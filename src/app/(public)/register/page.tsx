@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
-import { Loader2, User, Utensils } from "lucide-react";
+import { Eye, EyeOff, Loader2, User, Utensils } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
     const { register: registerUser, isLoading } = useAuth();
+    const [showPassword, setShowPassword] = useState(false);
 
     const form = useForm<RegisterFormValues>({
         resolver: zodResolver(registerSchema),
@@ -156,7 +158,28 @@ export default function RegisterPage() {
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="••••••••" {...field} />
+                                            <div className="relative">
+                                                <Input
+                                                    type={showPassword ? "text" : "password"}
+                                                    placeholder="••••••••"
+                                                    className="pr-10"
+                                                    {...field}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                                                >
+                                                    {showPassword ? (
+                                                        <EyeOff className="h-4 w-4" />
+                                                    ) : (
+                                                        <Eye className="h-4 w-4" />
+                                                    )}
+                                                    <span className="sr-only">
+                                                        {showPassword ? "Hide password" : "Show password"}
+                                                    </span>
+                                                </button>
+                                            </div>
                                         </FormControl>
                                         <p className="text-xs text-muted-foreground mt-1">
                                             Must be at least 6 characters long
