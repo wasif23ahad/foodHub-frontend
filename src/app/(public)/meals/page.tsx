@@ -11,6 +11,7 @@ import { Meal, Category, ApiResponse } from "@/types";
 import { useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
 import { MOCK_MEALS } from "@/lib/constants";
+import { MealSkeleton } from "@/components/meals/meal-skeleton";
 
 export default function MealsPage() {
     const searchParams = useSearchParams();
@@ -144,8 +145,10 @@ export default function MealsPage() {
             </div>
 
             {isLoading ? (
-                <div className="flex justify-center py-20">
-                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <MealSkeleton key={i} />
+                    ))}
                 </div>
             ) : error ? (
                 <div className="text-center py-20 text-red-500">

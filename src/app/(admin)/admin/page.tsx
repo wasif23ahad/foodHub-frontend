@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { ApiResponse, Order, User } from "@/types";
 
@@ -82,6 +83,65 @@ export default function AdminDashboardPage() {
 
     const orders = ordersData || [];
 
+    if (isOrdersLoading) {
+        return (
+            <div className="space-y-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-2">
+                        <Skeleton className="h-10 w-64" />
+                        <Skeleton className="h-4 w-48" />
+                    </div>
+                    <div className="flex gap-3">
+                        <Skeleton className="h-10 w-32" />
+                        <Skeleton className="h-10 w-32" />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <Card key={i} className="border-none shadow-md">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-5 w-5 rounded-lg" />
+                            </CardHeader>
+                            <CardContent>
+                                <Skeleton className="h-8 w-20 mb-1" />
+                                <Skeleton className="h-3 w-32" />
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <Card className="lg:col-span-2 shadow-sm border-muted">
+                        <CardHeader>
+                            <Skeleton className="h-6 w-32 mb-2" />
+                            <Skeleton className="h-4 w-48" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <Skeleton className="h-10 w-full" />
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <Skeleton key={i} className="h-16 w-full" />
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="shadow-sm border-muted">
+                        <CardHeader>
+                            <Skeleton className="h-6 w-32 mb-2" />
+                            <Skeleton className="h-4 w-48" />
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-3">
+                            {Array.from({ length: 4 }).map((_, i) => (
+                                <Skeleton key={i} className="h-20 w-full" />
+                            ))}
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

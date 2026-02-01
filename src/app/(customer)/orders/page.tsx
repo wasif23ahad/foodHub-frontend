@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { Order, ApiResponse, OrderStatus } from "@/types";
 
@@ -53,8 +54,38 @@ export default function OrderHistoryPage() {
 
     if (isLoading) {
         return (
-            <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[50vh]">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="container mx-auto px-4 py-8">
+                <Skeleton className="h-10 w-48 mb-8" />
+                <div className="space-y-6">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <Card key={i} className="overflow-hidden border-none shadow-sm">
+                            <CardHeader className="bg-muted/30 pb-4">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-6 w-40" />
+                                        <Skeleton className="h-4 w-64" />
+                                    </div>
+                                    <div className="text-right space-y-2">
+                                        <Skeleton className="h-8 w-24 ml-auto" />
+                                        <Skeleton className="h-4 w-16 ml-auto" />
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-4">
+                                <Skeleton className="h-4 w-20" />
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-full" />
+                                </div>
+                                <Separator />
+                                <div className="flex justify-between">
+                                    <Skeleton className="h-4 w-20" />
+                                    <Skeleton className="h-4 w-32" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
             </div>
         );
     }
