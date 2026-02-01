@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://foodhub-backend-silk.vercel.app";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://foodhub-backend-silk.vercel.app/api";
 
 type RequestOptions = {
     headers?: Record<string, string>;
@@ -26,7 +26,8 @@ export const api = {
         });
 
         if (!res.ok) {
-            throw new Error(`API Error: ${res.status} ${res.statusText}`);
+            const error = await res.json().catch(() => ({}));
+            throw new Error(error.message || `API Error: ${res.status} ${res.statusText}`);
         }
 
         return res.json();
