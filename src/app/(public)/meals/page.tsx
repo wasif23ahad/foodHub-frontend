@@ -8,19 +8,22 @@ import { Input } from "@/components/ui/input";
 import { Search, SlidersHorizontal, Loader2, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { Meal, Category, ApiResponse } from "@/types";
-import { useDebounce } from "@/hooks/use-debounce"; // We might need to create this hook if it doesn't exist, but I'll write inline debounce first or create the file. Be safer to create the file.
-
+import { useSearchParams } from "next/navigation";
+import { useDebounce } from "@/hooks/use-debounce";
 import { MOCK_MEALS } from "@/lib/constants";
 
 export default function MealsPage() {
-    const [search, setSearch] = useState("");
-    const [category, setCategory] = useState("");
-    const [sort, setSort] = useState("-createdAt"); // Default sort by newest
+    const searchParams = useSearchParams();
+    const initialCategory = searchParams.get("category") || "";
+    const initialSearch = searchParams.get("search") || "";
 
-    // Defer the search value for API calls to avoid excessive requests
+    const [search, setSearch] = useState(initialSearch);
+    const [category, setCategory] = useState(initialCategory);
+    const [sort, setSort] = useState("-createdAt");
+
     const debouncedSearch = useDebounce(search, 500);
 
-    // Fetch categories for filter
+    // Fetch categories
     const { data: categoriesData } = useQuery({
         queryKey: ["categories"],
         queryFn: async () => {
@@ -28,6 +31,7 @@ export default function MealsPage() {
                 const res = await api.get<ApiResponse<Category[]>>("/categories");
                 return res.data;
             } catch (e) {
+                console.error("Categories fetch failed", e);
                 return [];
             }
         },
@@ -36,34 +40,43 @@ export default function MealsPage() {
     const categories = categoriesData || [];
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ["meals", debouncedSearch, category, sort],
+        queryKey: ["meals", debouncedSearch, category, sort, categories.length],
         queryFn: async () => {
-            // Build query params
             const params = new URLSearchParams();
             if (debouncedSearch) params.append("search", debouncedSearch);
-            if (category && category !== "all") params.append("categoryId", category);
+
+            if (category && category !== "all") {
+                const matched = categories.find(c =>
+                    c.id === category || c.name.toLowerCase() === category.toLowerCase()
+                );
+
+                if (matched) {
+                    params.append("categoryId", matched.id);
+                } else if (category.length > 20) {
+                    // If it looks like a MongoID/UUID, send it
+                    params.append("categoryId", category);
+                } else {
+                    console.warn("Invalid category identifier:", category);
+                    // Don't append anything, falls back to all meals
+                }
+            }
             if (sort) params.append("sort", sort);
 
             try {
-                // If the backend endpoint supports query params appended to URL
                 const queryString = params.toString();
                 const url = `/meals${queryString ? `?${queryString}` : ""}`;
-
                 const res = await api.get<ApiResponse<Meal[]>>(url);
                 return res.data;
-            } catch (err) {
-                console.error("API Fetch Error, using fallback", err);
+            } catch (err: any) {
+                console.error("Meals fetch failed", err);
                 return [];
             }
         },
+        enabled: categories.length > 0 || !category || category === "all",
     });
 
-    // Use API data if available, otherwise use mock data ONLY if search/filters are empty to show something initially
-    // But if searching and no results, showing mock data is confusing. 
-    // So: if filtering is active, show real results (even if empty). If no filters and empty backend, show mock.
     const isFiltering = debouncedSearch || (category && category !== "all");
     const showMockFallback = !isFiltering && (!data || data.length === 0);
-
     const meals = showMockFallback ? MOCK_MEALS : (data || []);
 
     return (

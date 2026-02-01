@@ -14,10 +14,11 @@ export const api = {
      * GET request
      */
     async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-        const res = await fetch(`${API_URL}${endpoint}`, {
+        const url = `${API_URL}${endpoint}`;
+
+        const res = await fetch(url, {
             method: "GET",
             headers: {
-                "Content-Type": "application/json",
                 ...options?.headers,
             },
             credentials: "include",
@@ -26,8 +27,16 @@ export const api = {
         });
 
         if (!res.ok) {
-            const error = await res.json().catch(() => ({}));
-            throw new Error(error.message || `API Error: ${res.status} ${res.statusText}`);
+            let errorMsg = `API Error: ${res.status} ${res.statusText}`;
+            try {
+                const errorData = await res.json();
+                errorMsg = errorData.message || errorMsg;
+            } catch (e) {
+                // If not JSON, try text
+                const text = await res.text().catch(() => "");
+                if (text) errorMsg = text;
+            }
+            throw new Error(errorMsg);
         }
 
         return res.json();

@@ -63,7 +63,7 @@ export function Categories() {
                         const Icon = ICON_MAP[category.name] || UtensilsCrossed;
 
                         return (
-                            <Link key={category.id} href={`/meals?category=${category.name}`}>
+                            <Link key={category.id} href={`/meals?category=${category.id}`}>
                                 <Card className="flex flex-col items-center justify-center p-6 hover:border-primary hover:shadow-md transition-all cursor-pointer group h-full">
                                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary transition-colors">
                                         <Icon className="h-6 w-6 text-primary group-hover:text-white transition-colors" />

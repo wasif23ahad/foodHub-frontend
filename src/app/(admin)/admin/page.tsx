@@ -32,8 +32,13 @@ export default function AdminDashboardPage() {
     const { data: ordersData, isLoading: isOrdersLoading } = useQuery({
         queryKey: ["admin-orders"],
         queryFn: async () => {
-            const res = await api.get<ApiResponse<Order[]>>("/orders");
-            return res.data;
+            try {
+                const res = await api.get<ApiResponse<Order[]>>("/orders");
+                return res.data;
+            } catch (err) {
+                console.error("Admin orders fetch failed", err);
+                return [];
+            }
         }
     });
 
