@@ -31,11 +31,11 @@ export function Footer() {
                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
                                 <UtensilsCrossed className="h-5 w-5 text-white" />
                             </div>
-                            <span className="text-xl font-bold text-white">
+                            <span className="text-xl font-bold text-foreground">
                                 Food<span className="text-primary">Hub</span>
                             </span>
                         </Link>
-                        <p className="text-sm text-gray-400 leading-relaxed">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
                             Discover and order delicious meals from the best local providers.
                             Fresh, fast, and always satisfying.
                         </p>
@@ -43,13 +43,13 @@ export function Footer() {
 
                     {/* Support Links */}
                     <div>
-                        <h3 className="font-semibold text-white mb-4">Support</h3>
+                        <h3 className="font-semibold text-foreground mb-4">Support</h3>
                         <ul className="space-y-3">
                             {footerLinks.support.map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         href={link.href}
-                                        className="text-sm text-gray-400 hover:text-primary transition-colors"
+                                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
                                     >
                                         {link.label}
                                     </Link>
@@ -60,13 +60,13 @@ export function Footer() {
 
                     {/* Company Links */}
                     <div>
-                        <h3 className="font-semibold text-white mb-4">Company</h3>
+                        <h3 className="font-semibold text-foreground mb-4">Company</h3>
                         <ul className="space-y-3">
                             {footerLinks.company.map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         href={link.href}
-                                        className="text-sm text-gray-400 hover:text-primary transition-colors"
+                                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
                                     >
                                         {link.label}
                                     </Link>
@@ -77,13 +77,13 @@ export function Footer() {
 
                     {/* Legal Links */}
                     <div>
-                        <h3 className="font-semibold text-white mb-4">Legal</h3>
+                        <h3 className="font-semibold text-foreground mb-4">Legal</h3>
                         <ul className="space-y-3">
                             {footerLinks.legal.map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         href={link.href}
-                                        className="text-sm text-gray-400 hover:text-primary transition-colors"
+                                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
                                     >
                                         {link.label}
                                     </Link>
@@ -93,16 +93,13 @@ export function Footer() {
                     </div>
                 </div>
 
-                <Separator className="my-8 bg-gray-700" />
+                <Separator className="my-8 bg-border" />
 
                 {/* Copyright */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-sm text-gray-400">
+                <div className="text-center">
+                    <p className="text-sm text-muted-foreground">
                         © {new Date().getFullYear()} FoodHub. All rights reserved.
                     </p>
-                    <div className="flex items-center gap-4">
-                        <span className="text-sm text-gray-400">Made with ❤️ for food lovers</span>
-                    </div>
                 </div>
             </div>
         </footer>

@@ -12,12 +12,12 @@ export function Hero() {
             <div className="absolute inset-0 bg-primary/5 pattern-grid-lg opacity-20" />
 
             <div className="container relative mx-auto flex flex-col items-center text-center">
-                <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-6">
+                <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground mb-6">
                     Discover & Order <br />
                     <span className="text-primary">Delicious Meals</span>
                 </h1>
 
-                <p className="text-lg md:text-xl text-gray-400 max-w-2xl mb-10">
+                <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10">
                     From local favorites to gourmet specialties, get the best food delivered fast to your doorstep.
                 </p>
 
@@ -28,7 +28,7 @@ export function Hero() {
                         <Input
                             type="search"
                             placeholder="Search for meals (e.g. Burger, Pizza)..."
-                            className="pl-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-primary"
+                            className="pl-10 h-12 bg-background border-input text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
                         />
                     </div>
                     <Button size="lg" className="h-12 px-8 bg-primary hover:bg-primary-dark">
@@ -39,12 +39,12 @@ export function Hero() {
                 {/* CTA Buttons */}
                 <div className="flex gap-4">
                     <Link href="/meals">
-                        <Button size="lg" className="rounded-full px-8 bg-white text-secondary hover:bg-gray-100">
+                        <Button size="lg" className="rounded-full px-8 bg-primary text-primary-foreground hover:bg-primary-dark shadow-md">
                             Browse Menu
                         </Button>
                     </Link>
                     <Link href="/providers">
-                        <Button size="lg" variant="outline" className="rounded-full px-8 border-white/20 text-white hover:bg-white/10">
+                        <Button size="lg" variant="outline" className="rounded-full px-8 border-input text-foreground hover:bg-accent hover:text-accent-foreground">
                             Become a Provider
                         </Button>
                     </Link>
