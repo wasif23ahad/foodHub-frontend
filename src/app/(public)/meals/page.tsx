@@ -12,6 +12,23 @@ import { useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
 import { MOCK_MEALS } from "@/lib/constants";
 import { MealSkeleton } from "@/components/meals/meal-skeleton";
+import { StaggerContainer, fadeIn } from "@/components/animations";
+import { motion, AnimatePresence, Variants } from "framer-motion";
+
+const gridVariants: Variants = {
+    initial: {},
+    animate: {
+        transition: {
+            staggerChildren: 0.05
+        }
+    }
+};
+
+const cardVariants: Variants = {
+    initial: { opacity: 0, scale: 0.9 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.9 }
+};
 
 export default function MealsPage() {
     const searchParams = useSearchParams();
@@ -170,11 +187,25 @@ export default function MealsPage() {
                     </Button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {meals.map((meal) => (
-                        <MealCard key={meal.id} meal={meal} />
-                    ))}
-                </div>
+                <AnimatePresence mode="popLayout">
+                    <motion.div
+                        variants={gridVariants}
+                        initial="initial"
+                        animate="animate"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                    >
+                        {meals.map((meal) => (
+                            <motion.div
+                                key={meal.id}
+                                variants={cardVariants}
+                                transition={{ duration: 0.3 }}
+                                layout
+                            >
+                                <MealCard meal={meal} />
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                </AnimatePresence>
             )}
         </div>
     );

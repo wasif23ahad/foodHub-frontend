@@ -16,6 +16,7 @@ import { useCartStore } from "@/stores/cart-store";
 import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const navLinks = [
     { href: "/", label: "Home" },
@@ -38,31 +39,45 @@ export function Navbar() {
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                <Link href="/" className="flex items-center gap-2 group">
+                    <motion.div
+                        whileHover={{ rotate: 15, scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary"
+                    >
                         <UtensilsCrossed className="h-5 w-5 text-white" />
-                    </div>
+                    </motion.div>
                     <span className="text-xl font-bold text-foreground">
                         Food<span className="text-primary">Hub</span>
                     </span>
                 </Link>
 
                 {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center gap-6">
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className={cn(
-                                "text-sm font-medium transition-colors hover:text-primary",
-                                pathname === link.href
-                                    ? "text-foreground border-b-2 border-primary pb-1"
-                                    : "text-muted-foreground"
-                            )}
-                        >
-                            {link.label}
-                        </Link>
-                    ))}
+                <nav className="hidden md:flex items-center gap-8">
+                    {navLinks.map((link) => {
+                        const isActive = pathname === link.href;
+                        return (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={cn(
+                                    "text-sm font-medium transition-colors hover:text-primary relative py-1",
+                                    isActive ? "text-foreground" : "text-muted-foreground"
+                                )}
+                            >
+                                {link.label}
+                                {isActive && (
+                                    <motion.span
+                                        layoutId="nav-underline"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    />
+                                )}
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 {/* Right Side - Cart & Auth */}

@@ -16,6 +16,8 @@ export const metadata: Metadata = {
     description: "Order your favorite meals from top local providers.",
 };
 
+import { PageTransition } from "@/components/animations/page-transition";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -31,7 +33,9 @@ export default function RootLayout({
                     <div className="relative flex min-h-screen flex-col">
                         <Navbar />
                         <main className="flex-1">
-                            {children}
+                            <PageTransition>
+                                {children}
+                            </PageTransition>
                         </main>
                         <Footer />
                     </div>
