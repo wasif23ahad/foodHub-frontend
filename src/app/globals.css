@@ -4,9 +4,9 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --primary: oklch(0.205 0 0);
-  --primary-dark: #B91C1C;
-  --primary-light: #FEE2E2;
+  --primary: oklch(0.577 0.245 27.325);
+  --primary-dark: oklch(0.505 0.213 27.325);
+  --primary-light: oklch(0.936 0.032 17.717);
   --secondary: oklch(0.97 0 0);
   --accent: oklch(0.97 0 0);
   --muted: oklch(0.97 0 0);
@@ -143,6 +143,7 @@ button {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

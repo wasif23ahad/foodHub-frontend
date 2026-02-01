@@ -1,0 +1,122 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, ShoppingCart, X, UtensilsCrossed } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/meals", label: "Meals" },
+];
+
+export function Navbar() {
+    const pathname = usePathname();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // TODO: Replace with actual cart count from Zustand store
+    const cartItemCount = 0;
+
+    return (
+        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="container mx-auto flex h-16 items-center justify-between px-4">
+                {/* Logo */}
+                <Link href="/" className="flex items-center gap-2">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                        <UtensilsCrossed className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="text-xl font-bold text-foreground">
+                        Food<span className="text-primary">Hub</span>
+                    </span>
+                </Link>
+
+                {/* Desktop Navigation */}
+                <nav className="hidden md:flex items-center gap-6">
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={cn(
+                                "text-sm font-medium transition-colors hover:text-primary",
+                                pathname === link.href
+                                    ? "text-foreground border-b-2 border-primary pb-1"
+                                    : "text-muted-foreground"
+                            )}
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
+                </nav>
+
+                {/* Right Side - Cart & Auth */}
+                <div className="flex items-center gap-4">
+                    {/* Cart */}
+                    <Link href="/cart" className="relative">
+                        <Button variant="ghost" size="icon" className="relative">
+                            <ShoppingCart className="h-5 w-5" />
+                            {cartItemCount > 0 && (
+                                <Badge
+                                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
+                                >
+                                    {cartItemCount}
+                                </Badge>
+                            )}
+                        </Button>
+                    </Link>
+
+                    {/* Sign In Button - Desktop */}
+                    <Link href="/login" className="hidden md:block">
+                        <Button className="bg-primary hover:bg-primary-dark text-white">
+                            Sign In
+                        </Button>
+                    </Link>
+
+                    {/* Mobile Menu Button */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="md:hidden"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    >
+                        {isMobileMenuOpen ? (
+                            <X className="h-5 w-5" />
+                        ) : (
+                            <Menu className="h-5 w-5" />
+                        )}
+                    </Button>
+                </div>
+            </div>
+
+            {/* Mobile Menu */}
+            {isMobileMenuOpen && (
+                <div className="md:hidden border-t border-border/40 bg-background">
+                    <nav className="container mx-auto px-4 py-4 flex flex-col gap-4">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={cn(
+                                    "text-sm font-medium transition-colors hover:text-primary py-2",
+                                    pathname === link.href
+                                        ? "text-primary"
+                                        : "text-muted-foreground"
+                                )}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                            <Button className="w-full bg-primary hover:bg-primary-dark text-white">
+                                Sign In
+                            </Button>
+                        </Link>
+                    </nav>
+                </div>
+            )}
+        </header>
+    );
+}
