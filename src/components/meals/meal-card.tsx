@@ -31,14 +31,14 @@ export function MealCard({ meal }: MealCardProps) {
                         />
                         <Badge className="absolute top-3 right-3 bg-white/90 text-foreground hover:bg-white backdrop-blur-sm shadow-sm gap-1 z-10">
                             <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                            <span className="font-semibold text-xs">{meal.rating}</span>
+                            <span className="font-semibold text-xs">{(meal.avgRating || 4.5).toFixed(1)}</span>
                         </Badge>
                     </div>
 
                     <CardContent className="p-4 flex-1">
                         <div className="flex justify-between items-start mb-2">
                             <Badge variant="secondary" className="text-xs font-normal text-muted-foreground bg-slate-100 hover:bg-slate-200">
-                                {meal.category}
+                                {meal.category?.name || "Meal"}
                             </Badge>
                         </div>
                         <h3 className="font-bold text-lg mb-1 truncate group-hover:text-primary transition-colors">
@@ -48,7 +48,7 @@ export function MealCard({ meal }: MealCardProps) {
                             {meal.description}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>By <span className="font-medium text-foreground">{meal.provider}</span></span>
+                            <span>By <span className="font-medium text-foreground">{meal.providerProfile?.businessName || "Local Kitchen"}</span></span>
                         </div>
                     </CardContent>
                 </Link>

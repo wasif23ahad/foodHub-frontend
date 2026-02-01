@@ -50,13 +50,14 @@ export interface Meal {
     price: number;
     image?: string;
     categoryId: string;
-    providerId: string;
+    providerProfileId: string;
     isAvailable: boolean;
-    rating: number;
+    avgRating?: number;
+    reviewCount?: number;
     createdAt: string;
     updatedAt: string;
     category?: Category;
-    provider?: Provider;
+    providerProfile?: Provider;
 }
 
 // Cart types
