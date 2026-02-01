@@ -38,7 +38,7 @@ export default function MealsPage() {
 
     const [search, setSearch] = useState(initialSearch);
     const [category, setCategory] = useState(initialCategory);
-    const [sort, setSort] = useState("-createdAt"); // Local state for UI, but disabled for API to prevent validation error
+    const [sort, setSort] = useState("newest");
 
     const debouncedSearch = useDebounce(search, 500);
 
@@ -150,10 +150,12 @@ export default function MealsPage() {
                             value={sort}
                             onChange={(e) => setSort(e.target.value)}
                         >
-                            <option value="-createdAt">Newest</option>
-                            <option value="price">Price: Low to High</option>
-                            <option value="-price">Price: High to Low</option>
-                            <option value="-rating">Top Rated</option>
+                            <option value="newest">Newest</option>
+                            <option value="oldest">Oldest</option>
+                            <option value="price_asc">Price: Low to High</option>
+                            <option value="price_desc">Price: High to Low</option>
+                            <option value="rating">Top Rated</option>
+                            <option value="popular">Most Popular</option>
                         </select>
                         <SlidersHorizontal className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     </div>

@@ -93,7 +93,7 @@ export function Categories() {
                                             <Icon className="h-6 w-6 text-primary group-hover:text-white transition-colors" />
                                         </div>
                                         <h3 className="font-semibold text-lg mb-1">{category.name}</h3>
-                                        <span className="text-sm text-muted-foreground">{category.count || "20+"} items</span>
+                                        <span className="text-sm text-muted-foreground">{category._count?.meals || 0} items</span>
                                     </Card>
                                 </Link>
                             </motion.div>

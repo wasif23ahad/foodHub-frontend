@@ -121,7 +121,7 @@ export default function MealDetailsPage() {
                             </div>
                             <div className="flex items-center gap-1 bg-primary/10 px-3 py-1 rounded-full">
                                 <Star className="h-5 w-5 text-primary fill-primary" />
-                                <span className="font-bold text-primary">{meal.rating || 4.5}</span>
+                                <span className="font-bold text-primary">{(meal.avgRating || 4.5).toFixed(1)}</span>
                             </div>
                         </div>
 
@@ -129,10 +129,10 @@ export default function MealDetailsPage() {
                             <Store className="h-4 w-4" />
                             <span>Provided by</span>
                             <Link
-                                href={`/providers/${meal.providerId}`}
+                                href={`/providers/${meal.providerProfileId}`}
                                 className="font-medium text-foreground hover:underline hover:text-primary transition-colors"
                             >
-                                {meal.provider?.businessName || "Unknown Provider"}
+                                {meal.providerProfile?.businessName || "Unknown Provider"}
                             </Link>
                         </div>
                     </div>

@@ -40,9 +40,20 @@ export interface Category {
     image?: string;
     createdAt: string;
     updatedAt: string;
+    _count?: {
+        meals: number;
+    };
 }
 
 // Meal types
+export type MealSortingOption =
+    | "newest"
+    | "oldest"
+    | "price_asc"
+    | "price_desc"
+    | "rating"
+    | "popular";
+
 export interface Meal {
     id: string;
     name: string;

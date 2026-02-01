@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://foodhub-backend-silk.vercel.app/api";
+const API_URL = "http://localhost:5000/api";
 
 type RequestOptions = {
     headers?: Record<string, string>;
@@ -15,7 +15,7 @@ export const api = {
      */
     async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
         const url = `${API_URL}${endpoint}`;
-        console.log(`[API GET] ${url}`);
+        console.log(`[API GET] ${url} (Base: ${API_URL})`);
 
         const res = await fetch(url, {
             method: "GET",
