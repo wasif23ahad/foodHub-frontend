@@ -154,7 +154,7 @@ export default function CheckoutPage() {
                                                     <Phone className="h-4 w-4" /> Phone Number
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="017..." {...field} />
+                                                    <Input placeholder="Enter your phone number here..." {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
