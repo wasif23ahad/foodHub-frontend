@@ -1,59 +1,24 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { MealCard } from "@/components/meals/meal-card";
-
-// Mock data for initial display
-const MOCK_MEALS = [
-    {
-        id: "1",
-        name: "Classic Cheeseburger",
-        description: "Juicy beef patty with cheddar cheese, lettuce, and tomato on a brioche bun.",
-        price: 350,
-        rating: 4.8,
-        reviews: 120,
-        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
-        category: "Burgers",
-        provider: "Burger King"
-    },
-    {
-        id: "2",
-        name: "Margherita Pizza",
-        description: "Fresh basil, mozzarella cheese, and tomato sauce on a thin crust.",
-        price: 650,
-        rating: 4.6,
-        reviews: 85,
-        image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800&q=80",
-        category: "Italian",
-        provider: "Pizza Hut"
-    },
-    {
-        id: "3",
-        name: "Chicken Teriyaki Bowl",
-        description: "Grilled chicken glazed with teriyaki sauce, served over steamed rice and vegetables.",
-        price: 420,
-        rating: 4.7,
-        reviews: 200,
-        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80",
-        category: "Asian",
-        provider: "Panda Express"
-    },
-    {
-        id: "4",
-        name: "Kacchi Biriyani",
-        description: "Traditional Bangladeshi aromatic rice dish with tender mutton pieces and potatoes.",
-        price: 480,
-        rating: 4.9,
-        reviews: 245,
-        image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=800&q=80",
-        category: "Asian",
-        provider: "Sultan's Dine"
-    }
-];
+import { api } from "@/lib/api";
+import { Meal, ApiResponse } from "@/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function PopularMeals() {
+    const { data, isLoading } = useQuery({
+        queryKey: ["popular-meals"],
+        queryFn: async () => {
+            const res = await api.get<ApiResponse<Meal[]>>("/meals?limit=4&sort=-rating"); // Assuming backend supports these params
+            return res.data;
+        },
+    });
+
+    const meals = data || [];
+
     return (
         <section className="py-20 px-4 bg-slate-50">
             <div className="container mx-auto">
@@ -71,11 +36,26 @@ export function PopularMeals() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {MOCK_MEALS.map((meal) => (
-                        <MealCard key={meal.id} meal={meal} />
-                    ))}
-                </div>
+                {isLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="h-[350px] rounded-xl overflow-hidden">
+                                <Skeleton className="h-48 w-full" />
+                                <div className="p-4 space-y-3">
+                                    <Skeleton className="h-4 w-1/3" />
+                                    <Skeleton className="h-6 w-3/4" />
+                                    <Skeleton className="h-10 w-full" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {meals.slice(0, 4).map((meal) => (
+                            <MealCard key={meal.id} meal={meal} />
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     );

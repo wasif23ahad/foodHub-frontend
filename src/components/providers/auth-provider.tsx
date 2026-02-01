@@ -25,14 +25,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                // In a real app, we would verify the token or fetch the user profile here
-                // For now, we'll check local storage for a mock user
-                const storedUser = localStorage.getItem("foodhub_user");
-                if (storedUser) {
-                    setUser(JSON.parse(storedUser));
+                const session = await api.get<{ user: User } | null>("/auth/session");
+                if (session?.user) {
+                    setUser(session.user);
                 }
             } catch (error) {
                 console.error("Auth check failed:", error);
+                // Fail silently, user just isn't logged in
             } finally {
                 setIsLoading(false);
             }
@@ -44,32 +43,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = async (credentials: LoginCredentials) => {
         setIsLoading(true);
         try {
-            // MOCK LOGIN implementation for demo
-            // TODO: Replace with actual API call: const res = await api.post("/auth/login", credentials);
+            const res = await api.post<{ user: User; token?: string }>("/auth/sign-in/email", credentials);
 
-            console.log("Logging in with:", credentials);
+            // Assuming the backend returns the user object directly or within a data property
+            // Adjust based on actual API response structure if needed
+            const user = res.user || res;
 
-            // Simulating API delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            setUser(user as User);
+            // Better Auth handles session via cookies usually, but if token is returned, store it if needed
+            // localStorage.setItem("foodhub_user", JSON.stringify(user)); 
 
-            const mockUser: User = {
-                id: "1",
-                name: "Demo User",
-                email: credentials.email,
-                role: "customer",
-                emailVerified: true,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-            };
-
-            setUser(mockUser);
-            localStorage.setItem("foodhub_user", JSON.stringify(mockUser));
             toast.success("Logged in successfully");
             router.push("/");
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Login failed:", error);
-            toast.error("Invalid credentials");
+            toast.error(error.message || "Invalid credentials");
             throw error;
         } finally {
             setIsLoading(false);
@@ -79,32 +68,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const register = async (data: RegisterData) => {
         setIsLoading(true);
         try {
-            // MOCK REGISTER implementation for demo
-            // TODO: Replace with actual API call: const res = await api.post("/auth/register", data);
-
-            console.log("Registering with:", data);
-
-            // Simulating API delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            const mockUser: User = {
-                id: "1",
-                name: data.name,
+            const res = await api.post<{ user: User }>("/auth/sign-up/email", {
                 email: data.email,
-                role: data.role === "customer" ? "customer" : "provider", // Mapping simple string to UserRole
-                emailVerified: true,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-            };
+                password: data.password,
+                name: data.name,
+                role: data.role // Ensure backend accepts this field during signup or needs a separate profile update
+            });
 
-            setUser(mockUser);
-            localStorage.setItem("foodhub_user", JSON.stringify(mockUser));
+            const user = res.user || res;
+            setUser(user as User);
+
             toast.success("Account created successfully");
             router.push("/");
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Registration failed:", error);
-            toast.error("Registration failed. Please try again.");
+            toast.error(error.message || "Registration failed. Please try again.");
             throw error;
         } finally {
             setIsLoading(false);
@@ -113,13 +92,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const logout = async () => {
         try {
-            // TODO: Call API logout endpoint if needed
+            await api.post("/auth/sign-out");
             setUser(null);
-            localStorage.removeItem("foodhub_user");
+            // localStorage.removeItem("foodhub_user"); // If we stop using local storage for auth
             toast.success("Logged out successfully");
             router.push("/login");
         } catch (error) {
             console.error("Logout failed:", error);
+            toast.error("Failed to logout");
         }
     };
 
