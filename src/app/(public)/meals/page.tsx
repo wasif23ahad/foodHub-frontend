@@ -39,8 +39,12 @@ export default function MealsPage() {
     const [search, setSearch] = useState(initialSearch);
     const [category, setCategory] = useState(initialCategory);
     const [sort, setSort] = useState("newest");
+    const [minPrice, setMinPrice] = useState("");
+    const [maxPrice, setMaxPrice] = useState("");
 
     const debouncedSearch = useDebounce(search, 500);
+    const debouncedMinPrice = useDebounce(minPrice, 500);
+    const debouncedMaxPrice = useDebounce(maxPrice, 500);
 
     // Fetch categories
     const { data: categoriesData } = useQuery({
@@ -59,7 +63,7 @@ export default function MealsPage() {
     const categories = categoriesData || [];
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ["meals", debouncedSearch, category, sort, categories.length],
+        queryKey: ["meals", debouncedSearch, category, sort, debouncedMinPrice, debouncedMaxPrice, categories.length],
         queryFn: async () => {
             const params = new URLSearchParams();
             if (debouncedSearch) params.append("search", debouncedSearch);
@@ -79,7 +83,9 @@ export default function MealsPage() {
                     // Don't append anything, falls back to all meals
                 }
             }
-            // if (sort) params.append("sort", sort);
+            if (sort) params.append("sort", sort);
+            if (debouncedMinPrice) params.append("minPrice", debouncedMinPrice);
+            if (debouncedMaxPrice) params.append("maxPrice", debouncedMaxPrice);
 
             try {
                 const queryString = params.toString();
@@ -158,6 +164,27 @@ export default function MealsPage() {
                             <option value="popular">Most Popular</option>
                         </select>
                         <SlidersHorizontal className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    </div>
+
+                    {/* Price Range Filter */}
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                        <Input
+                            type="number"
+                            placeholder="Min $"
+                            className="w-[80px] h-10"
+                            min="0"
+                            value={minPrice}
+                            onChange={(e) => setMinPrice(e.target.value)}
+                        />
+                        <span className="text-muted-foreground">-</span>
+                        <Input
+                            type="number"
+                            placeholder="Max $"
+                            className="w-[80px] h-10"
+                            min="0"
+                            value={maxPrice}
+                            onChange={(e) => setMaxPrice(e.target.value)}
+                        />
                     </div>
                 </div>
             </div>
