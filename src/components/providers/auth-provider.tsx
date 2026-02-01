@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, LoginCredentials, RegisterData } from "@/types";
-import { api } from "@/lib/api";
+import { api, API_URL } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -11,6 +11,7 @@ interface AuthContextType {
     isLoading: boolean;
     login: (credentials: LoginCredentials) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
+    signInWithGoogle: () => void;
     logout: () => Promise<void>;
 }
 
@@ -44,18 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         try {
             const res = await api.post<{ user: User; token?: string }>("/auth/sign-in/email", credentials);
-
-            // Assuming the backend returns the user object directly or within a data property
-            // Adjust based on actual API response structure if needed
             const user = res.user || res;
-
             setUser(user as User);
-            // Better Auth handles session via cookies usually, but if token is returned, store it if needed
-            // localStorage.setItem("foodhub_user", JSON.stringify(user)); 
-
             toast.success("Logged in successfully");
             router.push("/");
-
         } catch (error: any) {
             console.error("Login failed:", error);
             toast.error(error.message || "Invalid credentials");
@@ -72,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 email: data.email,
                 password: data.password,
                 name: data.name,
-                // role: data.role // Backend rejects this field during signup
+                role: data.role.toUpperCase() // BetterAuth expects uppercase ROLES usually or matches what we defined in backend
             });
 
             const user = res.user || res;
@@ -80,7 +73,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             toast.success("Account created successfully");
             router.push("/");
-
         } catch (error: any) {
             console.error("Registration failed:", error);
             toast.error(error.message || "Registration failed. Please try again.");
@@ -90,11 +82,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const signInWithGoogle = () => {
+        const callbackUrl = window.location.origin;
+        // Redirect to backend social login route
+        window.location.href = `${API_URL}/auth/login/social/google?callbackURL=${callbackUrl}`;
+    };
+
     const logout = async () => {
         try {
             await api.post("/auth/sign-out");
             setUser(null);
-            // localStorage.removeItem("foodhub_user"); // If we stop using local storage for auth
             toast.success("Logged out successfully");
             router.push("/login");
         } catch (error) {
@@ -104,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, login, register, signInWithGoogle, logout }}>
             {children}
         </AuthContext.Provider>
     );
