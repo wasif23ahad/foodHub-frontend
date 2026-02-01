@@ -20,20 +20,62 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useCartStore } from "@/stores/cart-store";
 
 function SuccessContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const orderId = searchParams.get("orderId");
+    const paramOrderId = searchParams.get("orderId");
 
-    // Review State
+    // Auth Check
+    const { user } = useAuth();
+    const { clearCart } = useCartStore();
+
+    // State
+    const [orderId, setOrderId] = useState<string | null>(paramOrderId);
     const [isReviewOpen, setIsReviewOpen] = useState(false);
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [comment, setComment] = useState("");
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [isLoadingId, setIsLoadingId] = useState(false);
+
+    // Effect: Resolve Order ID (Param or Fetch Latest)
+    useEffect(() => {
+        if (paramOrderId) {
+            setOrderId(paramOrderId);
+            setTimeout(() => setIsReviewOpen(true), 1500); // Auto-open if param exists
+        } else if (user) {
+            // Fallback: Fetch latest order only if logged in
+            const fetchLatestOrder = async () => {
+                setIsLoadingId(true);
+                try {
+                    // Check if we can get the latest order
+                    const res = await api.get<{ data: { orders: { id: string }[] } }>("/orders?limit=1");
+
+                    // Handle different response structures gracefully
+                    // @ts-ignore - API response type safety might vary
+                    const orders = res.data?.orders || res.orders || [];
+
+                    if (orders.length > 0) {
+                        console.log("Fetched latest order ID:", orders[0].id);
+                        setOrderId(orders[0].id);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch latest order:", error);
+                } finally {
+                    setIsLoadingId(false);
+                }
+            };
+            fetchLatestOrder();
+        }
+    }, [paramOrderId, user]);
 
     useEffect(() => {
+        // Clear cart on mount
+        clearCart();
+
         // Trigger confetti on mount
         const duration = 5 * 1000;
         const animationEnd = Date.now() + duration;
@@ -49,7 +91,6 @@ function SuccessContent() {
             }
 
             const particleCount = 50 * (timeLeft / duration);
-            // since particles fall down, start a bit higher than random
             confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
             confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
         }, 250);
@@ -57,22 +98,13 @@ function SuccessContent() {
         return () => clearInterval(interval);
     }, []);
 
-    // Open review modal if orderId is present
-    useEffect(() => {
-        if (orderId) {
-            // Small delay to let the success animation play a bit
-            const timer = setTimeout(() => {
-                setIsReviewOpen(true);
-            }, 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [orderId]);
-
     const handleRatingSubmit = async () => {
         if (rating === 0) {
             toast.error("Please select a star rating");
             return;
         }
+
+        if (!orderId) return;
 
         setIsSubmittingReview(true);
         try {
@@ -82,8 +114,6 @@ function SuccessContent() {
             });
             toast.success("Thank you for your feedback!");
             setIsReviewOpen(false);
-            // Optional: Remove query param to prevent reopening on refresh?
-            router.replace("/checkout/success");
         } catch (error: any) {
             toast.error(error.message || "Failed to submit review");
         } finally {
@@ -101,18 +131,12 @@ function SuccessContent() {
             >
                 <Card className="text-center shadow-2xl border-primary/10 overflow-hidden">
                     <CardHeader className="bg-primary/5 pb-8 pt-10">
-                        <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
-                            className="flex justify-center mb-4"
-                        >
+                        <div className="flex justify-center mb-4">
                             <div className="h-24 w-24 bg-green-100 rounded-full flex items-center justify-center text-green-600">
                                 <CheckCircle2 className="h-14 w-14" />
                             </div>
-                        </motion.div>
+                        </div>
                         <CardTitle className="text-3xl font-bold text-foreground">Order Placed!</CardTitle>
-
                         <p className="text-muted-foreground mt-2 max-w-xs mx-auto">
                             Thank you for your order. We&apos;ve received it and are preparing your meal.
                         </p>
@@ -129,19 +153,56 @@ function SuccessContent() {
                                     <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[10px] font-bold">2</div>
                                     <span>You can track your order status in your dashboard.</span>
                                 </li>
-                                <li className="flex items-start gap-3">
-                                    <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[10px] font-bold">3</div>
-                                    <span>We&apos;ll notify you when the rider is heading your way.</span>
-                                </li>
                             </ul>
                         </div>
                     </CardContent>
-                    <CardFooter className="flex flex-col sm:flex-row gap-4 pt-4 pb-10">
+                    <CardFooter className="flex flex-col gap-4 pt-4 pb-10">
+                        {/* Always show View Orders */}
                         <Link href="/orders" className="w-full">
                             <Button variant="outline" className="w-full h-12 rounded-full border-2">
                                 <ShoppingBag className="mr-2 h-4 w-4" /> View My Orders
                             </Button>
                         </Link>
+
+                        {/* Rate Button with Auth Logic */}
+                        <Button
+                            variant="secondary"
+                            className="w-full h-12 rounded-full bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-700"
+                            onClick={async () => {
+                                if (!user) {
+                                    router.push("/login?callbackUrl=/checkout/success");
+                                    return;
+                                }
+
+                                if (orderId) {
+                                    setIsReviewOpen(true);
+                                } else {
+                                    // Manual fetch on click
+                                    const toastId = toast.loading("Finding your order...");
+                                    try {
+                                        const res = await api.get<{ data: { orders: { id: string }[] } }>("/orders?limit=1");
+                                        // Handle potential structure variations
+                                        // @ts-ignore
+                                        const orders = res.data?.orders || res.orders || [];
+
+                                        if (orders.length > 0) {
+                                            setOrderId(orders[0].id);
+                                            setIsReviewOpen(true);
+                                            toast.dismiss(toastId);
+                                        } else {
+                                            toast.error("No recent orders found to rate!", { id: toastId });
+                                        }
+                                    } catch (e) {
+                                        console.error(e);
+                                        toast.error("Could not find your order.", { id: toastId });
+                                    }
+                                }
+                            }}
+                        >
+                            <Star className="mr-2 h-4 w-4 fill-yellow-400" />
+                            {user ? "Rate Your Experience" : "Login to Rate"}
+                        </Button>
+
                         <Link href="/meals" className="w-full">
                             <Button className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
                                 Browse More Meals <ArrowRight className="ml-2 h-4 w-4" />

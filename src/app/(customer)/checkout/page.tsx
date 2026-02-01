@@ -95,7 +95,7 @@ export default function CheckoutPage() {
             const res = await api.post<{ data: { id: string } }>("/orders", payload);
 
             toast.success("Order placed successfully!");
-            clearCart();
+            // clearCart(); // Moved to Success Page to prevent race condition with "empty cart" redirect
             router.push(`/checkout/success?orderId=${res.data.id}`);
         } catch (error: any) {
             console.error("Checkout error:", error);
