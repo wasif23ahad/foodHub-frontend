@@ -14,12 +14,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import { MOCK_MEALS } from "@/lib/constants";
+import { useCartStore } from "@/stores/cart-store";
 
 export default function MealDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const mealId = params?.id as string;
     const [quantity, setQuantity] = useState(1);
+    const addItem = useCartStore((state) => state.addItem);
 
     const { data: apiMeal, isLoading, error } = useQuery({
         queryKey: ["meal", mealId],
@@ -63,8 +65,9 @@ export default function MealDetailsPage() {
     const meal = apiMeal || fallbackMeal;
 
     const handleAddToCart = () => {
-        // Todo: Implement actual cart logic (Zustand) in Phase 7
-        toast.success(`Added ${quantity} ${meal?.name} to cart`);
+        if (!meal) return;
+        addItem(meal, quantity);
+        toast.success(`Added ${quantity} ${meal.name} to cart`);
     };
 
     const increment = () => setQuantity((q) => q + 1);

@@ -12,6 +12,9 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
+import { useCartStore } from "@/stores/cart-store";
+import { useEffect, useState } from "react";
+
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -21,9 +24,15 @@ const navLinks = [
 
 export function Navbar() {
     const pathname = usePathname();
+    const cartItems = useCartStore((state) => state.items);
+    const [mounted, setMounted] = useState(false);
 
-    // TODO: Replace with actual cart count from Zustand store
-    const cartItemCount = 0;
+    // Hydration fix
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const cartItemCount = mounted ? cartItems.reduce((acc, item) => acc + item.quantity, 0) : 0;
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
