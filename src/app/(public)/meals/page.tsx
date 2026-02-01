@@ -170,7 +170,7 @@ export default function MealsPage() {
                     <div className="flex items-center gap-2 w-full md:w-auto">
                         <Input
                             type="number"
-                            placeholder="Min $"
+                            placeholder="Min ৳"
                             className="w-[80px] h-10"
                             min="0"
                             value={minPrice}
@@ -179,7 +179,7 @@ export default function MealsPage() {
                         <span className="text-muted-foreground">-</span>
                         <Input
                             type="number"
-                            placeholder="Max $"
+                            placeholder="Max ৳"
                             className="w-[80px] h-10"
                             min="0"
                             value={maxPrice}
