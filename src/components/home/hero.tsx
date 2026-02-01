@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const containerVariants: Variants = {
@@ -25,6 +27,18 @@ const itemVariants: Variants = {
 };
 
 export function Hero() {
+    const [searchQuery, setSearchQuery] = useState("");
+    const router = useRouter();
+
+    const handleSearch = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/meals?search=${encodeURIComponent(searchQuery.trim())}`);
+        } else {
+            router.push("/meals");
+        }
+    };
+
     return (
         <section className="relative bg-[#DC2626] py-20 px-4 md:py-32 overflow-hidden">
             {/* Background patterned overlay and gradient curve */}
@@ -53,22 +67,29 @@ export function Hero() {
                 </motion.p>
 
                 {/* Search Bar - Dark Themed */}
-                <motion.div
+                <motion.form
                     variants={itemVariants}
+                    onSubmit={handleSearch}
                     className="w-full max-w-xl flex gap-2 relative mb-8 p-1 bg-slate-900/30 backdrop-blur-sm rounded-xl border border-white/10"
                 >
                     <div className="relative flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                         <Input
                             type="search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="What are you craving?"
                             className="pl-12 h-14 bg-slate-900 border-none text-white placeholder:text-slate-400 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg shadow-inner"
                         />
                     </div>
-                    <Button size="lg" className="h-14 px-8 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg shadow-lg border border-white/5">
+                    <Button
+                        type="submit"
+                        size="lg"
+                        className="h-14 px-8 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg shadow-lg border border-white/5"
+                    >
                         Search
                     </Button>
-                </motion.div>
+                </motion.form>
 
                 <motion.div variants={itemVariants} className="flex gap-4">
                     <Link href="/meals">
