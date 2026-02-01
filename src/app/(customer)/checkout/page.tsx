@@ -103,7 +103,7 @@ export default function CheckoutPage() {
 
             toast.success("Order placed successfully!");
             clearCart();
-            router.push("/orders"); // Redirect to orders history
+            router.push("/checkout/success"); // Redirect to success page
         } catch (error: any) {
             console.error("Checkout error:", error);
             toast.error(error.message || "Failed to place order");
