@@ -23,14 +23,7 @@ const ICON_MAP: Record<string, any> = {
     "Naan": Pizza      // Flatbread
 };
 
-const DEFAULT_CATEGORIES = [
-    { id: "italian", name: "Italian", count: 12 },
-    { id: "asian", name: "Asian", count: 8 },
-    { id: "burgers", name: "Burgers", count: 15 },
-    { id: "healthy", name: "Healthy", count: 6 },
-    { id: "breakfast", name: "Breakfast", count: 9 },
-    { id: "all", name: "View All", count: 42 },
-];
+
 
 const containerVariants: Variants = {
     initial: {},
@@ -64,8 +57,7 @@ export function Categories() {
         },
     });
 
-    // Use backend data if available, otherwise default
-    const displayCategories = data && data.length > 0 ? data : DEFAULT_CATEGORIES;
+    const displayCategories = data || [];
 
     return (
         <section className="py-16 px-4 bg-background overflow-hidden">

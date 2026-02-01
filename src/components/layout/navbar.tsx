@@ -36,6 +36,7 @@ import { motion } from "framer-motion";
 const navLinks = [
     { href: "/", label: "Home" },
     { href: "/meals", label: "Meals" },
+    { href: "/providers", label: "Providers" },
 ];
 
 export function Navbar() {

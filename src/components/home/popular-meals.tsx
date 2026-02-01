@@ -7,7 +7,7 @@ import { MealCard } from "@/components/meals/meal-card";
 import { api } from "@/lib/api";
 import { Meal, ApiResponse } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MOCK_MEALS } from "@/lib/constants";
+
 
 import { motion, Variants } from "framer-motion";
 
@@ -25,9 +25,7 @@ export function PopularMeals() {
         },
     });
 
-    // Specific meals requested: Classic Cheeseburger (1), Kacchi Biriyani (4), Beef Sheek Kabab (9), Chicken Teriyaki Bowl (3)
-    const fallbackMeals = MOCK_MEALS.filter(meal => ["1", "3", "4", "9"].includes(meal.id));
-    const meals = data && data.length > 0 ? data : fallbackMeals;
+    const meals = data || [];
 
     const containerVariants: Variants = {
         initial: {},

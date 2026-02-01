@@ -16,16 +16,20 @@ export interface User {
 export interface Provider {
     id: string;
     userId: string;
-    name: string;
+    businessName: string;
     description?: string;
-    image?: string;
+    logo?: string;
+    address?: string;
+    phone?: string;
     cuisineType?: string;
-    rating: number;
-    totalOrders: number;
+    contactEmail?: string;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     user?: User;
+    avgRating?: number;
+    totalReviews?: number;
+    meals?: Meal[];
 }
 
 // Category types

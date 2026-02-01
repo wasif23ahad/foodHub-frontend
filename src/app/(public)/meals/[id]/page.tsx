@@ -13,7 +13,6 @@ import { Star, Minus, Plus, ShoppingCart, Store, ArrowLeft } from "lucide-react"
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
-import { MOCK_MEALS } from "@/lib/constants";
 import { useCartStore } from "@/stores/cart-store";
 
 export default function MealDetailsPage() {
@@ -38,31 +37,7 @@ export default function MealDetailsPage() {
         retry: 1
     });
 
-    // Fallback logic
-    const mockMeal = MOCK_MEALS.find((m) => m.id === mealId);
-
-    // Transform mock meal to match Meal interface if necessary
-    const fallbackMeal: Meal | undefined = mockMeal ? {
-        ...mockMeal,
-        categoryId: "mock-cat-id",
-        providerId: "mock-provider-id",
-        isAvailable: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        category: { id: "c", name: mockMeal.category, createdAt: "", updatedAt: "" },
-        provider: {
-            id: "p",
-            userId: "u",
-            name: mockMeal.provider,
-            rating: 4.8,
-            totalOrders: 100,
-            isActive: true,
-            createdAt: "",
-            updatedAt: ""
-        }
-    } : undefined;
-
-    const meal = apiMeal || fallbackMeal;
+    const meal = apiMeal;
 
     const handleAddToCart = () => {
         if (!meal) return;
@@ -157,7 +132,7 @@ export default function MealDetailsPage() {
                                 href={`/providers/${meal.providerId}`}
                                 className="font-medium text-foreground hover:underline hover:text-primary transition-colors"
                             >
-                                {meal.provider?.name || "Unknown Provider"}
+                                {meal.provider?.businessName || "Unknown Provider"}
                             </Link>
                         </div>
                     </div>

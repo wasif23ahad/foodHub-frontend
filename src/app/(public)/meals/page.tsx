@@ -10,10 +10,11 @@ import { api } from "@/lib/api";
 import { Meal, Category, ApiResponse } from "@/types";
 import { useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
-import { MOCK_MEALS } from "@/lib/constants";
 import { MealSkeleton } from "@/components/meals/meal-skeleton";
 import { StaggerContainer, fadeIn } from "@/components/animations";
 import { motion, AnimatePresence, Variants } from "framer-motion";
+
+
 
 const gridVariants: Variants = {
     initial: {},
@@ -93,9 +94,7 @@ export default function MealsPage() {
         enabled: !category || category === "all" || categories.length > 0,
     });
 
-    const isFiltering = debouncedSearch || (category && category !== "all");
-    const showMockFallback = !isFiltering && (!data || data.length === 0);
-    const meals = showMockFallback ? MOCK_MEALS : (data || []);
+    const meals = data || [];
 
     return (
         <div className="container mx-auto px-4 py-8">
