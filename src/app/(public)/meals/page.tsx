@@ -1,12 +1,12 @@
-"use client";
-
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MealCard } from "@/components/meals/meal-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal, Loader2, X } from "lucide-react";
 import { api } from "@/lib/api";
-import { Meal, ApiResponse } from "@/types";
+import { Meal, Category, ApiResponse } from "@/types";
+import { useDebounce } from "@/hooks/use-debounce"; // We might need to create this hook if it doesn't exist, but I'll write inline debounce first or create the file. Be safer to create the file.
 
 // Fallback data in case backend is empty
 const MOCK_MEALS = [
@@ -90,21 +90,58 @@ const MOCK_MEALS = [
 ];
 
 export default function MealsPage() {
-    const { data, isLoading, error } = useQuery({
-        queryKey: ["meals"],
+    const [search, setSearch] = useState("");
+    const [category, setCategory] = useState("");
+    const [sort, setSort] = useState("-createdAt"); // Default sort by newest
+
+    // Defer the search value for API calls to avoid excessive requests
+    const debouncedSearch = useDebounce(search, 500);
+
+    // Fetch categories for filter
+    const { data: categoriesData } = useQuery({
+        queryKey: ["categories"],
         queryFn: async () => {
             try {
-                const res = await api.get<ApiResponse<Meal[]>>("/meals");
+                const res = await api.get<ApiResponse<Category[]>>("/categories");
                 return res.data;
-            } catch (err) {
-                console.error("API Fetch Error, using fallback", err);
-                return []; // Return empty array to trigger fallback logic if needed
+            } catch (e) {
+                return [];
             }
         },
     });
 
-    // Use API data if available, otherwise use mock data
-    const meals = (data && data.length > 0) ? data : MOCK_MEALS;
+    const categories = categoriesData || [];
+
+    const { data, isLoading, error } = useQuery({
+        queryKey: ["meals", debouncedSearch, category, sort],
+        queryFn: async () => {
+            // Build query params
+            const params = new URLSearchParams();
+            if (debouncedSearch) params.append("search", debouncedSearch);
+            if (category && category !== "all") params.append("categoryId", category);
+            if (sort) params.append("sort", sort);
+
+            try {
+                // If the backend endpoint supports query params appended to URL
+                const queryString = params.toString();
+                const url = `/meals${queryString ? `?${queryString}` : ""}`;
+
+                const res = await api.get<ApiResponse<Meal[]>>(url);
+                return res.data;
+            } catch (err) {
+                console.error("API Fetch Error, using fallback", err);
+                return [];
+            }
+        },
+    });
+
+    // Use API data if available, otherwise use mock data ONLY if search/filters are empty to show something initially
+    // But if searching and no results, showing mock data is confusing. 
+    // So: if filtering is active, show real results (even if empty). If no filters and empty backend, show mock.
+    const isFiltering = debouncedSearch || (category && category !== "all");
+    const showMockFallback = !isFiltering && (!data || data.length === 0);
+
+    const meals = showMockFallback ? MOCK_MEALS : (data || []);
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -116,15 +153,57 @@ export default function MealsPage() {
                     </p>
                 </div>
 
-                {/* Search and Filter placeholders (Commit 23 will expand this) */}
-                <div className="flex w-full md:w-auto gap-3">
-                    <div className="relative w-full md:w-80">
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    {/* Search */}
+                    <div className="relative w-full md:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Search meals..." className="pl-9" />
+                        <Input
+                            placeholder="Search meals..."
+                            className="pl-9"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        {search && (
+                            <button
+                                onClick={() => setSearch("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
                     </div>
-                    <Button variant="outline" size="icon">
-                        <SlidersHorizontal className="h-4 w-4" />
-                    </Button>
+
+                    {/* Category Filter - Native Select styled to match */}
+                    <div className="relative w-full md:w-40">
+                        <select
+                            className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                        >
+                            <option value="all">All Categories</option>
+                            {categories.map((c: any) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name}
+                                </option>
+                            ))}
+                        </select>
+                        <SlidersHorizontal className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    </div>
+
+                    {/* Sort Filter - Native Select */}
+                    <div className="relative w-full md:w-40">
+                        <select
+                            className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                            value={sort}
+                            onChange={(e) => setSort(e.target.value)}
+                        >
+                            <option value="-createdAt">Newest</option>
+                            <option value="price">Price: Low to High</option>
+                            <option value="-price">Price: High to Low</option>
+                            <option value="-rating">Top Rated</option>
+                        </select>
+                        <SlidersHorizontal className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    </div>
                 </div>
             </div>
 
@@ -134,11 +213,22 @@ export default function MealsPage() {
                 </div>
             ) : error ? (
                 <div className="text-center py-20 text-red-500">
-                    Failed to load meals provided by backend.
+                    Failed to load meals.
                 </div>
             ) : meals.length === 0 ? (
-                <div className="text-center py-20 text-muted-foreground">
-                    No meals found. Check back later!
+                <div className="text-center py-20">
+                    <p className="text-muted-foreground text-lg">No meals found matching your criteria.</p>
+                    <Button
+                        variant="link"
+                        onClick={() => {
+                            setSearch("");
+                            setCategory("");
+                            setSort("-createdAt");
+                        }}
+                        className="mt-2 text-primary"
+                    >
+                        Clear all filters
+                    </Button>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -15,7 +15,11 @@ const ICON_MAP: Record<string, any> = {
     "Salads": Salad,
     "Coffee": Coffee,
     "Healthy": Carrot,
-    "Breakfast": Coffee
+    "Breakfast": Coffee,
+    "Deshi": Soup,     // Curry/Rice
+    "Biriyani": Soup,  // Pot/Bowl
+    "Kababs": Beef,    // Skewer/Meat
+    "Naan": Pizza      // Flatbread
 };
 
 const DEFAULT_CATEGORIES = [
