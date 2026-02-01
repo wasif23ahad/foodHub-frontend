@@ -7,13 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { Meal } from "@/types";
+import { useCartStore } from "@/stores/cart-store";
 
 interface MealCardProps {
     meal: Meal | any;
 }
 
 export function MealCard({ meal }: MealCardProps) {
+    const addItem = useCartStore((state) => state.addItem);
+
     return (
         <motion.div
             whileHover={{ y: -8, transition: { duration: 0.2 } }}
@@ -62,7 +66,9 @@ export function MealCard({ meal }: MealCardProps) {
                         className="bg-slate-900 text-white hover:bg-slate-800 rounded-full h-8 w-8 p-0"
                         onClick={(e) => {
                             e.preventDefault();
-                            // Cart logic will be here
+                            e.stopPropagation();
+                            addItem(meal);
+                            toast.success(`Added ${meal.name} to cart`);
                         }}
                     >
                         <Plus className="h-4 w-4" />

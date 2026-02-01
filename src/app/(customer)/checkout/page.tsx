@@ -81,29 +81,22 @@ export default function CheckoutPage() {
 
             // MVP: We'll send the providerId from the first item. 
             // Ideally, we should group by provider or block mixed carts.
-            const providerId = items[0]?.providerId;
-
-            if (!providerId) {
-                toast.error("Invalid cart data");
-                return;
-            }
+            // Backend derives provider from meal IDs
 
             const payload = {
-                providerId,
                 items: items.map(item => ({
                     mealId: item.id,
                     quantity: item.quantity
                 })),
-                deliveryAddress: `${data.address} (Phone: ${data.phone})`, // Combining for simple schema match
-                notes: data.notes,
-                totalAmount: total
+                deliveryAddress: `${data.address} (Phone: ${data.phone})`,
+                deliveryNotes: data.notes,
             };
 
-            await api.post("/orders", payload);
+            const res = await api.post<{ data: { id: string } }>("/orders", payload);
 
             toast.success("Order placed successfully!");
             clearCart();
-            router.push("/checkout/success"); // Redirect to success page
+            router.push(`/checkout/success?orderId=${res.data.id}`); // Redirect to success page with ID
         } catch (error: any) {
             console.error("Checkout error:", error);
             toast.error(error.message || "Failed to place order");

@@ -1,15 +1,38 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, ShoppingBag, ArrowRight } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { CheckCircle2, ShoppingBag, ArrowRight, Star } from "lucide-react";
 import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/lib/api";
 
 export default function OrderSuccessPage() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const orderId = searchParams.get("orderId");
+
+    // Review State
+    const [isReviewOpen, setIsReviewOpen] = useState(false);
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [comment, setComment] = useState("");
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
     useEffect(() => {
         // Trigger confetti on mount
         const duration = 5 * 1000;
@@ -34,6 +57,40 @@ export default function OrderSuccessPage() {
         return () => clearInterval(interval);
     }, []);
 
+    // Open review modal if orderId is present
+    useEffect(() => {
+        if (orderId) {
+            // Small delay to let the success animation play a bit
+            const timer = setTimeout(() => {
+                setIsReviewOpen(true);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [orderId]);
+
+    const handleRatingSubmit = async () => {
+        if (rating === 0) {
+            toast.error("Please select a star rating");
+            return;
+        }
+
+        setIsSubmittingReview(true);
+        try {
+            await api.post(`/orders/${orderId}/reviews`, {
+                rating,
+                comment,
+            });
+            toast.success("Thank you for your feedback!");
+            setIsReviewOpen(false);
+            // Optional: Remove query param to prevent reopening on refresh?
+            router.replace("/checkout/success");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to submit review");
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
+
     return (
         <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
             <motion.div
@@ -56,12 +113,12 @@ export default function OrderSuccessPage() {
                         </motion.div>
                         <CardTitle className="text-3xl font-bold text-foreground">Order Placed!</CardTitle>
                         <p className="text-muted-foreground mt-2 max-w-xs mx-auto">
-                            Thank you for your order. We've received it and are preparing your meal.
+                            Thank you for your order. We&apos;ve received it and are preparing your meal.
                         </p>
                     </CardHeader>
                     <CardContent className="py-10 space-y-4">
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
-                            <h3 className="font-semibold text-lg mb-2">What's next?</h3>
+                            <h3 className="font-semibold text-lg mb-2">What&apos;s next?</h3>
                             <ul className="text-sm text-muted-foreground space-y-3 text-left">
                                 <li className="flex items-start gap-3">
                                     <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[10px] font-bold">1</div>
@@ -73,7 +130,7 @@ export default function OrderSuccessPage() {
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-[10px] font-bold">3</div>
-                                    <span>We'll notify you when the rider is heading your way.</span>
+                                    <span>We&apos;ll notify you when the rider is heading your way.</span>
                                 </li>
                             </ul>
                         </div>
@@ -92,6 +149,58 @@ export default function OrderSuccessPage() {
                     </CardFooter>
                 </Card>
             </motion.div>
+
+            {/* Review Modal */}
+            <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-center text-2xl">Rate your Experience</DialogTitle>
+                        <DialogDescription className="text-center">
+                            How was your ordering experience? Your feedback helps us improve.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col items-center gap-6 py-6">
+                        <div className="flex gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                    key={star}
+                                    type="button"
+                                    className="focus:outline-none transition-transform hover:scale-110"
+                                    onClick={() => setRating(star)}
+                                    onMouseEnter={() => setHoverRating(star)}
+                                    onMouseLeave={() => setHoverRating(0)}
+                                >
+                                    <Star
+                                        className={`w-10 h-10 ${star <= (hoverRating || rating)
+                                                ? "fill-yellow-400 text-yellow-400"
+                                                : "text-slate-200"
+                                            }`}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                        <Textarea
+                            placeholder="Tell us what you liked or how we can improve..."
+                            className="min-h-[100px]"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter className="sm:justify-center">
+                        <Button type="button" variant="secondary" onClick={() => setIsReviewOpen(false)}>
+                            Skip
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={handleRatingSubmit}
+                            disabled={isSubmittingReview || rating === 0}
+                            className="bg-primary text-white"
+                        >
+                            {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
