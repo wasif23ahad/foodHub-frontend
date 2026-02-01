@@ -7,16 +7,19 @@ const footerLinks = {
         { href: "/help", label: "Help Center" },
         { href: "/safety", label: "Safety" },
         { href: "/refund-policy", label: "Refund Policy" },
+        { href: "/faq", label: "FAQ" },
     ],
     company: [
         { href: "/about", label: "About Us" },
         { href: "/providers", label: "Become a Provider" },
         { href: "/careers", label: "Careers" },
+        { href: "/newsroom", label: "Newsroom" },
     ],
     legal: [
         { href: "/privacy", label: "Privacy Policy" },
         { href: "/terms", label: "Terms of Service" },
         { href: "/cookies", label: "Cookie Policy" },
+        { href: "/cookie-settings", label: "Cookie Settings" },
     ],
 };
 
@@ -55,12 +58,6 @@ export function Footer() {
                                     </Link>
                                 </li>
                             ))}
-                            {/* Adding FAQ from screenshot */}
-                            <li>
-                                <Link href="/faq" className="text-sm text-slate-400 hover:text-white transition-colors">
-                                    FAQ
-                                </Link>
-                            </li>
                         </ul>
                     </div>
 
@@ -78,11 +75,6 @@ export function Footer() {
                                     </Link>
                                 </li>
                             ))}
-                            <li>
-                                <Link href="/newsroom" className="text-sm text-slate-400 hover:text-white transition-colors">
-                                    Newsroom
-                                </Link>
-                            </li>
                         </ul>
                     </div>
 
@@ -100,11 +92,6 @@ export function Footer() {
                                     </Link>
                                 </li>
                             ))}
-                            <li>
-                                <Link href="/cookie-settings" className="text-sm text-slate-400 hover:text-white transition-colors">
-                                    Cookie Settings
-                                </Link>
-                            </li>
                         </ul>
                     </div>
                 </div>
