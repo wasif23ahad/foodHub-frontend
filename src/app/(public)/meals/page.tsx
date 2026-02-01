@@ -72,7 +72,7 @@ export default function MealsPage() {
                 return [];
             }
         },
-        enabled: categories.length > 0 || !category || category === "all",
+        enabled: !category || category === "all" || categories.length > 0,
     });
 
     const isFiltering = debouncedSearch || (category && category !== "all");

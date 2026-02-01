@@ -61,7 +61,7 @@ export const MOCK_MEALS = [
         price: 60,
         rating: 4.7,
         reviews: 450,
-        image: "https://unsplash.com/photos/a-bowl-filled-with-pita-bread-and-a-fork-h7cZs0aFicw",
+        image: "https://images.unsplash.com/photo-1548940740-204726a19be3?w=800&q=80",
         category: "Naan",
         provider: "Star Kabab"
     },

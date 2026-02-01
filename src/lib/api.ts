@@ -15,6 +15,7 @@ export const api = {
      */
     async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
         const url = `${API_URL}${endpoint}`;
+        console.log(`[API GET] ${url}`);
 
         const res = await fetch(url, {
             method: "GET",
@@ -32,14 +33,18 @@ export const api = {
                 const errorData = await res.json();
                 errorMsg = errorData.message || errorMsg;
             } catch (e) {
-                // If not JSON, try text
                 const text = await res.text().catch(() => "");
                 if (text) errorMsg = text;
             }
             throw new Error(errorMsg);
         }
 
-        return res.json();
+        try {
+            return await res.json();
+        } catch (e) {
+            console.error("Failed to parse JSON response:", e);
+            throw new Error("Invalid response from server");
+        }
     },
 
     /**

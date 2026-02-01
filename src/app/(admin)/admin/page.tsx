@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import {
     Users,
     ShoppingBag,
@@ -171,9 +172,11 @@ export default function AdminDashboardPage() {
                                                                 {order.status}
                                                             </Badge>
                                                         </div>
-                                                        <Button variant="ghost" size="icon">
-                                                            <ArrowUpRight className="h-4 w-4" />
-                                                        </Button>
+                                                        <Link href={`/admin/orders/${order.id}`}>
+                                                            <Button variant="ghost" size="icon">
+                                                                <ArrowUpRight className="h-4 w-4" />
+                                                            </Button>
+                                                        </Link>
                                                     </div>
                                                 </div>
                                             ))}
@@ -236,22 +239,30 @@ export default function AdminDashboardPage() {
                             <CardTitle className="text-lg">Quick Access</CardTitle>
                         </CardHeader>
                         <CardContent className="grid grid-cols-2 gap-3">
-                            <Button variant="outline" className="h-20 flex flex-col gap-2 bg-background hover:bg-muted">
-                                <Users className="h-5 w-5" />
-                                <span className="text-xs">User List</span>
-                            </Button>
-                            <Button variant="outline" className="h-20 flex flex-col gap-2 bg-background hover:bg-muted">
-                                <Store className="h-5 w-5" />
-                                <span className="text-xs">Providers</span>
-                            </Button>
-                            <Button variant="outline" className="h-20 flex flex-col gap-2 bg-background hover:bg-muted">
-                                <ShoppingBag className="h-5 w-5" />
-                                <span className="text-xs">Orders</span>
-                            </Button>
-                            <Button variant="outline" className="h-20 flex flex-col gap-2 bg-background hover:bg-muted">
-                                <TrendingUp className="h-5 w-5" />
-                                <span className="text-xs">Analytics</span>
-                            </Button>
+                            <Link href="/admin/users" className="w-full">
+                                <Button variant="outline" className="w-full h-20 flex flex-col gap-2 bg-background hover:bg-muted">
+                                    <Users className="h-5 w-5" />
+                                    <span className="text-xs">User List</span>
+                                </Button>
+                            </Link>
+                            <Link href="/admin/providers" className="w-full">
+                                <Button variant="outline" className="w-full h-20 flex flex-col gap-2 bg-background hover:bg-muted">
+                                    <Store className="h-5 w-5" />
+                                    <span className="text-xs">Providers</span>
+                                </Button>
+                            </Link>
+                            <Link href="/admin/orders" className="w-full">
+                                <Button variant="outline" className="w-full h-20 flex flex-col gap-2 bg-background hover:bg-muted">
+                                    <ShoppingBag className="h-5 w-5" />
+                                    <span className="text-xs">Orders</span>
+                                </Button>
+                            </Link>
+                            <Link href="/admin/analytics" className="w-full">
+                                <Button variant="outline" className="w-full h-20 flex flex-col gap-2 bg-background hover:bg-muted">
+                                    <TrendingUp className="h-5 w-5" />
+                                    <span className="text-xs">Analytics</span>
+                                </Button>
+                            </Link>
                         </CardContent>
                     </Card>
                 </div>

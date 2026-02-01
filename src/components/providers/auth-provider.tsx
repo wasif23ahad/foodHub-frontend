@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const session = await api.get<{ user: User } | null>("/auth/session");
+                const session = await api.get<{ user: User } | null>("/auth/get-session");
                 if (session?.user) {
                     setUser(session.user);
                 }
