@@ -35,7 +35,7 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-    const { register: registerUser, isLoading } = useAuth();
+    const { register: registerUser, signInWithGoogle, isLoading } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
 
     const form = useForm<RegisterFormValues>({
@@ -218,7 +218,6 @@ export default function RegisterPage() {
                                 variant="outline"
                                 className="w-full font-semibold flex items-center justify-center gap-2"
                                 onClick={() => {
-                                    const { signInWithGoogle } = useAuth();
                                     signInWithGoogle();
                                 }}
                                 disabled={isLoading}

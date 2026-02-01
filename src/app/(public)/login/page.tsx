@@ -30,7 +30,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { login, isLoading } = useAuth();
+  const { login, signInWithGoogle, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -144,7 +144,6 @@ export default function LoginPage() {
                 variant="outline"
                 className="w-full font-semibold flex items-center justify-center gap-2"
                 onClick={() => {
-                  const { signInWithGoogle } = useAuth();
                   signInWithGoogle();
                 }}
                 disabled={isLoading}

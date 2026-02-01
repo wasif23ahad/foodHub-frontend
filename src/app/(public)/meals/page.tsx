@@ -86,6 +86,7 @@ export default function MealsPage() {
             if (sort) params.append("sort", sort);
             if (debouncedMinPrice) params.append("minPrice", debouncedMinPrice);
             if (debouncedMaxPrice) params.append("maxPrice", debouncedMaxPrice);
+            params.append("limit", "100"); // Show more items by default
 
             try {
                 const queryString = params.toString();

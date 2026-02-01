@@ -28,6 +28,13 @@ export const api = {
         });
 
         if (!res.ok) {
+            if (res.status === 401) {
+                // Redirect to login on 401
+                if (typeof window !== "undefined") {
+                    window.location.href = "/login";
+                }
+            }
+
             let errorMsg = `API Error: ${res.status} ${res.statusText}`;
             try {
                 const errorData = await res.json();

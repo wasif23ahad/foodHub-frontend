@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const signInWithGoogle = () => {
         const callbackUrl = window.location.origin;
         // Redirect to backend social login route
-        window.location.href = `${API_URL}/auth/login/social/google?callbackURL=${callbackUrl}`;
+        window.location.href = `${API_URL}/auth/sign-in/social/google?callbackURL=${callbackUrl}`;
     };
 
     const logout = async () => {
