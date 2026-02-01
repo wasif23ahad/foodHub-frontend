@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, ShoppingCart, UtensilsCrossed } from "lucide-react";
+import { Menu, ShoppingCart, UtensilsCrossed, User as UserIcon, LayoutDashboard, LogOut, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,7 +12,22 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
+} from "@/components/ui/avatar";
 import { useCartStore } from "@/stores/cart-store";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -26,6 +41,7 @@ const navLinks = [
 export function Navbar() {
     const pathname = usePathname();
     const cartItems = useCartStore((state) => state.items);
+    const { user, isLoading, logout } = useAuth();
     const [mounted, setMounted] = useState(false);
 
     // Hydration fix
@@ -34,6 +50,15 @@ export function Navbar() {
     }, []);
 
     const cartItemCount = mounted ? cartItems.reduce((acc, item) => acc + item.quantity, 0) : 0;
+
+    const getInitials = (name: string) => {
+        return name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()
+            .substring(0, 2);
+    };
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -81,7 +106,7 @@ export function Navbar() {
                 </nav>
 
                 {/* Right Side - Cart & Auth */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 md:gap-4">
                     {/* Cart */}
                     <Link href="/cart" className="relative">
                         <Button variant="ghost" size="icon" className="relative">
@@ -94,12 +119,78 @@ export function Navbar() {
                         </Button>
                     </Link>
 
-                    {/* Sign In Button - Desktop */}
-                    <Link href="/login" className="hidden md:block">
-                        <Button className="bg-primary hover:bg-primary-dark text-white">
-                            Sign In
-                        </Button>
-                    </Link>
+                    {/* Auth Section */}
+                    {mounted && !isLoading && (
+                        <>
+                            {user ? (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden border border-border/50">
+                                            <Avatar className="h-10 w-10">
+                                                <AvatarImage src={user.image} alt={user.name} />
+                                                <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                                                    {getInitials(user.name)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                                        <DropdownMenuLabel className="font-normal">
+                                            <div className="flex flex-col space-y-1">
+                                                <p className="text-sm font-medium leading-none">{user.name}</p>
+                                                <p className="text-xs leading-none text-muted-foreground">
+                                                    {user.email}
+                                                </p>
+                                            </div>
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            <Link href="/profile">
+                                                <DropdownMenuItem className="cursor-pointer">
+                                                    <UserIcon className="mr-2 h-4 w-4" />
+                                                    <span>Profile</span>
+                                                </DropdownMenuItem>
+                                            </Link>
+                                            <Link href="/orders">
+                                                <DropdownMenuItem className="cursor-pointer">
+                                                    <Package className="mr-2 h-4 w-4" />
+                                                    <span>My Orders</span>
+                                                </DropdownMenuItem>
+                                            </Link>
+                                            {/* Role Based Dashboards */}
+                                            {user.role === "admin" && (
+                                                <Link href="/admin">
+                                                    <DropdownMenuItem className="cursor-pointer text-primary">
+                                                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                                                        <span>Admin Dashboard</span>
+                                                    </DropdownMenuItem>
+                                                </Link>
+                                            )}
+                                            {user.role === "provider" && (
+                                                <Link href="/provider/dashboard">
+                                                    <DropdownMenuItem className="cursor-pointer text-primary">
+                                                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                                                        <span>Provider Dashboard</span>
+                                                    </DropdownMenuItem>
+                                                </Link>
+                                            )}
+                                        </DropdownMenuGroup>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-50" onClick={() => logout()}>
+                                            <LogOut className="mr-2 h-4 w-4" />
+                                            <span>Log out</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            ) : (
+                                <Link href="/login" className="hidden md:block">
+                                    <Button className="bg-primary hover:bg-primary-dark text-white rounded-full px-6">
+                                        Sign In
+                                    </Button>
+                                </Link>
+                            )}
+                        </>
+                    )}
 
                     {/* Mobile Menu - Sheet */}
                     <Sheet>
@@ -135,11 +226,50 @@ export function Navbar() {
                                         {link.label}
                                     </Link>
                                 ))}
-                                <Link href="/login" className="mt-4">
-                                    <Button className="w-full bg-primary hover:bg-primary-dark text-white">
-                                        Sign In
-                                    </Button>
-                                </Link>
+
+                                {mounted && (
+                                    <>
+                                        {user ? (
+                                            <>
+                                                <div className="py-4 px-2 bg-slate-50 rounded-lg mt-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-10 w-10">
+                                                            <AvatarImage src={user.image} alt={user.name} />
+                                                            <AvatarFallback className="bg-primary/10 text-primary">
+                                                                {getInitials(user.name)}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-bold">{user.name}</span>
+                                                            <span className="text-xs text-muted-foreground">{user.email}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <Link href="/profile" className="text-lg font-medium py-2 border-b">Profile</Link>
+                                                <Link href="/orders" className="text-lg font-medium py-2 border-b">My Orders</Link>
+                                                {user.role === "admin" && (
+                                                    <Link href="/admin" className="text-lg font-medium py-2 border-b text-primary">Admin Dashboard</Link>
+                                                )}
+                                                {user.role === "provider" && (
+                                                    <Link href="/provider/dashboard" className="text-lg font-medium py-2 border-b text-primary">Provider Dashboard</Link>
+                                                )}
+                                                <Button
+                                                    variant="ghost"
+                                                    className="justify-start px-0 text-lg font-medium text-red-500 hover:text-red-600 hover:bg-transparent"
+                                                    onClick={() => logout()}
+                                                >
+                                                    <LogOut className="mr-2 h-5 w-5" /> Log out
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <Link href="/login" className="mt-4">
+                                                <Button className="w-full bg-primary hover:bg-primary-dark text-white rounded-full py-6 text-lg">
+                                                    Sign In
+                                                </Button>
+                                            </Link>
+                                        )}
+                                    </>
+                                )}
                             </nav>
                         </SheetContent>
                     </Sheet>
