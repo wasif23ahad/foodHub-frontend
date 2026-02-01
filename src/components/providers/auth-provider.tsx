@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 email: data.email,
                 password: data.password,
                 name: data.name,
-                role: data.role // Ensure backend accepts this field during signup or needs a separate profile update
+                // role: data.role // Backend rejects this field during signup
             });
 
             const user = res.user || res;

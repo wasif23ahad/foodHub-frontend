@@ -16,7 +16,7 @@ export function PopularMeals() {
         queryKey: ["popular-meals"],
         queryFn: async () => {
             try {
-                const res = await api.get<ApiResponse<Meal[]>>("/meals?limit=4&sort=-rating");
+                const res = await api.get<ApiResponse<Meal[]>>("/meals?limit=4");
                 return res.data;
             } catch (err) {
                 console.error("Popular meals fetch failed:", err);

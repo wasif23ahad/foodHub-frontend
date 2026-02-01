@@ -37,7 +37,7 @@ export default function MealsPage() {
 
     const [search, setSearch] = useState(initialSearch);
     const [category, setCategory] = useState(initialCategory);
-    const [sort, setSort] = useState("-createdAt");
+    const [sort, setSort] = useState("-createdAt"); // Local state for UI, but disabled for API to prevent validation error
 
     const debouncedSearch = useDebounce(search, 500);
 
@@ -78,7 +78,7 @@ export default function MealsPage() {
                     // Don't append anything, falls back to all meals
                 }
             }
-            if (sort) params.append("sort", sort);
+            // if (sort) params.append("sort", sort);
 
             try {
                 const queryString = params.toString();
