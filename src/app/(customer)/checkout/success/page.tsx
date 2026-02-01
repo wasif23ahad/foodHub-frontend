@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, ShoppingBag, ArrowRight, Star } from "lucide-react";
@@ -21,7 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
 
-export default function OrderSuccessPage() {
+function SuccessContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const orderId = searchParams.get("orderId");
@@ -112,6 +112,7 @@ export default function OrderSuccessPage() {
                             </div>
                         </motion.div>
                         <CardTitle className="text-3xl font-bold text-foreground">Order Placed!</CardTitle>
+
                         <p className="text-muted-foreground mt-2 max-w-xs mx-auto">
                             Thank you for your order. We&apos;ve received it and are preparing your meal.
                         </p>
@@ -172,8 +173,8 @@ export default function OrderSuccessPage() {
                                 >
                                     <Star
                                         className={`w-10 h-10 ${star <= (hoverRating || rating)
-                                                ? "fill-yellow-400 text-yellow-400"
-                                                : "text-slate-200"
+                                            ? "fill-yellow-400 text-yellow-400"
+                                            : "text-slate-200"
                                             }`}
                                     />
                                 </button>
@@ -202,5 +203,13 @@ export default function OrderSuccessPage() {
                 </DialogContent>
             </Dialog>
         </div>
+    );
+}
+
+export default function OrderSuccessPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <SuccessContent />
+        </Suspense>
     );
 }
