@@ -58,14 +58,18 @@ export const api = {
      * POST request
      */
     async post<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
+        const isFormData = data instanceof FormData;
+        const headers = { ...options?.headers };
+
+        if (!isFormData) {
+            headers["Content-Type"] = "application/json";
+        }
+
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                ...options?.headers,
-            },
+            headers,
             credentials: "include",
-            body: data ? JSON.stringify(data) : undefined,
+            body: isFormData ? (data as FormData) : (data ? JSON.stringify(data) : undefined),
         });
 
         if (!res.ok) {

@@ -13,6 +13,7 @@ interface AuthContextType {
     register: (data: RegisterData) => Promise<void>;
     signInWithGoogle: () => void;
     logout: () => Promise<void>;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,17 +23,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
+    // Helper to fetch fresh user data
+    const fetchFreshUser = async (userFromSession: User) => {
+        try {
+            // Fetch fresh data from DB to bypass BetterAuth session cache
+            const freshProfile = await api.get<{ data: User }>("/user/profile");
+            return freshProfile.data || freshProfile;
+        } catch (error) {
+            console.error("Failed to fetch fresh profile, using session data:", error);
+            return userFromSession;
+        }
+    };
+
     // Check for existing session on mount
     useEffect(() => {
         const checkAuth = async () => {
             try {
                 const session = await api.get<{ user: User } | null>("/auth/get-session");
                 if (session?.user) {
-                    setUser(session.user);
+                    const freshUser = await fetchFreshUser(session.user);
+                    setUser(freshUser as User);
                 }
             } catch (error) {
                 console.error("Auth check failed:", error);
-                // Fail silently, user just isn't logged in
             } finally {
                 setIsLoading(false);
             }
@@ -40,6 +53,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         checkAuth();
     }, []);
+
+    const refreshUser = async () => {
+        try {
+            const session = await api.get<{ user: User } | null>("/auth/get-session");
+            if (session?.user) {
+                const freshUser = await fetchFreshUser(session.user);
+                setUser(freshUser as User);
+            }
+        } catch (error) {
+            console.error("Refresh user failed:", error);
+        }
+    };
 
     const login = async (credentials: LoginCredentials) => {
         setIsLoading(true);
@@ -101,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, register, signInWithGoogle, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, login, register, signInWithGoogle, logout, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );

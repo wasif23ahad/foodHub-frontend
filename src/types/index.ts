@@ -8,6 +8,8 @@ export interface User {
     role: UserRole;
     image?: string;
     emailVerified: boolean;
+    address?: string;
+    phone?: string;
     createdAt: string;
     updatedAt: string;
 }
