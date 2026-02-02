@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCartStore } from "@/stores/cart-store";
 import { useEffect, useState } from "react";
+import { getMediaUrl } from "@/lib/utils";
 
 export default function CartPage() {
     const { items, removeItem, updateQuantity, clearCart, getTotalPrice } = useCartStore();
@@ -57,7 +58,7 @@ export default function CartPage() {
                                     <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border bg-muted">
                                         {item.image ? (
                                             <Image
-                                                src={item.image}
+                                                src={getMediaUrl(item.image)}
                                                 alt={item.name}
                                                 fill
                                                 className="object-cover"

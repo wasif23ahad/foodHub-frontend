@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useCartStore } from "@/stores/cart-store";
+import { getMediaUrl } from "@/lib/utils";
 
 export default function MealDetailsPage() {
     const params = useParams();
@@ -95,7 +96,7 @@ export default function MealDetailsPage() {
                 <div className="relative aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border bg-muted">
                     {meal.image ? (
                         <Image
-                            src={meal.image}
+                            src={getMediaUrl(meal.image)}
                             alt={meal.name}
                             fill
                             className="object-cover hover:scale-105 transition-transform duration-500"

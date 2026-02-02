@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Provider } from "@/types";
 import { motion } from "framer-motion";
+import { getMediaUrl } from "@/lib/utils";
 
 interface ProviderCardProps {
     provider: Provider;
@@ -23,7 +24,7 @@ export function ProviderCard({ provider }: ProviderCardProps) {
                         <div className="relative aspect-video w-full overflow-hidden bg-muted">
                             {provider.logo ? (
                                 <img
-                                    src={provider.logo}
+                                    src={getMediaUrl(provider.logo)}
                                     alt={provider.businessName}
                                     className="object-cover w-full h-full transition-transform duration-500 hover:scale-110"
                                 />

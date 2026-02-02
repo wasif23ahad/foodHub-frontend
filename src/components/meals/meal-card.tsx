@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Meal } from "@/types";
 import { useCartStore } from "@/stores/cart-store";
+import { getMediaUrl } from "@/lib/utils";
 
 interface MealCardProps {
     meal: Meal | any;
@@ -28,7 +29,7 @@ export function MealCard({ meal }: MealCardProps) {
                 <Link href={`/meals/${meal.id}`} className="block overflow-hidden flex-1 flex flex-col">
                     <div className="relative h-48 w-full overflow-hidden">
                         <Image
-                            src={meal.image || "/placeholder-meal.jpg"}
+                            src={getMediaUrl(meal.image) || "/placeholder-meal.jpg"}
                             alt={meal.name}
                             fill
                             className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"

@@ -38,6 +38,7 @@ import { api } from "@/lib/api";
 import { User, ApiResponse } from "@/types";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { getMediaUrl } from "@/lib/utils";
 
 export default function AdminUsersPage() {
     const [search, setSearch] = useState("");
@@ -193,7 +194,7 @@ export default function AdminUsersPage() {
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             <Avatar className="h-10 w-10 border border-muted shadow-sm">
-                                                <AvatarImage src={user.image} alt={user.name} />
+                                                <AvatarImage src={getMediaUrl(user.image)} alt={user.name} />
                                                 <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                                                     {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                                 </AvatarFallback>

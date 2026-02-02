@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Star, MapPin, Phone, Mail, ArrowLeft, Utensils, Info } from "lucide-react";
 import { MealCard } from "@/components/meals/meal-card";
 import { motion } from "framer-motion";
+import { getMediaUrl } from "@/lib/utils";
 
 export default function ProviderDetailsPage() {
     const params = useParams();
@@ -79,7 +80,7 @@ export default function ProviderDetailsPage() {
                     <div className="relative aspect-square rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-muted">
                         {provider.logo ? (
                             <img
-                                src={provider.logo}
+                                src={getMediaUrl(provider.logo)}
                                 alt={provider.businessName}
                                 className="object-cover w-full h-full"
                             />

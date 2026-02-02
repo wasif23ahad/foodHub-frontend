@@ -30,7 +30,7 @@ import { useCartStore } from "@/stores/cart-store";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useEffect, useState } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 const navLinks = [
@@ -128,7 +128,7 @@ export function Navbar() {
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden border border-border/50">
                                             <Avatar className="h-10 w-10">
-                                                <AvatarImage src={user.image} alt={user.name} />
+                                                <AvatarImage src={getMediaUrl(user.image)} alt={user.name} />
                                                 <AvatarFallback className="bg-primary/10 text-primary font-bold">
                                                     {getInitials(user.name)}
                                                 </AvatarFallback>
@@ -235,7 +235,7 @@ export function Navbar() {
                                                 <div className="py-4 px-2 bg-slate-50 rounded-lg mt-4">
                                                     <div className="flex items-center gap-3">
                                                         <Avatar className="h-10 w-10">
-                                                            <AvatarImage src={user.image} alt={user.name} />
+                                                            <AvatarImage src={getMediaUrl(user.image)} alt={user.name} />
                                                             <AvatarFallback className="bg-primary/10 text-primary">
                                                                 {getInitials(user.name)}
                                                             </AvatarFallback>

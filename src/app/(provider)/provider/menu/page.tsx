@@ -73,6 +73,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import Image from "next/image";
+import { getMediaUrl } from "@/lib/utils";
 
 const mealSchema = z.object({
     name: z.string().min(3, "Name must be at least 3 characters"),
@@ -233,7 +234,7 @@ export default function ProviderMenuPage() {
                                         <div className="relative h-12 w-12 rounded-lg overflow-hidden border bg-muted flex items-center justify-center">
                                             {meal.image ? (
                                                 <Image
-                                                    src={meal.image}
+                                                    src={getMediaUrl(meal.image)}
                                                     alt={meal.name}
                                                     fill
                                                     className="object-cover"
