@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Pizza, Coffee, Salad, Beef, Utensils, Soup, Carrot, UtensilsCrossed } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { Category, ApiResponse } from "@/types";
 import { motion, Variants } from "framer-motion";
@@ -44,20 +45,46 @@ const itemVariants: Variants = {
 };
 
 export function Categories() {
-    const { data } = useQuery({
+    const { data, isLoading, isError } = useQuery({
         queryKey: ["categories"],
         queryFn: async () => {
-            try {
-                const res = await api.get<ApiResponse<Category[]>>("/categories");
-                return res.data;
-            } catch (e) {
-                console.error("Failed to fetch categories, using fallback");
-                return [];
-            }
+            const res = await api.get<ApiResponse<Category[]>>("/categories");
+            return res.data;
         },
     });
 
     const displayCategories = data || [];
+
+    if (isLoading) {
+        return (
+            <section className="py-16 px-4 bg-background overflow-hidden">
+                <div className="container mx-auto">
+                    <div className="text-center mb-12">
+                        <Skeleton className="h-10 w-64 mx-auto mb-4" />
+                        <Skeleton className="h-6 w-96 mx-auto" />
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <div key={i} className="flex flex-col items-center justify-center p-6 border rounded-xl h-[180px]">
+                                <Skeleton className="h-12 w-12 rounded-full mb-4" />
+                                <Skeleton className="h-6 w-24 mb-2" />
+                                <Skeleton className="h-4 w-16" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
+    if (isError || displayCategories.length === 0) {
+        // Optional: Render nothing or an error state. 
+        // For now, consistent with previous behavior, render nothing but maybe log it?
+        // Actually, if it's an error, we might want to return null to hide the section
+        // OR show a retry button. 
+        // Given the design, hiding it is safer than a broken UI.
+        if (isError) return null;
+    }
 
     return (
         <section className="py-16 px-4 bg-background overflow-hidden">

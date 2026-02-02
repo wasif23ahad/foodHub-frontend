@@ -34,7 +34,7 @@ export function ProviderCard({ provider }: ProviderCardProps) {
                             )}
                             <Badge className="absolute top-3 right-3 bg-white/90 text-primary hover:bg-white flex items-center gap-1 font-bold">
                                 <Star className="h-3 w-3 fill-primary text-primary" />
-                                {(provider.avgRating || 0).toFixed(1)}
+                                {(provider.rating || provider.avgRating || 4.5).toFixed(1)}
                             </Badge>
                         </div>
                     </CardHeader>

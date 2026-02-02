@@ -28,6 +28,7 @@ export interface Provider {
     updatedAt: string;
     user?: User;
     avgRating?: number;
+    rating?: number; // Added static rating from backend
     totalReviews?: number;
     meals?: Meal[];
 }
