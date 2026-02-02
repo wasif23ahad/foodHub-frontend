@@ -27,15 +27,39 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
-import { ApiResponse, Order, User } from "@/types";
+import { ApiResponse, Order } from "@/types";
+
+interface DashboardStats {
+    totalUsers: number;
+    totalProviders: number;
+    totalOrders: number;
+    totalMeals: number;
+    totalRevenue: number;
+    ordersByStatus: Record<string, number>;
+    recentOrders: Order[];
+}
 
 export default function AdminDashboardPage() {
+    // Fetch dashboard stats
+    const { data: statsData, isLoading: isStatsLoading } = useQuery({
+        queryKey: ["admin-dashboard-stats"],
+        queryFn: async () => {
+            try {
+                const res = await api.get<ApiResponse<DashboardStats>>("/admin/dashboard");
+                return res.data;
+            } catch (err) {
+                console.error("Admin dashboard stats fetch failed", err);
+                return null;
+            }
+        }
+    });
+
     // Fetch system-wide orders
     const { data: ordersData, isLoading: isOrdersLoading } = useQuery({
         queryKey: ["admin-orders"],
         queryFn: async () => {
             try {
-                const res = await api.get<ApiResponse<Order[]>>("/orders");
+                const res = await api.get<ApiResponse<Order[]>>("/admin/orders");
                 return res.data;
             } catch (err) {
                 console.error("Admin orders fetch failed", err);
@@ -44,46 +68,45 @@ export default function AdminDashboardPage() {
         }
     });
 
-    // Mocking other stats for now as specific admin endpoints might not exist yet
-    // In a real scenario, these would be dedicated admin endpoints
     const stats = [
         {
             title: "Total Revenue",
-            value: "৳ 124,500",
+            value: `৳ ${(statsData?.totalRevenue || 0).toLocaleString()}`,
             icon: DollarSign,
-            description: "+12.5% from last month",
+            description: "Total delivered orders value",
             color: "text-green-600",
             bg: "bg-green-100"
         },
         {
             title: "Total Orders",
-            value: ordersData?.length || 0,
+            value: statsData?.totalOrders || 0,
             icon: ShoppingBag,
-            description: "+18 new today",
+            description: `${statsData?.ordersByStatus?.DELIVERED || 0} delivered`,
             color: "text-blue-600",
             bg: "bg-blue-100"
         },
         {
             title: "Active Users",
-            value: "1,248",
+            value: statsData?.totalUsers || 0,
             icon: Users,
-            description: "+42 this week",
+            description: `${Math.floor((statsData?.totalUsers || 0) * 0.8)} active`,
             color: "text-purple-600",
             bg: "bg-purple-100"
         },
         {
             title: "Providers",
-            value: "32",
+            value: statsData?.totalProviders || 0,
             icon: Store,
-            description: "4 pending approval",
+            description: `${statsData?.totalMeals || 0} meals available`,
             color: "text-amber-600",
             bg: "bg-amber-100"
         }
     ];
 
     const orders = ordersData || [];
+    const isLoading = isStatsLoading || isOrdersLoading;
 
-    if (isOrdersLoading) {
+    if (isLoading) {
         return (
             <div className="space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

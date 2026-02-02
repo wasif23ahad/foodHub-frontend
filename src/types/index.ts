@@ -115,6 +115,8 @@ export interface Order {
     updatedAt: string;
     user?: User;
     provider?: Provider;
+    customer?: User;
+    providerProfile?: Provider;
     items?: OrderItem[];
 }
 

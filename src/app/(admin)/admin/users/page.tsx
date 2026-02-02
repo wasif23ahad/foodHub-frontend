@@ -45,47 +45,45 @@ export default function AdminUsersPage() {
     const [roleFilter, setRoleFilter] = useState<string>("all");
     const queryClient = useQueryClient();
 
-    const { data: users, isLoading, error } = useQuery({
+    const { data: usersData, isLoading, error } = useQuery({
         queryKey: ["admin-users"],
         queryFn: async () => {
             try {
-                // Trying /users endpoint which is common for admins
-                const res = await api.get<ApiResponse<User[]>>("/users");
+                const res = await api.get<ApiResponse<User[]>>("/admin/users");
                 return res.data;
             } catch (err) {
                 console.error("Failed to fetch users:", err);
-                // Return empty array on error to prevent layout break
                 return [];
             }
         }
     });
 
-    const toggleStatusMutation = useMutation({
-        mutationFn: async ({ userId, currentStatus }: { userId: string, currentStatus: boolean }) => {
-            // Assuming the backend uses isActive to block/unblock (isActive=false is blocked)
-            // This is a common pattern. If the backend differs, we'll adjust.
-            return api.patch<ApiResponse<User>>(`/users/${userId}`, {
-                isActive: !currentStatus
+    const banUserMutation = useMutation({
+        mutationFn: async ({ userId, banned, banReason }: { userId: string; banned: boolean; banReason?: string }) => {
+            return api.patch<ApiResponse<User>>(`/admin/users/${userId}/ban`, {
+                banned,
+                banReason: banReason || undefined
             });
         },
-        onSuccess: () => {
+        onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-            toast.success("User status updated successfully");
+            toast.success(variables.banned ? "User banned successfully" : "User unbanned successfully");
         },
         onError: (err: any) => {
             toast.error(err.message || "Failed to update user status");
         }
     });
 
-    const filteredUsers = (users || []).filter(user => {
+    const filteredUsers = (usersData || []).filter(user => {
         const matchesSearch = user.name.toLowerCase().includes(search.toLowerCase()) ||
             user.email.toLowerCase().includes(search.toLowerCase());
-        const matchesRole = roleFilter === "all" || user.role === roleFilter;
+        const matchesRole = roleFilter === "all" || user.role.toLowerCase() === roleFilter.toLowerCase();
         return matchesSearch && matchesRole;
     });
 
     const getRoleBadge = (role: string) => {
-        switch (role) {
+        const roleLower = role.toLowerCase();
+        switch (roleLower) {
             case "admin":
                 return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-none">Admin</Badge>;
             case "provider":
@@ -117,7 +115,7 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <Badge variant="outline" className="h-8 px-3">
-                        Total: {users?.length || 0}
+                        Total: {usersData?.length || 0}
                     </Badge>
                 </div>
             </div>
@@ -219,14 +217,10 @@ export default function AdminUsersPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        {/* Since User type doesn't have isActive in types/index.ts, but Provider does, 
-                                            I'll assume it exists or use emailVerified as a proxy/fallback for now.
-                                            Actually, I'll use a type cast to any for this specific field to be flexible.
-                                        */}
-                                        {(user as any).isActive !== false ? (
-                                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
+                                        {user.banned ? (
+                                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Banned</Badge>
                                         ) : (
-                                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Blocked</Badge>
+                                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -242,23 +236,22 @@ export default function AdminUsersPage() {
                                                 <DropdownMenuItem className="cursor-pointer">
                                                     <UserIcon className="mr-2 h-4 w-4" /> View Profile
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    <Mail className="mr-2 h-4 w-4" /> Message User
-                                                </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
-                                                {(user as any).isActive !== false ? (
+                                                {!user.banned ? (
                                                     <DropdownMenuItem
                                                         className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-                                                        onClick={() => toggleStatusMutation.mutate({ userId: user.id, currentStatus: true })}
+                                                        onClick={() => banUserMutation.mutate({ userId: user.id, banned: true })}
+                                                        disabled={banUserMutation.isPending}
                                                     >
-                                                        <UserMinus className="mr-2 h-4 w-4" /> Block User
+                                                        <UserMinus className="mr-2 h-4 w-4" /> Ban User
                                                     </DropdownMenuItem>
                                                 ) : (
                                                     <DropdownMenuItem
                                                         className="text-green-600 focus:text-green-600 focus:bg-green-50 cursor-pointer"
-                                                        onClick={() => toggleStatusMutation.mutate({ userId: user.id, currentStatus: false })}
+                                                        onClick={() => banUserMutation.mutate({ userId: user.id, banned: false })}
+                                                        disabled={banUserMutation.isPending}
                                                     >
-                                                        <UserCheck className="mr-2 h-4 w-4" /> Unblock User
+                                                        <UserCheck className="mr-2 h-4 w-4" /> Unban User
                                                     </DropdownMenuItem>
                                                 )}
                                             </DropdownMenuContent>

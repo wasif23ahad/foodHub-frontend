@@ -9,7 +9,7 @@ import { toast } from "sonner";
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
-    login: (credentials: LoginCredentials) => Promise<void>;
+    login: (credentials: LoginCredentials, requireRole?: string) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
     signInWithGoogle: () => void;
     logout: () => Promise<void>;
@@ -66,17 +66,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const login = async (credentials: LoginCredentials) => {
+    const login = async (credentials: LoginCredentials, requireRole?: string) => {
         setIsLoading(true);
         try {
-            const res = await api.post<{ user: User; token?: string }>("/auth/sign-in/email", credentials);
-            const user = res.user || res;
+            const res = await api.post<any>("/auth/sign-in/email", credentials);
+
+            // BetterAuth returns { user: {...}, session: {...} }
+            const user = res?.user || res;
+            const userRole = (user?.role || "").toUpperCase();
+
+            // Strict role checking if requested
+            if (requireRole && userRole !== requireRole.toUpperCase()) {
+                await api.post("/auth/sign-out");
+                toast.error(`Authorized access only. This is an ${requireRole} portal.`);
+                throw new Error("Access denied: Insufficient permissions.");
+            }
+
             setUser(user as User);
             toast.success("Logged in successfully");
-            router.push("/");
+
+            // Role-based redirection
+            const redirectUrl = userRole === "ADMIN" ? "/admin" : "/";
+            router.push(redirectUrl);
         } catch (error: any) {
             console.error("Login failed:", error);
-            toast.error(error.message || "Invalid credentials");
+            if (!error.message?.includes("Access denied")) {
+                toast.error(error.message || "Invalid credentials");
+            }
             throw error;
         } finally {
             setIsLoading(false);

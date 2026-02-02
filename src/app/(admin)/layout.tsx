@@ -23,12 +23,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const pathname = usePathname();
 
     useEffect(() => {
-        if (!isLoading && (!user || user.role !== "admin")) {
-            router.push("/login");
+        if (!isLoading && (!user || user.role.toUpperCase() !== "ADMIN")) {
+            router.push("/admin/login");
         }
     }, [user, isLoading, router]);
 
-    if (isLoading || !user || user.role !== "admin") {
+    if (isLoading || !user || user.role.toUpperCase() !== "ADMIN") {
         return (
             <div className="flex h-screen items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />

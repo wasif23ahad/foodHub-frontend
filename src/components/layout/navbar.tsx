@@ -104,6 +104,26 @@ export function Navbar() {
                             </Link>
                         );
                     })}
+                    {/* Admin Dashboard Quick Link */}
+                    {mounted && user?.role.toUpperCase() === "ADMIN" && (
+                        <Link
+                            href="/admin"
+                            className={cn(
+                                "text-sm font-medium transition-colors hover:text-primary relative py-1",
+                                pathname.startsWith("/admin") ? "text-primary" : "text-muted-foreground"
+                            )}
+                        >
+                            Dashboard
+                            {pathname.startsWith("/admin") && (
+                                <motion.span
+                                    layoutId="nav-underline"
+                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                />
+                            )}
+                        </Link>
+                    )}
                 </nav>
 
                 {/* Right Side - Cart & Auth */}
@@ -146,34 +166,36 @@ export function Navbar() {
                                         </DropdownMenuLabel>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuGroup>
-                                            <Link href="/profile">
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    <UserIcon className="mr-2 h-4 w-4" />
-                                                    <span>Profile</span>
-                                                </DropdownMenuItem>
-                                            </Link>
-                                            <Link href="/orders">
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    <Package className="mr-2 h-4 w-4" />
-                                                    <span>My Orders</span>
-                                                </DropdownMenuItem>
-                                            </Link>
-                                            {/* Role Based Dashboards */}
-                                            {user.role === "admin" && (
+                                            {user.role.toUpperCase() === "ADMIN" ? (
                                                 <Link href="/admin">
                                                     <DropdownMenuItem className="cursor-pointer text-primary">
                                                         <LayoutDashboard className="mr-2 h-4 w-4" />
                                                         <span>Admin Dashboard</span>
                                                     </DropdownMenuItem>
                                                 </Link>
-                                            )}
-                                            {user.role === "provider" && (
-                                                <Link href="/provider/dashboard">
-                                                    <DropdownMenuItem className="cursor-pointer text-primary">
-                                                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                                                        <span>Provider Dashboard</span>
-                                                    </DropdownMenuItem>
-                                                </Link>
+                                            ) : (
+                                                <>
+                                                    <Link href="/profile">
+                                                        <DropdownMenuItem className="cursor-pointer">
+                                                            <UserIcon className="mr-2 h-4 w-4" />
+                                                            <span>Profile</span>
+                                                        </DropdownMenuItem>
+                                                    </Link>
+                                                    <Link href="/orders">
+                                                        <DropdownMenuItem className="cursor-pointer">
+                                                            <Package className="mr-2 h-4 w-4" />
+                                                            <span>My Orders</span>
+                                                        </DropdownMenuItem>
+                                                    </Link>
+                                                    {user.role.toUpperCase() === "PROVIDER" && (
+                                                        <Link href="/provider/dashboard">
+                                                            <DropdownMenuItem className="cursor-pointer text-primary">
+                                                                <LayoutDashboard className="mr-2 h-4 w-4" />
+                                                                <span>Provider Dashboard</span>
+                                                            </DropdownMenuItem>
+                                                        </Link>
+                                                    )}
+                                                </>
                                             )}
                                         </DropdownMenuGroup>
                                         <DropdownMenuSeparator />
@@ -246,14 +268,20 @@ export function Navbar() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <Link href="/profile" className="text-lg font-medium py-2 border-b">Profile</Link>
-                                                <Link href="/orders" className="text-lg font-medium py-2 border-b">My Orders</Link>
-                                                {user.role === "admin" && (
+
+                                                {/* Role based mobile links */}
+                                                {user.role.toUpperCase() === "ADMIN" ? (
                                                     <Link href="/admin" className="text-lg font-medium py-2 border-b text-primary">Admin Dashboard</Link>
+                                                ) : (
+                                                    <>
+                                                        <Link href="/profile" className="text-lg font-medium py-2 border-b">Profile</Link>
+                                                        <Link href="/orders" className="text-lg font-medium py-2 border-b">My Orders</Link>
+                                                        {user.role.toUpperCase() === "PROVIDER" && (
+                                                            <Link href="/provider/dashboard" className="text-lg font-medium py-2 border-b text-primary">Provider Dashboard</Link>
+                                                        )}
+                                                    </>
                                                 )}
-                                                {user.role === "provider" && (
-                                                    <Link href="/provider/dashboard" className="text-lg font-medium py-2 border-b text-primary">Provider Dashboard</Link>
-                                                )}
+
                                                 <Button
                                                     variant="ghost"
                                                     className="justify-start px-0 text-lg font-medium text-red-500 hover:text-red-600 hover:bg-transparent"
