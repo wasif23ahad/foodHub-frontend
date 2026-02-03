@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MealCard } from "@/components/meals/meal-card";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ const cardVariants: Variants = {
     exit: { opacity: 0, scale: 0.9 }
 };
 
-export default function MealsPage() {
+function MealsContent() {
     const searchParams = useSearchParams();
     const initialCategory = searchParams.get("category") || "";
     const initialSearch = searchParams.get("search") || "";
@@ -237,5 +237,22 @@ export default function MealsPage() {
                 </AnimatePresence>
             )}
         </div>
+    );
+}
+
+export default function MealsPage() {
+    return (
+        <Suspense fallback={
+            <div className="container mx-auto px-4 py-8">
+                <div className="h-20 w-full bg-muted animate-pulse rounded-xl mb-8" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <MealSkeleton key={i} />
+                    ))}
+                </div>
+            </div>
+        }>
+            <MealsContent />
+        </Suspense>
     );
 }
