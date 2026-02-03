@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Pizza, Coffee, Salad, Beef, Utensils, Soup, Carrot, UtensilsCrossed } from "lucide-react";
+import { Pizza, Coffee, Salad, Beef, Utensils, Soup, Carrot, UtensilsCrossed, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { Category, ApiResponse } from "@/types";
 import { motion, Variants } from "framer-motion";
@@ -45,12 +46,13 @@ const itemVariants: Variants = {
 };
 
 export function Categories() {
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ["categories"],
         queryFn: async () => {
             const res = await api.get<ApiResponse<Category[]>>("/categories");
             return res.data;
         },
+        retry: 1,
     });
 
     const displayCategories = data || [];
@@ -77,13 +79,27 @@ export function Categories() {
         );
     }
 
-    if (isError || displayCategories.length === 0) {
-        // Optional: Render nothing or an error state. 
-        // For now, consistent with previous behavior, render nothing but maybe log it?
-        // Actually, if it's an error, we might want to return null to hide the section
-        // OR show a retry button. 
-        // Given the design, hiding it is safer than a broken UI.
-        if (isError) return null;
+    if (isError) {
+        return (
+            <section className="py-16 px-4 bg-background overflow-hidden">
+                <div className="container mx-auto text-center">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 text-amber-600 mb-4">
+                        <AlertCircle className="h-7 w-7" />
+                    </div>
+                    <h2 className="text-xl font-semibold mb-2">Couldn&apos;t load categories</h2>
+                    <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+                        The server may be temporarily unavailable. Please try again.
+                    </p>
+                    <Button variant="outline" onClick={() => refetch()}>
+                        Try again
+                    </Button>
+                </div>
+            </section>
+        );
+    }
+
+    if (displayCategories.length === 0 && !isLoading) {
+        return null;
     }
 
     return (

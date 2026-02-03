@@ -7,22 +7,17 @@ import { MealCard } from "@/components/meals/meal-card";
 import { api } from "@/lib/api";
 import { Meal, ApiResponse } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
-
-
+import { AlertCircle } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 
 export function PopularMeals() {
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ["popular-meals"],
         queryFn: async () => {
-            try {
-                const res = await api.get<ApiResponse<Meal[]>>("/meals?limit=4");
-                return res.data;
-            } catch (err) {
-                console.error("Popular meals fetch failed:", err);
-                return [];
-            }
+            const res = await api.get<ApiResponse<Meal[]>>("/meals?limit=4");
+            return res.data;
         },
+        retry: 1,
     });
 
     const meals = data || [];
@@ -80,6 +75,14 @@ export function PopularMeals() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                ) : isError ? (
+                    <div className="text-center py-12">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 text-amber-600 mb-4">
+                            <AlertCircle className="h-7 w-7" />
+                        </div>
+                        <p className="text-muted-foreground mb-4">Couldn&apos;t load popular meals. The server may be temporarily unavailable.</p>
+                        <Button variant="outline" onClick={() => refetch()}>Try again</Button>
                     </div>
                 ) : (
                     <motion.div
