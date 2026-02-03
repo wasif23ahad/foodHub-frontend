@@ -27,25 +27,39 @@ export const api = {
             next: options?.next,
         });
 
+        const contentType = res.headers.get("content-type") ?? "";
+        const isJson = contentType.includes("application/json");
+
         if (!res.ok) {
             if (res.status === 401) {
-                // Redirect to login on 401
                 if (typeof window !== "undefined") {
                     window.location.href = "/login";
                 }
             }
-
             let errorMsg = `API Error: ${res.status} ${res.statusText}`;
-            try {
-                const errorData = await res.json();
-                errorMsg = errorData.message || errorMsg;
-            } catch (e) {
+            if (isJson) {
+                try {
+                    const errorData = await res.json();
+                    errorMsg = errorData.message || errorMsg;
+                } catch {
+                    // ignore
+                }
+            } else {
                 const text = await res.text().catch(() => "");
-                if (text) errorMsg = text;
+                if (text?.startsWith("<")) errorMsg = "Server returned an HTML page instead of JSON. Check backend deployment.";
+                else if (text) errorMsg = text.slice(0, 200);
             }
             throw new Error(errorMsg);
         }
 
+        if (!isJson) {
+            const text = await res.text().catch(() => "");
+            if (text?.startsWith("<")) {
+                console.error("Backend returned HTML instead of JSON. URL:", url);
+                throw new Error("Server returned an HTML page instead of JSON. The backend may be down or misconfigured.");
+            }
+            throw new Error("Invalid response from server");
+        }
         try {
             return await res.json();
         } catch (e) {
