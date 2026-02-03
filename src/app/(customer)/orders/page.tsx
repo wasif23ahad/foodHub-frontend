@@ -168,7 +168,7 @@ export default function OrderHistoryPage() {
 
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">Provider</span>
-                                        <span className="font-medium">{order.provider?.name || "Unknown Provider"}</span>
+                                        <span className="font-medium">{order.provider?.businessName || "Unknown Provider"}</span>
                                     </div>
                                 </div>
                             </CardContent>
