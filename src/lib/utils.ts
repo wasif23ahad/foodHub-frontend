@@ -6,8 +6,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function getMediaUrl(path?: string | null) {
-  if (!path) return undefined;
+export function getMediaUrl(path?: string | null): string {
+  if (!path) return "";
 
   // Function to strip /api from the end of API_URL
   const getBaseUrl = () => API_URL.replace(/\/api$/, "");
