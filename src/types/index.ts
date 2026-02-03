@@ -77,8 +77,7 @@ export interface Meal {
 }
 
 // Cart types
-export interface CartItem {
-    meal: Meal;
+export interface CartItem extends Meal {
     quantity: number;
 }
 

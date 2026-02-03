@@ -1,10 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Meal } from '@/types';
-
-export interface CartItem extends Meal {
-    quantity: number;
-}
+import { Meal, CartItem } from '@/types';
 
 interface CartState {
     items: CartItem[];

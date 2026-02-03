@@ -76,7 +76,7 @@ export default function CartPage() {
                                             <div>
                                                 <h3 className="font-semibold text-lg">{item.name}</h3>
                                                 <p className="text-sm text-muted-foreground">
-                                                    {item.provider?.name}
+                                                    {item.providerProfile?.businessName}
                                                 </p>
                                             </div>
                                             <p className="font-bold">৳ {(item.price * item.quantity).toFixed(2)}</p>
