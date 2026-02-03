@@ -33,6 +33,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*.vercel.app",
       },
+      {
+        protocol: "https",
+        hostname: "foodhub-backend-silk.vercel.app",
+      },
     ],
     unoptimized: true, // Required for local development with private IP backend serving
   },
