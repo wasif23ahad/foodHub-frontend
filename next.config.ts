@@ -29,6 +29,10 @@ const nextConfig: NextConfig = {
         hostname: "127.0.0.1",
         port: "5000",
       },
+      {
+        protocol: "https",
+        hostname: "*.vercel.app",
+      },
     ],
     unoptimized: true, // Required for local development with private IP backend serving
   },
