@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { Star, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ interface MealCardProps {
 
 export function MealCard({ meal }: MealCardProps) {
     const addItem = useCartStore((state) => state.addItem);
+    const [imgSrc, setImgSrc] = useState(getMediaUrl(meal.image) || "/placeholder-meal.jpg");
 
     return (
         <motion.div
@@ -27,12 +29,13 @@ export function MealCard({ meal }: MealCardProps) {
         >
             <Card className="overflow-hidden group transition-shadow duration-300 border-none shadow-sm h-full flex flex-col hover:shadow-xl">
                 <Link href={`/meals/${meal.id}`} className="block overflow-hidden flex-1 flex flex-col">
-                    <div className="relative h-48 w-full overflow-hidden">
+                    <div className="relative h-48 w-full overflow-hidden bg-slate-100">
                         <Image
-                            src={getMediaUrl(meal.image) || "/placeholder-meal.jpg"}
+                            src={imgSrc}
                             alt={meal.name}
                             fill
                             className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                            onError={() => setImgSrc("/placeholder-meal.jpg")}
                         />
                         <Badge className="absolute top-3 right-3 bg-white/90 text-foreground hover:bg-white backdrop-blur-sm shadow-sm gap-1 z-10">
                             <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
