@@ -12,6 +12,8 @@ export interface User {
     phone?: string;
     createdAt: string;
     updatedAt: string;
+    banned?: boolean;
+    banReason?: string;
 }
 
 // Provider types

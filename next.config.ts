@@ -36,6 +36,14 @@ const nextConfig: NextConfig = {
     ],
     unoptimized: true, // Required for local development with private IP backend serving
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/auth/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/auth/:path*`,
+      },
+    ];
+  },
   reactCompiler: true,
 };
 
