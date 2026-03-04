@@ -81,6 +81,7 @@ const mealSchema = z.object({
     price: z.number().min(1, "Price must be at least 1"),
     categoryId: z.string().min(1, "Please select a category"),
     image: z.string().url("Please enter a valid image URL").or(z.string().length(0)),
+    dietaryPreference: z.string().default("REGULAR"),
     isAvailable: z.boolean(),
 });
 
@@ -119,6 +120,7 @@ export default function ProviderMenuPage() {
             price: 0,
             categoryId: "",
             image: "",
+            dietaryPreference: "REGULAR",
             isAvailable: true,
         },
     });
@@ -133,6 +135,7 @@ export default function ProviderMenuPage() {
                 price: meal.price,
                 categoryId: meal.categoryId,
                 image: meal.image || "",
+                dietaryPreference: meal.dietaryPreference || "REGULAR",
                 isAvailable: meal.isAvailable,
             });
         } else {
@@ -143,6 +146,7 @@ export default function ProviderMenuPage() {
                 price: 0,
                 categoryId: "",
                 image: "",
+                dietaryPreference: "REGULAR",
                 isAvailable: true,
             });
         }
@@ -215,6 +219,7 @@ export default function ProviderMenuPage() {
                             <TableHead className="w-[100px]">Image</TableHead>
                             <TableHead>Meal Name</TableHead>
                             <TableHead>Category</TableHead>
+                            <TableHead>Dietary</TableHead>
                             <TableHead>Price</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -248,6 +253,11 @@ export default function ProviderMenuPage() {
                                     <TableCell>
                                         <Badge variant="secondary">
                                             {meal.category?.name || "Uncategorized"}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className="text-xs">
+                                            {meal.dietaryPreference || "REGULAR"}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="font-bold text-primary">৳ {meal.price}</TableCell>
@@ -378,6 +388,31 @@ export default function ProviderMenuPage() {
                                             <Input placeholder="https://..." {...field} />
                                         </FormControl>
                                         <FormDescription>Link to a delicious photo of your meal.</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="dietaryPreference"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Dietary Preference</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select dietary preference" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="REGULAR">Regular</SelectItem>
+                                                <SelectItem value="VEGETARIAN">Vegetarian</SelectItem>
+                                                <SelectItem value="VEGAN">Vegan</SelectItem>
+                                                <SelectItem value="GLUTEN_FREE">Gluten Free</SelectItem>
+                                                <SelectItem value="KETO">Keto</SelectItem>
+                                                <SelectItem value="HALAL">Halal</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}

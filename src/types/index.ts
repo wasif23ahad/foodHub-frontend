@@ -59,6 +59,14 @@ export type MealSortingOption =
     | "rating"
     | "popular";
 
+export type DietaryPreference =
+    | "REGULAR"
+    | "VEGETARIAN"
+    | "VEGAN"
+    | "GLUTEN_FREE"
+    | "KETO"
+    | "HALAL";
+
 export interface Meal {
     id: string;
     name: string;
@@ -74,6 +82,7 @@ export interface Meal {
     updatedAt: string;
     category?: Category;
     providerProfile?: Provider;
+    dietaryPreference?: DietaryPreference;
 }
 
 // Cart types

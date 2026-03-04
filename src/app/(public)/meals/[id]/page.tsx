@@ -119,6 +119,11 @@ export default function MealDetailsPage() {
                                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
                                     {meal.name}
                                 </h1>
+                                {meal.dietaryPreference && meal.dietaryPreference !== "REGULAR" && (
+                                    <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5">
+                                        {meal.dietaryPreference.replace("_", " ")}
+                                    </Badge>
+                                )}
                             </div>
                             <div className="flex items-center gap-1 bg-primary/10 px-3 py-1 rounded-full">
                                 <Star className="h-5 w-5 text-primary fill-primary" />

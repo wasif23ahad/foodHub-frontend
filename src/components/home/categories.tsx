@@ -49,7 +49,7 @@ export function Categories() {
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ["categories"],
         queryFn: async () => {
-            const res = await api.get<ApiResponse<Category[]>>("/categories");
+            const res = await api.get<ApiResponse<Category[]>>("/categories?isFeatured=true&limit=12");
             return res.data;
         },
         retry: 1,

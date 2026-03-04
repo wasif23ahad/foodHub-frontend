@@ -7,12 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, SlidersHorizontal, Loader2, X } from "lucide-react";
 import { api } from "@/lib/api";
-import { Meal, Category, ApiResponse } from "@/types";
+import { Meal, Category, ApiResponse, DietaryPreference } from "@/types";
 import { useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
 import { MealSkeleton } from "@/components/meals/meal-skeleton";
 import { StaggerContainer, fadeIn } from "@/components/animations";
 import { motion, AnimatePresence, Variants } from "framer-motion";
+
+const DIETARY_OPTIONS: { label: string; value: DietaryPreference | "all" }[] = [
+    { label: "All Diets", value: "all" },
+    { label: "Vegetarian", value: "VEGETARIAN" },
+    { label: "Vegan", value: "VEGAN" },
+    { label: "Gluten Free", value: "GLUTEN_FREE" },
+    { label: "Keto", value: "KETO" },
+    { label: "Halal", value: "HALAL" },
+    { label: "Regular", value: "REGULAR" },
+];
 
 
 
@@ -38,6 +48,7 @@ function MealsContent() {
 
     const [search, setSearch] = useState(initialSearch);
     const [category, setCategory] = useState(initialCategory);
+    const [dietary, setDietary] = useState<DietaryPreference | "all">("all");
     const [sort, setSort] = useState("newest");
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
@@ -63,7 +74,7 @@ function MealsContent() {
     const categories = categoriesData || [];
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ["meals", debouncedSearch, category, sort, debouncedMinPrice, debouncedMaxPrice, categories.length],
+        queryKey: ["meals", debouncedSearch, category, dietary, sort, debouncedMinPrice, debouncedMaxPrice, categories.length],
         queryFn: async () => {
             const params = new URLSearchParams();
             if (debouncedSearch) params.append("search", debouncedSearch);
@@ -83,6 +94,7 @@ function MealsContent() {
                     // Don't append anything, falls back to all meals
                 }
             }
+            if (dietary && dietary !== "all") params.append("dietaryPreference", dietary);
             if (sort) params.append("sort", sort);
             if (debouncedMinPrice) params.append("minPrice", debouncedMinPrice);
             if (debouncedMaxPrice) params.append("maxPrice", debouncedMaxPrice);
@@ -150,6 +162,22 @@ function MealsContent() {
                         <SlidersHorizontal className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     </div>
 
+                    {/* Dietary Filter */}
+                    <div className="relative w-full md:w-40">
+                        <select
+                            className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                            value={dietary}
+                            onChange={(e) => setDietary(e.target.value as any)}
+                        >
+                            {DIETARY_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                        <SlidersHorizontal className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    </div>
+
                     {/* Sort Filter - Native Select */}
                     <div className="relative w-full md:w-40">
                         <select
@@ -208,7 +236,8 @@ function MealsContent() {
                         onClick={() => {
                             setSearch("");
                             setCategory("");
-                            setSort("-createdAt");
+                            setDietary("all");
+                            setSort("newest");
                         }}
                         className="mt-2 text-primary"
                     >

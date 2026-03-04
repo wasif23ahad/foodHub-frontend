@@ -15,16 +15,16 @@ export function getMediaUrl(path?: string | null): string {
   // Default to localhost for development if env var is missing
   const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/api\/?$/, "");
 
-  // For /uploads/ paths - these are served from the BACKEND
+  // For /uploads/ paths - these are now served directly from FRONTEND's public folder
   if (path.includes("/uploads/") || path.startsWith("/uploads/")) {
     const parts = path.split("/uploads/");
     const relativePath = parts[parts.length - 1];
-    return `${apiUrl}/uploads/${relativePath}`;
+    return `/uploads/${relativePath}`;
   }
 
   // For paths starting with uploads/ without the slash after
   if (path.startsWith("uploads/")) {
-    return `${apiUrl}/${path}`;
+    return `/${path}`;
   }
 
   // Relative path - assume it's a backend asset if not starting with /
