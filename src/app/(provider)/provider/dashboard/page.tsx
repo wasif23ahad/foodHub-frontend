@@ -32,7 +32,7 @@ export default function ProviderDashboardPage() {
 
     // Protection: Redirect if not a provider
     useEffect(() => {
-        if (!isAuthLoading && (!user || user.role !== "provider")) {
+        if (!isAuthLoading && (!user || user.role?.toLowerCase() !== "provider")) {
             router.push("/");
         }
     }, [user, isAuthLoading, router]);
@@ -45,7 +45,7 @@ export default function ProviderDashboardPage() {
             const res = await api.get<ApiResponse<Order[]>>("/orders");
             return res.data;
         },
-        enabled: !!user && user.role === "provider",
+        enabled: !!user && user.role?.toLowerCase() === "provider",
     });
 
     // Fetch meals to show menu status
@@ -56,7 +56,7 @@ export default function ProviderDashboardPage() {
             const res = await api.get<ApiResponse<Meal[]>>("/meals");
             return res.data;
         },
-        enabled: !!user && user.role === "provider",
+        enabled: !!user && user.role?.toLowerCase() === "provider",
     });
 
     if (isAuthLoading || isOrdersLoading) {
@@ -67,7 +67,7 @@ export default function ProviderDashboardPage() {
         );
     }
 
-    if (!user || user.role !== "provider") return null;
+    if (!user || user.role?.toLowerCase() !== "provider") return null;
 
     const orders = ordersData || [];
     const meals = mealsData || [];

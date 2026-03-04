@@ -144,7 +144,7 @@ export default function OrderHistoryPage() {
                                             ৳ {order.totalAmount}
                                         </div>
                                         <div className="text-sm text-muted-foreground">
-                                            {order.items?.length || 0} Items
+                                            {(order.items || (order as any).orderItems)?.length || 0} Items
                                         </div>
                                     </div>
                                 </div>
@@ -153,7 +153,7 @@ export default function OrderHistoryPage() {
                                 <div className="space-y-4">
                                     <div className="space-y-2">
                                         <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">Items</h4>
-                                        {order.items?.map((item) => (
+                                        {(order.items || (order as any).orderItems)?.map((item: any) => (
                                             <div key={item.id} className="flex justify-between items-center text-sm">
                                                 <span>
                                                     <span className="font-bold mr-2">{item.quantity}x</span>
@@ -168,7 +168,7 @@ export default function OrderHistoryPage() {
 
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">Provider</span>
-                                        <span className="font-medium">{order.provider?.businessName || "Unknown Provider"}</span>
+                                        <span className="font-medium">{(order.provider || order.providerProfile)?.businessName || "Unknown Provider"}</span>
                                     </div>
                                 </div>
                             </CardContent>
