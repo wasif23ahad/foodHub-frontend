@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
     ShoppingBag,
@@ -203,9 +203,8 @@ export default function AdminOrdersPage() {
                                 </TableHeader>
                                 <TableBody>
                                     {orders.map((order) => (
-                                        <>
+                                        <React.Fragment key={order.id}>
                                             <TableRow
-                                                key={order.id}
                                                 className="hover:bg-muted/30 cursor-pointer"
                                                 onClick={() => setExpandedOrderId(
                                                     expandedOrderId === order.id ? null : order.id
@@ -268,7 +267,7 @@ export default function AdminOrdersPage() {
                                                     </TableCell>
                                                 </TableRow>
                                             )}
-                                        </>
+                                        </React.Fragment>
                                     ))}
                                 </TableBody>
                             </Table>

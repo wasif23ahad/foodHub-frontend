@@ -189,23 +189,31 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
+                    // Determine the appropriate link for each stat card
+                    let href = "#";
+                    if (stat.title === "Total Revenue" || stat.title === "Total Orders") href = "/admin/orders";
+                    else if (stat.title === "Active Users") href = "/admin/users";
+                    else if (stat.title === "Providers") href = "/admin/providers";
+
                     return (
-                        <Card key={i} className="border-none shadow-md hover:shadow-lg transition-shadow overflow-hidden bg-background">
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    {stat.title}
-                                </CardTitle>
-                                <div className={`p-2 rounded-lg ${stat.bg}`}>
-                                    <Icon className={`h-4 w-4 ${stat.color}`} />
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold font-mono">{stat.value}</div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    {stat.description}
-                                </p>
-                            </CardContent>
-                        </Card>
+                        <Link href={href} key={i}>
+                            <Card className="border-none shadow-md hover:shadow-lg transition-transform hover:-translate-y-1 overflow-hidden bg-background cursor-pointer h-full">
+                                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                        {stat.title}
+                                    </CardTitle>
+                                    <div className={`p-2 rounded-lg ${stat.bg}`}>
+                                        <Icon className={`h-4 w-4 ${stat.color}`} />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold font-mono">{stat.value}</div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {stat.description}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </Link>
                     );
                 })}
             </div>
@@ -251,7 +259,7 @@ export default function AdminDashboardPage() {
                                                     <div className="flex items-center gap-4">
                                                         <div className="text-right">
                                                             <p className="text-sm font-bold">৳{order.totalAmount}</p>
-                                                            <Badge variant={order.status === 'delivered' ? 'default' : 'outline'} className="text-[10px] h-5">
+                                                            <Badge variant={order.status === 'DELIVERED' ? 'default' : 'outline'} className="text-[10px] h-5">
                                                                 {order.status}
                                                             </Badge>
                                                         </div>
