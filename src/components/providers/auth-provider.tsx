@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const userRole = (user?.role || "").toUpperCase();
 
             // Strict role checking if requested
-            if (requireRole && userRole !== requireRole.toUpperCase()) {
+            if (requireRole && userRole !== requireRole.toUpperCase() && userRole !== "ADMIN") {
                 await api.post("/auth/sign-out");
                 const portalName = requireRole.toUpperCase() === "PROVIDER" ? "Seller" : "Customer";
                 toast.error(`This account is not a ${portalName} account. Please use the correct login option.`);
