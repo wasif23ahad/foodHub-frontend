@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -245,13 +247,13 @@ export default function AdminOrdersPage() {
                                                     <TableCell colSpan={7} className="bg-muted/20 p-4">
                                                         <div className="space-y-3">
                                                             <h4 className="font-semibold text-sm">Order Items</h4>
-                                                            {order.items && order.items.length > 0 ? (
+                                                            {order.orderItems && order.orderItems.length > 0 ? (
                                                                 <div className="grid gap-2">
-                                                                    {order.items.map((item) => (
+                                                                    {order.orderItems.map((item) => (
                                                                         <div key={item.id} className="flex justify-between items-center text-sm bg-background p-2 rounded-md border">
                                                                             <span>{item.meal?.name || "Unknown meal"}</span>
                                                                             <span className="text-muted-foreground">
-                                                                                x{item.quantity} — ৳{((item.price || item.meal?.price || 0) * item.quantity).toFixed(2)}
+                                                                                x{item.quantity} — ৳{((item.unitPrice || item.meal?.price || 0) * item.quantity).toFixed(2)}
                                                                             </span>
                                                                         </div>
                                                                     ))}

@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -185,7 +187,7 @@ export default function ProviderOrdersPage() {
                                                     {order.customer?.name || "Customer"}
                                                 </TableCell>
                                                 <TableCell className="text-sm text-muted-foreground">
-                                                    {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
+                                                    {(order.orderItems || order.items)?.length || 0} item{((order.orderItems || order.items)?.length || 0) !== 1 ? 's' : ''}
                                                 </TableCell>
                                                 <TableCell className="font-bold">
                                                     ৳{order.totalAmount.toFixed(2)}

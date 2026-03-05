@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Loader2, Package, ShoppingBag, Clock, CheckCircle2, XCircle, Truck } from "lucide-react";
@@ -15,24 +17,22 @@ import { Order, ApiResponse, OrderStatus } from "@/types";
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
-        case "pending": return "bg-yellow-500/10 text-yellow-600 border-yellow-200 hover:bg-yellow-500/20";
-        case "confirmed": return "bg-blue-500/10 text-blue-600 border-blue-200 hover:bg-blue-500/20";
-        case "preparing": return "bg-purple-500/10 text-purple-600 border-purple-200 hover:bg-purple-500/20";
-        case "ready": return "bg-indigo-500/10 text-indigo-600 border-indigo-200 hover:bg-indigo-500/20";
-        case "delivered": return "bg-green-500/10 text-green-600 border-green-200 hover:bg-green-500/20";
-        case "cancelled": return "bg-red-500/10 text-red-600 border-red-200 hover:bg-red-500/20";
+        case "PLACED": return "bg-yellow-500/10 text-yellow-600 border-yellow-200 hover:bg-yellow-500/20";
+        case "PREPARING": return "bg-purple-500/10 text-purple-600 border-purple-200 hover:bg-purple-500/20";
+        case "READY": return "bg-indigo-500/10 text-indigo-600 border-indigo-200 hover:bg-indigo-500/20";
+        case "DELIVERED": return "bg-green-500/10 text-green-600 border-green-200 hover:bg-green-500/20";
+        case "CANCELLED": return "bg-red-500/10 text-red-600 border-red-200 hover:bg-red-500/20";
         default: return "bg-gray-500/10 text-gray-600 border-gray-200";
     }
 };
 
 const getStatusIcon = (status: OrderStatus) => {
     switch (status) {
-        case "pending": return Clock;
-        case "confirmed": return CheckCircle2;
-        case "preparing": return Package;
-        case "ready": return ShoppingBag;
-        case "delivered": return Truck;
-        case "cancelled": return XCircle;
+        case "PLACED": return Clock;
+        case "PREPARING": return Package;
+        case "READY": return ShoppingBag;
+        case "DELIVERED": return Truck;
+        case "CANCELLED": return XCircle;
         default: return Clock;
     }
 };
@@ -144,7 +144,7 @@ export default function OrderHistoryPage() {
                                             ৳ {order.totalAmount}
                                         </div>
                                         <div className="text-sm text-muted-foreground">
-                                            {(order.items || (order as any).orderItems)?.length || 0} Items
+                                            {(order.orderItems || (order as any).items)?.length || 0} Items
                                         </div>
                                     </div>
                                 </div>
@@ -153,13 +153,13 @@ export default function OrderHistoryPage() {
                                 <div className="space-y-4">
                                     <div className="space-y-2">
                                         <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">Items</h4>
-                                        {(order.items || (order as any).orderItems)?.map((item: any) => (
+                                        {(order.orderItems || (order as any).items)?.map((item: any) => (
                                             <div key={item.id} className="flex justify-between items-center text-sm">
                                                 <span>
                                                     <span className="font-bold mr-2">{item.quantity}x</span>
                                                     {item.meal?.name || "Deleted Meal"}
                                                 </span>
-                                                <span>৳ {item.price * item.quantity}</span>
+                                                <span>৳ {(item.unitPrice || item.price) * item.quantity}</span>
                                             </div>
                                         ))}
                                     </div>

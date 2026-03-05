@@ -27,6 +27,8 @@ export interface Provider {
     phone?: string;
     cuisineType?: string;
     contactEmail?: string;
+    contactPhone?: string;
+    coverImage?: string;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -37,12 +39,15 @@ export interface Provider {
     meals?: Meal[];
 }
 
+export type ProviderProfile = Provider;
+
 // Category types
 export interface Category {
     id: string;
     name: string;
     description?: string;
     image?: string;
+    isFeatured?: boolean;
     createdAt: string;
     updatedAt: string;
     _count?: {
@@ -109,6 +114,7 @@ export interface OrderItem {
     mealId: string;
     quantity: number;
     price: number;
+    unitPrice?: number;
     meal?: Meal;
 }
 
@@ -127,6 +133,7 @@ export interface Order {
     customer?: User;
     providerProfile?: Provider;
     items?: OrderItem[];
+    orderItems?: OrderItem[];
 }
 
 // API Response types

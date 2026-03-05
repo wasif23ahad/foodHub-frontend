@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,7 +54,7 @@ export default function ProviderProfilePage() {
             description: profile?.description || "",
             logo: profile?.logo || "",
             coverImage: profile?.coverImage || "",
-            contactPhone: profile?.contactPhone || "",
+            contactPhone: profile?.contactPhone || (profile as any)?.phone || "",
             contactEmail: profile?.contactEmail || "",
         },
     });

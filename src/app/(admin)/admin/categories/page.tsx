@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search, Plus, MoreHorizontal, Tags, Edit, Trash, ImageIcon } from "lucide-react";
@@ -26,6 +28,7 @@ const categorySchema = z.object({
     name: z.string().min(2, "Category name must be at least 2 characters").max(50),
     description: z.string().max(500).optional(),
     image: z.string().optional(),
+    isFeatured: z.boolean().default(false).optional(),
 });
 type CategoryFormData = z.infer<typeof categorySchema>;
 
@@ -60,7 +63,7 @@ export default function AdminCategoriesPage() {
     // Form setup for Create/Edit
     const form = useForm<CategoryFormData>({
         resolver: zodResolver(categorySchema),
-        defaultValues: { name: "", description: "", image: "" }
+        defaultValues: { name: "", description: "", image: "", isFeatured: false }
     });
 
     // Reset form when edit modal opens
@@ -70,12 +73,13 @@ export default function AdminCategoriesPage() {
             name: category.name,
             description: category.description || "",
             image: category.image || "",
+            isFeatured: category.isFeatured || false
         });
     };
 
     // Prepare create modal
     const handleOpenCreate = () => {
-        form.reset({ name: "", description: "", image: "" });
+        form.reset({ name: "", description: "", image: "", isFeatured: false });
         setIsCreateOpen(true);
     };
 
@@ -173,6 +177,7 @@ export default function AdminCategoriesPage() {
                             <TableHead className="w-[80px]">Image</TableHead>
                             <TableHead className="w-[200px]">Name</TableHead>
                             <TableHead>Description</TableHead>
+                            <TableHead className="w-[100px]">Featured</TableHead>
                             <TableHead className="w-[150px]">Created</TableHead>
                             <TableHead className="text-right w-[100px]">Actions</TableHead>
                         </TableRow>
@@ -197,6 +202,11 @@ export default function AdminCategoriesPage() {
                                     <TableCell className="font-medium">{cat.name}</TableCell>
                                     <TableCell className="text-muted-foreground truncate max-w-[300px]">
                                         {cat.description || "No description"}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={cat.isFeatured ? "default" : "secondary"}>
+                                            {cat.isFeatured ? "Featured" : "Regular"}
+                                        </Badge>
                                     </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
                                         {format(new Date(cat.createdAt), "MMM d, yyyy")}
@@ -261,6 +271,17 @@ export default function AdminCategoriesPage() {
                                 onRemove={() => form.setValue("image", "", { shouldValidate: true })}
                             />
                             {form.formState.errors.image && <p className="text-sm text-destructive">{form.formState.errors.image.message}</p>}
+                        </div>
+
+                        <div className="flex items-center space-x-2 py-2">
+                            <input
+                                type="checkbox"
+                                id="isFeatured"
+                                {...form.register("isFeatured")}
+                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                disabled={updateMutation.isPending || createMutation.isPending}
+                            />
+                            <Label htmlFor="isFeatured" className="cursor-pointer">Feature on homepage</Label>
                         </div>
 
                         <DialogFooter className="pt-4">

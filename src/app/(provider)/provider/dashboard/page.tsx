@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useQuery } from "@tanstack/react-query";
 import {
     LayoutDashboard,
@@ -72,11 +74,11 @@ export default function ProviderDashboardPage() {
 
     // Derive stats
     const totalRevenue = orders
-        .filter(o => o.status === "delivered")
+        .filter(o => o.status === "DELIVERED")
         .reduce((sum, o) => sum + o.totalAmount, 0);
 
-    const pendingOrders = orders.filter(o => o.status === "pending" || o.status === "confirmed").length;
-    const completedOrders = orders.filter(o => o.status === "delivered").length;
+    const pendingOrders = orders.filter(o => o.status === "PLACED" || o.status === "PREPARING").length;
+    const completedOrders = orders.filter(o => o.status === "DELIVERED").length;
     const totalMeals = meals.length;
 
     const stats = [
@@ -194,8 +196,8 @@ export default function ProviderDashboardPage() {
                                         </div>
                                         <div className="text-right space-y-1">
                                             <p className="text-sm font-bold">৳ {order.totalAmount}</p>
-                                            <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${order.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                                                    order.status === 'delivered' ? 'bg-green-50 text-green-600 border-green-200' :
+                                            <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${order.status === 'PLACED' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                                                    order.status === 'DELIVERED' ? 'bg-green-50 text-green-600 border-green-200' :
                                                         'bg-blue-50 text-blue-600 border-blue-200'
                                                 }`}>
                                                 {order.status}
