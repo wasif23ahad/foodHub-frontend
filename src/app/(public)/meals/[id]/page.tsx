@@ -113,9 +113,16 @@ export default function MealDetailsPage() {
                     <div>
                         <div className="flex justify-between items-start">
                             <div>
-                                <Badge variant="secondary" className="mb-2 uppercase tracking-wide text-xs">
-                                    {meal.category?.name || "Meal"}
-                                </Badge>
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                    <Badge variant="secondary" className="uppercase tracking-wide text-xs">
+                                        {meal.category?.name || "Meal"}
+                                    </Badge>
+                                    {meal.dietaryPreference && meal.dietaryPreference !== "REGULAR" && (
+                                        <Badge variant="outline" className="uppercase tracking-wide text-xs border-primary/30 text-primary bg-primary/5">
+                                            {meal.dietaryPreference.replace("_", " ")}
+                                        </Badge>
+                                    )}
+                                </div>
                                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
                                     {meal.name}
                                 </h1>

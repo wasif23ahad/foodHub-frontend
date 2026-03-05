@@ -19,12 +19,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 // Schemas matching Backend
 const categorySchema = z.object({
     name: z.string().min(2, "Category name must be at least 2 characters").max(50),
     description: z.string().max(500).optional(),
-    image: z.string().optional().transform(val => (!val || val.trim() === "") ? undefined : val),
+    image: z.string().optional(),
 });
 type CategoryFormData = z.infer<typeof categorySchema>;
 
@@ -253,8 +254,12 @@ export default function AdminCategoriesPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="image">Image URL</Label>
-                            <Input id="image" {...form.register("image")} placeholder="https://example.com/image.jpg" disabled={updateMutation.isPending || createMutation.isPending} />
+                            <Label htmlFor="image">Category Image</Label>
+                            <ImageUpload
+                                value={form.watch("image")}
+                                onChange={(url) => form.setValue("image", url, { shouldValidate: true })}
+                                onRemove={() => form.setValue("image", "", { shouldValidate: true })}
+                            />
                             {form.formState.errors.image && <p className="text-sm text-destructive">{form.formState.errors.image.message}</p>}
                         </div>
 

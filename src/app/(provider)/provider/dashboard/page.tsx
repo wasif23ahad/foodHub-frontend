@@ -38,11 +38,10 @@ export default function ProviderDashboardPage() {
     }, [user, isAuthLoading, router]);
 
     // Fetch orders for this provider
-    // Assuming backend supports filtering or returns only provider's orders for provider role
     const { data: ordersData, isLoading: isOrdersLoading } = useQuery({
         queryKey: ["provider-orders"],
         queryFn: async () => {
-            const res = await api.get<ApiResponse<Order[]>>("/orders");
+            const res = await api.get<ApiResponse<Order[]>>("/provider/orders");
             return res.data;
         },
         enabled: !!user && user.role?.toLowerCase() === "provider",
@@ -52,8 +51,7 @@ export default function ProviderDashboardPage() {
     const { data: mealsData } = useQuery({
         queryKey: ["provider-meals"],
         queryFn: async () => {
-            // For now, assuming we can filter or it returns provider's meals
-            const res = await api.get<ApiResponse<Meal[]>>("/meals");
+            const res = await api.get<ApiResponse<Meal[]>>("/provider/meals");
             return res.data;
         },
         enabled: !!user && user.role?.toLowerCase() === "provider",
@@ -131,10 +129,12 @@ export default function ProviderDashboardPage() {
                             Manage Menu
                         </Button>
                     </Link>
-                    <Button className="gap-2">
-                        View All Orders
-                        <ArrowUpRight className="h-4 w-4" />
-                    </Button>
+                    <Link href="/provider/orders">
+                        <Button className="gap-2">
+                            View All Orders
+                            <ArrowUpRight className="h-4 w-4" />
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
@@ -205,9 +205,11 @@ export default function ProviderDashboardPage() {
                                 ))}
                             </div>
                         )}
-                        <Button variant="ghost" className="w-full mt-4 text-primary hover:text-primary hover:bg-primary/5">
-                            View All Orders
-                        </Button>
+                        <Link href="/provider/orders" className="w-full">
+                            <Button variant="ghost" className="w-full mt-4 text-primary hover:text-primary hover:bg-primary/5">
+                                View All Orders
+                            </Button>
+                        </Link>
                     </CardContent>
                 </Card>
 
@@ -228,9 +230,11 @@ export default function ProviderDashboardPage() {
                             <p className="text-xs text-muted-foreground">
                                 Adding high-quality photos to your meals can increase orders by up to 30%.
                             </p>
-                            <Button size="sm" className="mt-3 text-xs" variant="outline">
-                                Edit Menu
-                            </Button>
+                            <Link href="/provider/menu">
+                                <Button size="sm" className="mt-3 text-xs" variant="outline">
+                                    Edit Menu
+                                </Button>
+                            </Link>
                         </div>
                         <div className="p-4 rounded-xl bg-secondary/5 border border-secondary/10">
                             <h4 className="font-semibold text-sm mb-1">Peak Hours</h4>
@@ -239,14 +243,18 @@ export default function ProviderDashboardPage() {
                             </p>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <Button variant="outline" className="h-20 flex flex-col gap-2">
-                                <Utensils className="h-5 w-5" />
-                                <span className="text-xs">New Meal</span>
-                            </Button>
-                            <Button variant="outline" className="h-20 flex flex-col gap-2">
-                                <DollarSign className="h-5 w-5" />
-                                <span className="text-xs">Payouts</span>
-                            </Button>
+                            <Link href="/provider/menu">
+                                <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                                    <Utensils className="h-5 w-5" />
+                                    <span className="text-xs">New Meal</span>
+                                </Button>
+                            </Link>
+                            <Link href="/provider/profile">
+                                <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                                    <LayoutDashboard className="h-5 w-5" />
+                                    <span className="text-xs">Edit Profile</span>
+                                </Button>
+                            </Link>
                         </div>
                     </CardContent>
                 </Card>

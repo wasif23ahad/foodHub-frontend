@@ -44,10 +44,15 @@ export function MealCard({ meal }: MealCardProps) {
                     </div>
 
                     <CardContent className="p-4 flex-1">
-                        <div className="flex justify-between items-start mb-2">
+                        <div className="flex justify-between items-start mb-2 gap-2 flex-wrap">
                             <Badge variant="secondary" className="text-xs font-normal text-muted-foreground bg-slate-100 hover:bg-slate-200">
                                 {meal.category?.name || "Meal"}
                             </Badge>
+                            {meal.dietaryPreference && meal.dietaryPreference !== "REGULAR" && (
+                                <Badge variant="outline" className="text-xs font-medium border-primary/20 bg-primary/5 text-primary">
+                                    {meal.dietaryPreference.replace("_", " ")}
+                                </Badge>
+                            )}
                         </div>
                         <h3 className="font-bold text-lg mb-1 truncate group-hover:text-primary transition-colors">
                             {meal.name}

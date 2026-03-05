@@ -74,14 +74,15 @@ import * as z from "zod";
 import { toast } from "sonner";
 import Image from "next/image";
 import { getMediaUrl } from "@/lib/utils";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 const mealSchema = z.object({
     name: z.string().min(3, "Name must be at least 3 characters"),
     description: z.string().min(10, "Description must be at least 10 characters"),
     price: z.number().min(1, "Price must be at least 1"),
     categoryId: z.string().min(1, "Please select a category"),
-    image: z.string().url("Please enter a valid image URL").or(z.string().length(0)),
-    dietaryPreference: z.string().default("REGULAR"),
+    image: z.string().optional(),
+    dietaryPreference: z.string().min(1, "Please select a dietary preference"),
     isAvailable: z.boolean(),
 });
 
@@ -112,7 +113,7 @@ export default function ProviderMenuPage() {
         },
     });
 
-    const form = useForm<MealFormValues>({
+    const form = useForm<z.infer<typeof mealSchema>>({
         resolver: zodResolver(mealSchema),
         defaultValues: {
             name: "",
@@ -383,11 +384,14 @@ export default function ProviderMenuPage() {
                                 name="image"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Image URL</FormLabel>
+                                        <FormLabel>Meal Image</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="https://..." {...field} />
+                                            <ImageUpload
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                            />
                                         </FormControl>
-                                        <FormDescription>Link to a delicious photo of your meal.</FormDescription>
+                                        <FormDescription>Upload a delicious photo of your meal.</FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
