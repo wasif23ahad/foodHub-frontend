@@ -132,10 +132,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const signInWithGoogle = () => {
-        const callbackUrl = window.location.origin;
-        // Redirect to backend social login route
-        window.location.href = `${API_URL}/auth/sign-in/social/google?callbackURL=${callbackUrl}`;
+    const signInWithGoogle = async () => {
+        try {
+            const callbackUrl = window.location.origin;
+            const res = await api.post<any>("/auth/sign-in/social", {
+                provider: "google",
+                callbackURL: callbackUrl,
+            });
+
+            if (res.url) {
+                window.location.href = res.url;
+            } else {
+                toast.error("Could not initialize Google login");
+                console.error("Missing URL in response:", res);
+            }
+        } catch (error: any) {
+            console.error("Google sign-in error:", error);
+            toast.error(error.message || "Failed to initialize Google login");
+        }
     };
 
     const logout = async () => {
