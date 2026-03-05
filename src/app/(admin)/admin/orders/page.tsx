@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import {
     ShoppingBag,
     Search,
-    Eye
+    ChevronDown,
+    ChevronUp,
 } from "lucide-react";
 import {
     Table,
@@ -27,14 +28,19 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { ApiResponse, Order } from "@/types";
-import Link from "next/link";
 
 const statusColors: Record<string, string> = {
+    PLACED: "bg-yellow-100 text-yellow-800",
+    placed: "bg-yellow-100 text-yellow-800",
     pending: "bg-yellow-100 text-yellow-800",
     confirmed: "bg-blue-100 text-blue-800",
+    PREPARING: "bg-blue-100 text-blue-800",
     preparing: "bg-blue-100 text-blue-800",
+    READY: "bg-green-100 text-green-800",
     ready: "bg-green-100 text-green-800",
+    DELIVERED: "bg-green-100 text-green-800",
     delivered: "bg-green-100 text-green-800",
+    CANCELLED: "bg-red-100 text-red-800",
     cancelled: "bg-red-100 text-red-800",
 };
 
@@ -42,14 +48,15 @@ export default function AdminOrdersPage() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
+    const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
     const { data: ordersData, isLoading } = useQuery({
         queryKey: ["admin-orders", statusFilter, sortBy],
         queryFn: async () => {
             try {
                 const params = new URLSearchParams();
-                if (statusFilter !== "all") params.append("status", statusFilter);
-                params.append("sortBy", sortBy);
+                if (statusFilter !== "all") params.append("status", statusFilter.toUpperCase());
+                params.append("limit", "100");
 
                 const res = await api.get<ApiResponse<Order[]>>(
                     `/admin/orders?${params.toString()}`
@@ -65,6 +72,7 @@ export default function AdminOrdersPage() {
     const orders = (ordersData || []).filter(order =>
         search === "" ||
         order.id.toLowerCase().includes(search.toLowerCase()) ||
+        order.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
         order.totalAmount.toString().includes(search)
     );
 
@@ -76,17 +84,17 @@ export default function AdminOrdersPage() {
         },
         {
             label: "Delivered",
-            value: ordersData?.filter(o => o.status === "delivered").length || 0,
+            value: ordersData?.filter(o => o.status.toUpperCase() === "DELIVERED").length || 0,
             color: "text-green-600"
         },
         {
             label: "Pending",
-            value: ordersData?.filter(o => ["pending", "confirmed", "preparing", "ready"].includes(o.status)).length || 0,
+            value: ordersData?.filter(o => ["PLACED", "PREPARING", "READY"].includes(o.status.toUpperCase())).length || 0,
             color: "text-yellow-600"
         },
         {
             label: "Cancelled",
-            value: ordersData?.filter(o => o.status === "cancelled").length || 0,
+            value: ordersData?.filter(o => o.status.toUpperCase() === "CANCELLED").length || 0,
             color: "text-red-600"
         }
     ];
@@ -140,12 +148,11 @@ export default function AdminOrdersPage() {
                                 onChange={(e) => setStatusFilter(e.target.value)}
                             >
                                 <option value="all">All Statuses</option>
-                                <option value="pending">Pending</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="preparing">Preparing</option>
-                                <option value="ready">Ready</option>
-                                <option value="delivered">Delivered</option>
-                                <option value="cancelled">Cancelled</option>
+                                <option value="PLACED">Placed</option>
+                                <option value="PREPARING">Preparing</option>
+                                <option value="READY">Ready</option>
+                                <option value="DELIVERED">Delivered</option>
+                                <option value="CANCELLED">Cancelled</option>
                             </select>
                         </div>
                         <div className="md:w-48">
@@ -185,46 +192,83 @@ export default function AdminOrdersPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead className="w-8"></TableHead>
                                         <TableHead>Order ID</TableHead>
                                         <TableHead>Customer</TableHead>
                                         <TableHead>Provider</TableHead>
                                         <TableHead>Amount</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead>Date</TableHead>
-                                        <TableHead>Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {orders.map((order) => (
-                                        <TableRow key={order.id} className="hover:bg-muted/30">
-                                            <TableCell className="font-mono text-sm">
-                                                {order.id.slice(-8).toUpperCase()}
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className="font-medium">{order.customer?.name || "Anonymous"}</span>
-                                            </TableCell>
-                                            <TableCell>
-                                                {order.providerProfile?.businessName || "Unknown"}
-                                            </TableCell>
-                                            <TableCell className="font-bold">
-                                                ৳{order.totalAmount.toFixed(2)}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge className={statusColors[order.status]}>
-                                                    {order.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-sm text-muted-foreground">
-                                                {new Date(order.createdAt).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Link href={`/admin/orders/${order.id}`}>
-                                                    <Button variant="ghost" size="sm">
-                                                        <Eye className="h-4 w-4" />
+                                        <>
+                                            <TableRow
+                                                key={order.id}
+                                                className="hover:bg-muted/30 cursor-pointer"
+                                                onClick={() => setExpandedOrderId(
+                                                    expandedOrderId === order.id ? null : order.id
+                                                )}
+                                            >
+                                                <TableCell>
+                                                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                                                        {expandedOrderId === order.id ? (
+                                                            <ChevronUp className="h-4 w-4" />
+                                                        ) : (
+                                                            <ChevronDown className="h-4 w-4" />
+                                                        )}
                                                     </Button>
-                                                </Link>
-                                            </TableCell>
-                                        </TableRow>
+                                                </TableCell>
+                                                <TableCell className="font-mono text-sm">
+                                                    {order.id.slice(-8).toUpperCase()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="font-medium">{order.customer?.name || "Anonymous"}</span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {order.providerProfile?.businessName || "Unknown"}
+                                                </TableCell>
+                                                <TableCell className="font-bold">
+                                                    ৳{order.totalAmount.toFixed(2)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge className={statusColors[order.status] || "bg-gray-100 text-gray-800"}>
+                                                        {order.status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-sm text-muted-foreground">
+                                                    {new Date(order.createdAt).toLocaleDateString()}
+                                                </TableCell>
+                                            </TableRow>
+                                            {expandedOrderId === order.id && (
+                                                <TableRow key={`${order.id}-detail`}>
+                                                    <TableCell colSpan={7} className="bg-muted/20 p-4">
+                                                        <div className="space-y-3">
+                                                            <h4 className="font-semibold text-sm">Order Items</h4>
+                                                            {order.items && order.items.length > 0 ? (
+                                                                <div className="grid gap-2">
+                                                                    {order.items.map((item) => (
+                                                                        <div key={item.id} className="flex justify-between items-center text-sm bg-background p-2 rounded-md border">
+                                                                            <span>{item.meal?.name || "Unknown meal"}</span>
+                                                                            <span className="text-muted-foreground">
+                                                                                x{item.quantity} — ৳{((item.price || item.meal?.price || 0) * item.quantity).toFixed(2)}
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            ) : (
+                                                                <p className="text-sm text-muted-foreground">No items data available for this order.</p>
+                                                            )}
+                                                            <div className="flex gap-4 text-xs text-muted-foreground pt-2 border-t">
+                                                                <span>Delivery: {order.deliveryAddress || "N/A"}</span>
+                                                                {order.notes && <span>Notes: {order.notes}</span>}
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </>
                                     ))}
                                 </TableBody>
                             </Table>

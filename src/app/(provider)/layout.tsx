@@ -1,19 +1,16 @@
 "use client";
 
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import {
   Loader2,
   LayoutDashboard,
-  Users,
+  Utensils,
   ShoppingBag,
-  Settings,
+  UserCircle,
   LogOut,
   Menu,
-  Tags,
-  Store,
-  Utensils,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,16 +19,13 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const sidebarLinks = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Users", href: "/admin/users", icon: Users },
-  { name: "Providers", href: "/admin/providers", icon: Store },
-  { name: "Meals", href: "/admin/meals", icon: Utensils },
-  { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
-  { name: "Categories", href: "/admin/categories", icon: Tags },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
+  { name: "Dashboard", href: "/provider/dashboard", icon: LayoutDashboard },
+  { name: "Menu", href: "/provider/menu", icon: Utensils },
+  { name: "Orders", href: "/provider/orders", icon: ShoppingBag },
+  { name: "Profile", href: "/provider/profile", icon: UserCircle },
 ];
 
-export default function AdminLayout({
+export default function ProviderLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -41,12 +35,12 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading && (!user || user.role.toUpperCase() !== "ADMIN")) {
-      router.push("/admin/login");
+    if (!isLoading && (!user || user.role.toUpperCase() !== "PROVIDER")) {
+      router.push("/login");
     }
   }, [user, isLoading, router]);
 
-  if (isLoading || !user || user.role.toUpperCase() !== "ADMIN") {
+  if (isLoading || !user || user.role.toUpperCase() !== "PROVIDER") {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -57,12 +51,12 @@ export default function AdminLayout({
   const SidebarContent = () => (
     <div className="flex flex-col h-full py-6">
       <div className="px-6 mb-8">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/provider/dashboard" className="flex items-center gap-2">
           <div className="p-1.5 bg-primary rounded-lg">
-            <ShoppingBag className="h-6 w-6 text-white" />
+            <Utensils className="h-6 w-6 text-white" />
           </div>
           <span className="text-xl font-bold tracking-tight">
-            FoodHub <span className="text-primary italic">Admin</span>
+            FoodHub <span className="text-primary italic">Seller</span>
           </span>
         </Link>
       </div>
@@ -113,12 +107,12 @@ export default function AdminLayout({
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
         <header className="lg:hidden h-16 border-b bg-background px-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/provider/dashboard" className="flex items-center gap-2">
             <div className="p-1.5 bg-primary rounded-lg">
-              <ShoppingBag className="h-5 w-5 text-white" />
+              <Utensils className="h-5 w-5 text-white" />
             </div>
             <span className="text-lg font-bold tracking-tight">
-              FoodHub <span className="text-primary italic">Admin</span>
+              FoodHub <span className="text-primary italic">Seller</span>
             </span>
           </Link>
 

@@ -97,12 +97,11 @@ export interface Cart {
 
 // Order types
 export type OrderStatus =
-    | "pending"
-    | "confirmed"
-    | "preparing"
-    | "ready"
-    | "delivered"
-    | "cancelled";
+    | "PLACED"
+    | "PREPARING"
+    | "READY"
+    | "DELIVERED"
+    | "CANCELLED";
 
 export interface OrderItem {
     id: string;

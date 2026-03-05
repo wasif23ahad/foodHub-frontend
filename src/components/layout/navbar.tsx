@@ -51,6 +51,8 @@ export function Navbar() {
     }, []);
 
     const cartItemCount = mounted ? cartItems.reduce((acc, item) => acc + item.quantity, 0) : 0;
+    const isProvider = mounted && user?.role.toUpperCase() === "PROVIDER";
+    const isAdmin = mounted && user?.role.toUpperCase() === "ADMIN";
 
     const getInitials = (name: string) => {
         return name
@@ -128,17 +130,19 @@ export function Navbar() {
 
                 {/* Right Side - Cart & Auth */}
                 <div className="flex items-center gap-2 md:gap-4">
-                    {/* Cart */}
-                    <Link href="/cart" className="relative">
-                        <Button variant="ghost" size="icon" className="relative">
-                            <ShoppingCart className="h-5 w-5" />
-                            {cartItemCount > 0 && (
-                                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary">
-                                    {cartItemCount}
-                                </Badge>
-                            )}
-                        </Button>
-                    </Link>
+                    {/* Cart - hidden for providers */}
+                    {!isProvider && (
+                        <Link href="/cart" className="relative">
+                            <Button variant="ghost" size="icon" className="relative">
+                                <ShoppingCart className="h-5 w-5" />
+                                {cartItemCount > 0 && (
+                                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary">
+                                        {cartItemCount}
+                                    </Badge>
+                                )}
+                            </Button>
+                        </Link>
+                    )}
 
                     {/* Auth Section */}
                     {mounted && !isLoading && (
@@ -166,13 +170,28 @@ export function Navbar() {
                                         </DropdownMenuLabel>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuGroup>
-                                            {user.role.toUpperCase() === "ADMIN" ? (
+                                                {isAdmin ? (
                                                 <Link href="/admin">
                                                     <DropdownMenuItem className="cursor-pointer text-primary">
                                                         <LayoutDashboard className="mr-2 h-4 w-4" />
                                                         <span>Admin Dashboard</span>
                                                     </DropdownMenuItem>
                                                 </Link>
+                                            ) : isProvider ? (
+                                                <>
+                                                    <Link href="/provider/dashboard">
+                                                        <DropdownMenuItem className="cursor-pointer text-primary">
+                                                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                                                            <span>Seller Dashboard</span>
+                                                        </DropdownMenuItem>
+                                                    </Link>
+                                                    <Link href="/provider/profile">
+                                                        <DropdownMenuItem className="cursor-pointer">
+                                                            <UserIcon className="mr-2 h-4 w-4" />
+                                                            <span>Business Profile</span>
+                                                        </DropdownMenuItem>
+                                                    </Link>
+                                                </>
                                             ) : (
                                                 <>
                                                     <Link href="/profile">
@@ -187,14 +206,6 @@ export function Navbar() {
                                                             <span>My Orders</span>
                                                         </DropdownMenuItem>
                                                     </Link>
-                                                    {user.role.toUpperCase() === "PROVIDER" && (
-                                                        <Link href="/provider/dashboard">
-                                                            <DropdownMenuItem className="cursor-pointer text-primary">
-                                                                <LayoutDashboard className="mr-2 h-4 w-4" />
-                                                                <span>Provider Dashboard</span>
-                                                            </DropdownMenuItem>
-                                                        </Link>
-                                                    )}
                                                 </>
                                             )}
                                         </DropdownMenuGroup>
@@ -270,15 +281,17 @@ export function Navbar() {
                                                 </div>
 
                                                 {/* Role based mobile links */}
-                                                {user.role.toUpperCase() === "ADMIN" ? (
+                                                {isAdmin ? (
                                                     <Link href="/admin" className="text-lg font-medium py-2 border-b text-primary">Admin Dashboard</Link>
+                                                ) : isProvider ? (
+                                                    <>
+                                                        <Link href="/provider/dashboard" className="text-lg font-medium py-2 border-b text-primary">Seller Dashboard</Link>
+                                                        <Link href="/provider/profile" className="text-lg font-medium py-2 border-b">Business Profile</Link>
+                                                    </>
                                                 ) : (
                                                     <>
                                                         <Link href="/profile" className="text-lg font-medium py-2 border-b">Profile</Link>
                                                         <Link href="/orders" className="text-lg font-medium py-2 border-b">My Orders</Link>
-                                                        {user.role.toUpperCase() === "PROVIDER" && (
-                                                            <Link href="/provider/dashboard" className="text-lg font-medium py-2 border-b text-primary">Provider Dashboard</Link>
-                                                        )}
                                                     </>
                                                 )}
 

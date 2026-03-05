@@ -4,13 +4,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, User, Utensils } from "lucide-react";
 import { useState } from "react";
 
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 import {
   Form,
@@ -32,6 +33,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const { login, signInWithGoogle, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [loginRole, setLoginRole] = useState<"user" | "seller">("user");
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -43,7 +45,8 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormValues) {
     try {
-      await login(data);
+      const requireRole = loginRole === "seller" ? "PROVIDER" : "CUSTOMER";
+      await login(data, requireRole);
     } catch {
       // Error handling is done in AuthProvider
     }
@@ -63,6 +66,47 @@ export default function LoginPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              {/* Role Selection */}
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Sign in as</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="relative">
+                    <input
+                      id="login-role-user"
+                      type="radio"
+                      className="peer sr-only"
+                      checked={loginRole === "user"}
+                      onChange={() => setLoginRole("user")}
+                      name="loginRole"
+                    />
+                    <Label
+                      htmlFor="login-role-user"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary peer-checked:text-primary cursor-pointer transition-all"
+                    >
+                      <User className="mb-2 h-6 w-6" />
+                      <span className="font-semibold">Customer</span>
+                    </Label>
+                  </div>
+                  <div className="relative">
+                    <input
+                      id="login-role-seller"
+                      type="radio"
+                      className="peer sr-only"
+                      checked={loginRole === "seller"}
+                      onChange={() => setLoginRole("seller")}
+                      name="loginRole"
+                    />
+                    <Label
+                      htmlFor="login-role-seller"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary peer-checked:text-primary cursor-pointer transition-all"
+                    >
+                      <Utensils className="mb-2 h-6 w-6" />
+                      <span className="font-semibold">Sell Food</span>
+                    </Label>
+                  </div>
+                </div>
+              </div>
+
               <FormField
                 control={form.control}
                 name="email"
@@ -126,7 +170,7 @@ export default function LoginPage() {
                     Signing in...
                   </>
                 ) : (
-                  "Sign In"
+                  `Sign In as ${loginRole === "seller" ? "Seller" : "Customer"}`
                 )}
               </Button>
 

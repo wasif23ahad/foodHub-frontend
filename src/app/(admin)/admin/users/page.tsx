@@ -6,10 +6,9 @@ import {
     Search,
     MoreHorizontal,
     User as UserIcon,
-    Shield,
-    ShieldCheck,
     UserMinus,
     UserCheck,
+    Trash2,
     Mail,
     Calendar,
     Filter
@@ -30,6 +29,23 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +59,8 @@ import { getMediaUrl } from "@/lib/utils";
 export default function AdminUsersPage() {
     const [search, setSearch] = useState("");
     const [roleFilter, setRoleFilter] = useState<string>("all");
+    const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+    const [viewTarget, setViewTarget] = useState<User | null>(null);
     const queryClient = useQueryClient();
 
     const { data: usersData, isLoading, error } = useQuery({
@@ -71,6 +89,20 @@ export default function AdminUsersPage() {
         },
         onError: (err: any) => {
             toast.error(err.message || "Failed to update user status");
+        }
+    });
+
+    const deleteUserMutation = useMutation({
+        mutationFn: async (userId: string) => {
+            return api.delete<ApiResponse<any>>(`/admin/users/${userId}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+            toast.success("User deleted successfully");
+            setDeleteTarget(null);
+        },
+        onError: (err: any) => {
+            toast.error(err.message || "Failed to delete user");
         }
     });
 
@@ -233,7 +265,10 @@ export default function AdminUsersPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="w-48">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem className="cursor-pointer">
+                                                <DropdownMenuItem
+                                                    className="cursor-pointer"
+                                                    onClick={() => setViewTarget(user)}
+                                                >
                                                     <UserIcon className="mr-2 h-4 w-4" /> View Profile
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
@@ -254,6 +289,14 @@ export default function AdminUsersPage() {
                                                         <UserCheck className="mr-2 h-4 w-4" /> Unban User
                                                     </DropdownMenuItem>
                                                 )}
+                                                {user.role.toUpperCase() !== "ADMIN" && (
+                                                    <DropdownMenuItem
+                                                        className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                                                        onClick={() => setDeleteTarget(user)}
+                                                    >
+                                                        <Trash2 className="mr-2 h-4 w-4" /> Delete User
+                                                    </DropdownMenuItem>
+                                                )}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -263,6 +306,62 @@ export default function AdminUsersPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete User</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete <strong>{deleteTarget?.name}</strong> ({deleteTarget?.email})?
+                            This action cannot be undone and will permanently remove all their data.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            variant="destructive"
+                            onClick={() => deleteTarget && deleteUserMutation.mutate(deleteTarget.id)}
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* View Profile Dialog */}
+            <Dialog open={!!viewTarget} onOpenChange={(open) => !open && setViewTarget(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>User Profile</DialogTitle>
+                        <DialogDescription>Detailed user information.</DialogDescription>
+                    </DialogHeader>
+                    {viewTarget && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-16 w-16 border-2 border-primary/10">
+                                    <AvatarImage src={getMediaUrl(viewTarget.image)} alt={viewTarget.name} />
+                                    <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
+                                        {viewTarget.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <h3 className="font-bold text-lg">{viewTarget.name}</h3>
+                                    <p className="text-sm text-muted-foreground">{viewTarget.email}</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div><span className="text-muted-foreground">Role:</span> <span className="font-medium capitalize">{viewTarget.role}</span></div>
+                                <div><span className="text-muted-foreground">Status:</span> <span className={`font-medium ${viewTarget.banned ? 'text-red-600' : 'text-green-600'}`}>{viewTarget.banned ? 'Banned' : 'Active'}</span></div>
+                                <div><span className="text-muted-foreground">Joined:</span> <span className="font-medium">{format(new Date(viewTarget.createdAt), "MMM d, yyyy")}</span></div>
+                                {viewTarget.banReason && (
+                                    <div className="col-span-2"><span className="text-muted-foreground">Ban Reason:</span> <span className="font-medium text-red-600">{viewTarget.banReason}</span></div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

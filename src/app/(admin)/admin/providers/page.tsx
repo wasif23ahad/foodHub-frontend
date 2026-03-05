@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Store,
     Search,
     MapPin,
-    Users,
     TrendingUp,
-    Eye
+    MoreHorizontal,
+    Trash2,
+    UserMinus,
+    UserCheck
 } from "lucide-react";
 import {
     Table,
@@ -18,6 +20,24 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
     Card,
     CardContent,
@@ -31,12 +51,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { ApiResponse, Provider } from "@/types";
-import Link from "next/link";
+import { toast } from "sonner";
 import { getMediaUrl } from "@/lib/utils";
 
 export default function AdminProvidersPage() {
     const [search, setSearch] = useState("");
     const [cuisineFilter, setCuisineFilter] = useState<string>("all");
+    const [deleteTarget, setDeleteTarget] = useState<Provider | null>(null);
+    const queryClient = useQueryClient();
 
     const { data: providersData, isLoading } = useQuery({
         queryKey: ["admin-providers"],
@@ -48,6 +70,33 @@ export default function AdminProvidersPage() {
                 console.error("Providers fetch failed", err);
                 return [];
             }
+        }
+    });
+
+    const deleteProviderMutation = useMutation({
+        mutationFn: async (providerId: string) => {
+            return api.delete<ApiResponse<any>>(`/admin/providers/${providerId}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin-providers"] });
+            toast.success("Provider deleted successfully");
+            setDeleteTarget(null);
+        },
+        onError: (err: any) => {
+            toast.error(err.message || "Failed to delete provider");
+        }
+    });
+
+    const banProviderMutation = useMutation({
+        mutationFn: async ({ userId, banned }: { userId: string; banned: boolean }) => {
+            return api.patch<ApiResponse<any>>(`/admin/users/${userId}/ban`, { banned });
+        },
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["admin-providers"] });
+            toast.success(variables.banned ? "Provider banned successfully" : "Provider unbanned successfully");
+        },
+        onError: (err: any) => {
+            toast.error(err.message || "Failed to update provider status");
         }
     });
 
@@ -74,12 +123,12 @@ export default function AdminProvidersPage() {
             icon: TrendingUp
         },
         {
-            label: "Total Rating",
-            value: providersData && providersData.length > 0 
+            label: "Avg Rating",
+            value: providersData && providersData.length > 0
                 ? (providersData.reduce((sum, p) => sum + (p.rating || 0), 0) / providersData.length).toFixed(1)
                 : "0.0",
             color: "text-yellow-600",
-            icon: Users
+            icon: Store
         }
     ];
 
@@ -174,7 +223,7 @@ export default function AdminProvidersPage() {
                                         <TableHead>Location</TableHead>
                                         <TableHead>Rating</TableHead>
                                         <TableHead>Status</TableHead>
-                                        <TableHead>Action</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -215,12 +264,41 @@ export default function AdminProvidersPage() {
                                                     {provider.isActive ? "Active" : "Inactive"}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>
-                                                <Link href={`/admin/providers/${provider.id}`}>
-                                                    <Button variant="ghost" size="sm">
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
-                                                </Link>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-48">
+                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <DropdownMenuSeparator />
+                                                        {provider.userId && (
+                                                            provider.isActive ? (
+                                                                <DropdownMenuItem
+                                                                    className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                                                                    onClick={() => banProviderMutation.mutate({ userId: provider.userId, banned: true })}
+                                                                >
+                                                                    <UserMinus className="mr-2 h-4 w-4" /> Ban Provider
+                                                                </DropdownMenuItem>
+                                                            ) : (
+                                                                <DropdownMenuItem
+                                                                    className="text-green-600 focus:text-green-600 focus:bg-green-50 cursor-pointer"
+                                                                    onClick={() => banProviderMutation.mutate({ userId: provider.userId, banned: false })}
+                                                                >
+                                                                    <UserCheck className="mr-2 h-4 w-4" /> Unban Provider
+                                                                </DropdownMenuItem>
+                                                            )
+                                                        )}
+                                                        <DropdownMenuItem
+                                                            className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                                                            onClick={() => setDeleteTarget(provider)}
+                                                        >
+                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete Provider
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -230,6 +308,28 @@ export default function AdminProvidersPage() {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Provider</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete <strong>{deleteTarget?.businessName}</strong>?
+                            This will permanently remove their profile and all associated meals.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            variant="destructive"
+                            onClick={() => deleteTarget && deleteProviderMutation.mutate(deleteTarget.id)}
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

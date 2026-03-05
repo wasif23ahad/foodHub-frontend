@@ -78,7 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Strict role checking if requested
             if (requireRole && userRole !== requireRole.toUpperCase()) {
                 await api.post("/auth/sign-out");
-                toast.error(`Authorized access only. This is an ${requireRole} portal.`);
+                const portalName = requireRole.toUpperCase() === "PROVIDER" ? "Seller" : "Customer";
+                toast.error(`This account is not a ${portalName} account. Please use the correct login option.`);
                 throw new Error("Access denied: Insufficient permissions.");
             }
 
@@ -86,7 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             toast.success("Logged in successfully");
 
             // Role-based redirection
-            const redirectUrl = userRole === "ADMIN" ? "/admin" : "/";
+            let redirectUrl = "/";
+            if (userRole === "ADMIN") redirectUrl = "/admin";
+            else if (userRole === "PROVIDER") redirectUrl = "/provider/dashboard";
             router.push(redirectUrl);
         } catch (error: any) {
             console.error("Login failed:", error);
@@ -113,7 +116,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(user as User);
 
             toast.success("Account created successfully");
-            router.push("/");
+
+            const userRole = (user as User)?.role?.toUpperCase() || "";
+            if (userRole === "PROVIDER") {
+                router.push("/provider/dashboard");
+            } else {
+                router.push("/");
+            }
         } catch (error: any) {
             console.error("Registration failed:", error);
             toast.error(error.message || "Registration failed. Please try again.");

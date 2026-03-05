@@ -97,10 +97,17 @@ export default function ProviderMenuPage() {
 
     // Fetch meals
     const { data: meals, isLoading } = useQuery({
-        queryKey: ["provider-meals"],
+        queryKey: ["provider-meals-own"],
         queryFn: async () => {
-            const res = await api.get<ApiResponse<Meal[]>>("/meals");
-            return res.data;
+            try {
+                const res = await api.get<ApiResponse<Meal[]>>("/provider/meals");
+                return res.data;
+            } catch (err: any) {
+                if (err.message?.includes("profile not found")) {
+                    return []; // Return empty array if no profile created yet
+                }
+                throw err;
+            }
         },
     });
 
@@ -158,12 +165,12 @@ export default function ProviderMenuPage() {
     const upsertMutation = useMutation({
         mutationFn: async (values: MealFormValues) => {
             if (editingMeal) {
-                return api.put(`/meals/${editingMeal.id}`, values);
+                return api.put(`/provider/meals/${editingMeal.id}`, values);
             }
-            return api.post("/meals", values);
+            return api.post("/provider/meals", values);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["provider-meals"] });
+            queryClient.invalidateQueries({ queryKey: ["provider-meals-own"] });
             toast.success(editingMeal ? "Meal updated" : "Meal created");
             setIsEditorOpen(false);
         },
@@ -175,10 +182,10 @@ export default function ProviderMenuPage() {
     // Delete Mutation
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            return api.delete(`/meals/${id}`);
+            return api.delete(`/provider/meals/${id}`);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["provider-meals"] });
+            queryClient.invalidateQueries({ queryKey: ["provider-meals-own"] });
             toast.success("Meal deleted");
             setIsDeleteAlertOpen(false);
         },
