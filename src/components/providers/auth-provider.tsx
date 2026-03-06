@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, LoginCredentials, RegisterData } from "@/types";
 import { api, API_URL } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -134,18 +135,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const signInWithGoogle = async () => {
         try {
-            const callbackUrl = window.location.origin;
-            const res = await api.post<any>("/auth/sign-in/social", {
+            await authClient.signIn.social({
                 provider: "google",
-                callbackURL: callbackUrl,
+                callbackURL: window.location.origin,
             });
-
-            if (res.url) {
-                window.location.href = res.url;
-            } else {
-                toast.error("Could not initialize Google login");
-                console.error("Missing URL in response:", res);
-            }
         } catch (error: any) {
             console.error("Google sign-in error:", error);
             toast.error(error.message || "Failed to initialize Google login");
