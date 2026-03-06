@@ -1,6 +1,9 @@
-// Always use the relative /api path in production so requests go through the Next.js proxy 
-// (which solves cross-domain cookie issues). In local dev, fallback to localhost.
-const API_URL = process.env.NODE_ENV === "production" ? "/api" : (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api");
+// Strict cross-origin communication. In production, we MUST hit the backend absolutely.
+// This prevents Next.js proxy Host-header stripping which breaks BetterAuth cookies.
+let API_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_URL || API_URL === "/api") {
+    API_URL = process.env.NODE_ENV === "production" ? "https://foodhub-backend-silk.vercel.app/api" : "http://127.0.0.1:5000/api";
+}
 
 type RequestOptions = {
     headers?: Record<string, string>;
