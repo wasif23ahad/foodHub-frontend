@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await authClient.signIn.social({
                 provider: "google",
-                callbackURL: window.location.origin,
+                callbackURL: "/dashboard", // Redirect after successful login
             });
         } catch (error: any) {
             console.error("Google sign-in error:", error);
