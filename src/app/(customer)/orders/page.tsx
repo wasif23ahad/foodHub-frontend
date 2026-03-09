@@ -4,8 +4,9 @@ export const dynamic = "force-dynamic";
 
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Loader2, Package, ShoppingBag, Clock, CheckCircle2, XCircle, Truck } from "lucide-react";
+import { Package, ShoppingBag, Clock, XCircle, Truck } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { Order, ApiResponse, OrderStatus } from "@/types";
+import { useAuth } from "@/components/providers/auth-provider";
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {
@@ -38,6 +40,14 @@ const getStatusIcon = (status: OrderStatus) => {
 };
 
 export default function OrderHistoryPage() {
+    const router = useRouter();
+    const { user, isLoading: isAuthLoading } = useAuth();
+
+    if (!isAuthLoading && !user) {
+        router.push("/login?redirect=/orders");
+        return null;
+    }
+
     const { data: orders, isLoading, error } = useQuery({
         queryKey: ["orders"],
         queryFn: async () => {
@@ -163,6 +173,14 @@ export default function OrderHistoryPage() {
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">Provider</span>
                                         <span className="font-medium">{(order.provider || order.providerProfile)?.businessName || "Unknown Provider"}</span>
+                                    </div>
+
+                                    <div className="pt-2">
+                                        <Link href={`/orders/${order.id}`}>
+                                            <Button variant="outline" size="sm" className="w-full">
+                                                View Details
+                                            </Button>
+                                        </Link>
                                     </div>
                                 </div>
                             </CardContent>
