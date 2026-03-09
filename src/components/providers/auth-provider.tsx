@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, LoginCredentials, RegisterData } from "@/types";
 import { api, API_URL } from "@/lib/api";
-import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -12,7 +11,6 @@ interface AuthContextType {
     isLoading: boolean;
     login: (credentials: LoginCredentials, requireRole?: string) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
-    signInWithGoogle: () => void;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
 }
@@ -133,17 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const signInWithGoogle = async () => {
-        try {
-            await authClient.signIn.social({
-                provider: "google",
-                callbackURL: "/dashboard", // Redirect after successful login
-            });
-        } catch (error: any) {
-            console.error("Google sign-in error:", error);
-            toast.error(error.message || "Failed to initialize Google login");
-        }
-    };
+
 
     const logout = async () => {
         try {
@@ -158,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, register, signInWithGoogle, logout, refreshUser }}>
+        <AuthContext.Provider value={{ user, isLoading, login, register, logout, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );
