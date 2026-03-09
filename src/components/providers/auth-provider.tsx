@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 email: data.email,
                 password: data.password,
                 name: data.name,
-                role: data.role.toUpperCase() // BetterAuth expects uppercase ROLES usually or matches what we defined in backend
+                role: data.role.toUpperCase()
             });
 
             const user = res.user || res;

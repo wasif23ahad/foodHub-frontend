@@ -104,14 +104,13 @@ export default function ProviderMenuPage() {
                 return res.data;
             } catch (err: any) {
                 if (err.message?.includes("profile not found")) {
-                    return []; // Return empty array if no profile created yet
+                    return [];
                 }
                 throw err;
             }
         },
     });
 
-    // Fetch categories
     const { data: categories } = useQuery({
         queryKey: ["categories"],
         queryFn: async () => {

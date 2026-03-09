@@ -54,12 +54,10 @@ function SuccessContent() {
                     // Check if we can get the latest order
                     const res = await api.get<{ data: { orders: { id: string }[] } }>("/orders?limit=1");
 
-                    // Handle different response structures gracefully
-                    // @ts-ignore - API response type safety might vary
+                    // @ts-ignore
                     const orders = res.data?.orders || res.orders || [];
 
                     if (orders.length > 0) {
-                        console.log("Fetched latest order ID:", orders[0].id);
                         setOrderId(orders[0].id);
                     }
                 } catch (error) {

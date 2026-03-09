@@ -1,5 +1,3 @@
-// Always use the relative /api path in production so requests go through the Next.js proxy 
-// (which solves cross-domain cookie issues). In local dev, fallback to localhost.
 const API_URL = process.env.NODE_ENV === "production" ? "/api" : (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api");
 
 type RequestOptions = {
@@ -8,16 +6,9 @@ type RequestOptions = {
     next?: { revalidate?: number; tags?: string[] };
 };
 
-/**
- * API client for making requests to the backend
- */
 export const api = {
-    /**
-     * GET request
-     */
     async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
         const url = `${API_URL}${endpoint}`;
-        console.log(`[API GET] ${url} (Base: ${API_URL})`);
 
         const res = await fetch(url, {
             method: "GET",
@@ -70,9 +61,6 @@ export const api = {
         }
     },
 
-    /**
-     * POST request
-     */
     async post<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
         const isFormData = data instanceof FormData;
         const headers = { ...options?.headers };
@@ -96,9 +84,6 @@ export const api = {
         return res.json();
     },
 
-    /**
-     * PUT request
-     */
     async put<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "PUT",
@@ -118,9 +103,6 @@ export const api = {
         return res.json();
     },
 
-    /**
-     * PATCH request
-     */
     async patch<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "PATCH",
@@ -140,9 +122,6 @@ export const api = {
         return res.json();
     },
 
-    /**
-     * DELETE request
-     */
     async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "DELETE",

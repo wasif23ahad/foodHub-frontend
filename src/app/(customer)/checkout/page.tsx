@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/form";
 import { useCartStore } from "@/stores/cart-store";
 import { api } from "@/lib/api";
-import { useAuth } from "@/components/providers/auth-provider"; // Assuming this exports the hook
+import { useAuth } from "@/components/providers/auth-provider";
 
 const checkoutSchema = z.object({
     address: z.string().min(5, "Address is required (min 5 characters)"),
@@ -75,14 +75,6 @@ export default function CheckoutPage() {
     const onSubmit = async (data: CheckoutFormValues) => {
         setIsSubmitting(true);
         try {
-            // Prepare order payload
-            // Assuming we process the order for the first provider found if multiple, 
-            // or expecting backend to handle it. For now, simple payload.
-
-            // MVP: We'll send the providerId from the first item. 
-            // Ideally, we should group by provider or block mixed carts.
-            // Backend derives provider from meal IDs
-
             const payload = {
                 items: items.map(item => ({
                     mealId: item.id,
@@ -95,7 +87,6 @@ export default function CheckoutPage() {
             const res = await api.post<{ data: { id: string } }>("/orders", payload);
 
             toast.success("Order placed successfully!");
-            // clearCart(); // Moved to Success Page to prevent race condition with "empty cart" redirect
             router.push(`/checkout/success?orderId=${res.data.id}`);
         } catch (error: any) {
             console.error("Checkout error:", error);

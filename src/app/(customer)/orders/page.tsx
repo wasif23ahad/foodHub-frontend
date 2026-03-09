@@ -41,14 +41,8 @@ export default function OrderHistoryPage() {
     const { data: orders, isLoading, error } = useQuery({
         queryKey: ["orders"],
         queryFn: async () => {
-            try {
-                const res = await api.get<ApiResponse<Order[]>>("/orders");
-                return res.data;
-            } catch (err) {
-                console.error("Failed to fetch orders:", err);
-                // Return empty array on error for now to show empty state/error UI
-                throw err;
-            }
+            const res = await api.get<ApiResponse<Order[]>>("/orders");
+            return res.data;
         },
     });
 
