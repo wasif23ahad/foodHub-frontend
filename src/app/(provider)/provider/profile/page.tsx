@@ -26,12 +26,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ImageUpload } from "@/components/ui/image-upload";
 
 const profileSchema = z.object({
+    // Field names match what the backend expects:
+    // phone (not contactPhone), logo (not coverImage)
     businessName: z.string().min(2, "Business name is required"),
-    description: z.string().max(1000).optional(),
+    description: z.string().max(500).optional(),
     logo: z.string().optional(),
-    coverImage: z.string().optional(),
-    contactPhone: z.string().min(5, "Contact phone is required").max(20),
-    contactEmail: z.string().email("Valid email is required").optional(),
+    phone: z.string().min(5, "Contact phone is required").max(20).optional(),
+    contactEmail: z.string().email("Valid email is required").optional().or(z.literal("")),
+    cuisineType: z.string().max(50).optional(),
+    address: z.string().max(255).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -39,12 +42,21 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function ProviderProfilePage() {
     const queryClient = useQueryClient();
 
+    // Use throwOnError: false so a 404 (no profile yet) renders null profile,
+    // not an unrecoverable error screen
     const { data: profile, isLoading } = useQuery({
         queryKey: ["provider-profile"],
         queryFn: async () => {
-            const res = await api.get<ApiResponse<ProviderProfile>>("/provider/profile");
-            return res.data;
+            try {
+                const res = await api.get<ApiResponse<ProviderProfile>>("/provider/profile");
+                return res.data ?? null;
+            } catch {
+                // New provider — no profile exists yet. Return null to trigger create mode.
+                return null;
+            }
         },
+        retry: false,
+        staleTime: 30_000,
     });
 
     const form = useForm<ProfileFormValues>({
@@ -53,26 +65,40 @@ export default function ProviderProfilePage() {
             businessName: profile?.businessName || "",
             description: profile?.description || "",
             logo: profile?.logo || "",
-            coverImage: profile?.coverImage || "",
-            contactPhone: profile?.contactPhone || (profile as any)?.phone || "",
+            // phone field — backend stores as `phone`, not `contactPhone`
+            phone: (profile as any)?.phone || (profile as any)?.contactPhone || "",
             contactEmail: profile?.contactEmail || "",
+            cuisineType: (profile as any)?.cuisineType || "",
+            address: (profile as any)?.address || "",
         },
     });
 
     const updateProfile = useMutation({
         mutationFn: async (values: ProfileFormValues) => {
+            // Sanitize: remove empty strings so URL/email validators don't trip on ""
+            const payload: Record<string, unknown> = {};
+            if (values.businessName) payload.businessName = values.businessName;
+            if (values.description) payload.description = values.description;
+            if (values.logo) payload.logo = values.logo;
+            if (values.phone) payload.phone = values.phone;
+            if (values.contactEmail) payload.contactEmail = values.contactEmail;
+            if (values.cuisineType) payload.cuisineType = values.cuisineType;
+            if (values.address) payload.address = values.address;
+
             if (!profile) {
-                // If the backend requires creating profile if not exists
-                return api.post<ApiResponse<ProviderProfile>>("/provider/profile", values);
+                // No existing profile — create it (POST)
+                return api.post<ApiResponse<ProviderProfile>>("/provider/profile", payload);
             }
-            return api.put<ApiResponse<ProviderProfile>>("/provider/profile", values);
+            // Profile exists — update it (PUT)
+            return api.put<ApiResponse<ProviderProfile>>("/provider/profile", payload);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["provider-profile"] });
-            toast.success("Profile updated successfully");
+            toast.success("Profile saved successfully!");
         },
         onError: (error: any) => {
-            toast.error(error.message || "Failed to update profile");
+            const message = error?.response?.data?.message || error?.message || "Failed to save profile";
+            toast.error(message);
         },
     });
 
@@ -95,10 +121,18 @@ export default function ProviderProfilePage() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Business Profile</h1>
                     <p className="text-muted-foreground mt-1">
-                        Manage how your restaurant appears to customers on FoodHub.
+                        {profile
+                            ? "Manage how your restaurant appears to customers on FoodHub."
+                            : "Set up your business profile to start adding meals."}
                     </p>
                 </div>
             </div>
+
+            {!profile && (
+                <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+                    <strong>Welcome!</strong> Please complete your business profile before adding meals.
+                </div>
+            )}
 
             <Card className="shadow-sm border-muted">
                 <CardHeader>
@@ -126,10 +160,10 @@ export default function ProviderProfilePage() {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="contactPhone"
+                                    name="phone"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Contact Phone *</FormLabel>
+                                            <FormLabel>Contact Phone</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="e.g. +880 1234 567890" {...field} />
                                             </FormControl>
@@ -141,10 +175,36 @@ export default function ProviderProfilePage() {
                                     control={form.control}
                                     name="contactEmail"
                                     render={({ field }) => (
-                                        <FormItem className="md:col-span-2">
+                                        <FormItem>
                                             <FormLabel>Support Email</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="support@restaurant.com" type="email" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="cuisineType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Cuisine Type</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="e.g. Italian, Deshi, Fast Food" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="address"
+                                    render={({ field }) => (
+                                        <FormItem className="md:col-span-2">
+                                            <FormLabel>Restaurant Address</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="e.g. 123 Main St, Dhaka" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -171,54 +231,32 @@ export default function ProviderProfilePage() {
 
                             <div className="space-y-4">
                                 <h3 className="text-lg font-medium">Branding</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <FormField
-                                        control={form.control}
-                                        name="logo"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Restaurant Logo</FormLabel>
-                                                <FormControl>
-                                                    <ImageUpload
-                                                        value={field.value}
-                                                        onChange={field.onChange}
-                                                        onRemove={() => form.setValue("logo", "", { shouldValidate: true })}
-                                                    />
-                                                </FormControl>
-                                                <FormDescription>
-                                                    A square image works best for your logo.
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="coverImage"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Cover Image</FormLabel>
-                                                <FormControl>
-                                                    <ImageUpload
-                                                        value={field.value}
-                                                        onChange={field.onChange}
-                                                        onRemove={() => form.setValue("coverImage", "", { shouldValidate: true })}
-                                                    />
-                                                </FormControl>
-                                                <FormDescription>
-                                                    This will appear at the top of your restaurant page.
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name="logo"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Restaurant Logo</FormLabel>
+                                            <FormControl>
+                                                <ImageUpload
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                    onRemove={() => form.setValue("logo", "", { shouldValidate: true })}
+                                                />
+                                            </FormControl>
+                                            <FormDescription>
+                                                A square image works best for your logo.
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
 
                             <div className="flex justify-end pt-4 border-t">
                                 <Button type="submit" disabled={updateProfile.isPending}>
                                     {updateProfile.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Save Changes
+                                    {profile ? "Save Changes" : "Create Profile"}
                                 </Button>
                             </div>
                         </form>

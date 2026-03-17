@@ -86,7 +86,9 @@ export default function AdminCategoriesPage() {
     // Mutations
     const createMutation = useMutation({
         mutationFn: async (data: CategoryFormData) => {
-            return api.post<ApiResponse<Category>>("/admin/categories", data);
+            // Strip empty image string — backend URL validator rejects ''
+            const payload = { ...data, image: data.image || undefined };
+            return api.post<ApiResponse<Category>>("/admin/categories", payload);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
@@ -100,7 +102,9 @@ export default function AdminCategoriesPage() {
 
     const updateMutation = useMutation({
         mutationFn: async ({ id, data }: { id: string; data: CategoryFormData }) => {
-            return api.put<ApiResponse<Category>>(`/admin/categories/${id}`, data);
+            // Strip empty image string — backend URL validator rejects ''
+            const payload = { ...data, image: data.image || undefined };
+            return api.put<ApiResponse<Category>>(`/admin/categories/${id}`, payload);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin-categories"] });

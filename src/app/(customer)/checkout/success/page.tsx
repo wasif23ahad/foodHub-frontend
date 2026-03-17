@@ -42,16 +42,17 @@ function SuccessContent() {
     const [isLoadingId, setIsLoadingId] = useState(false);
 
     // Effect: Resolve Order ID (Param or Fetch Latest)
+    // Note: We no longer auto-open the review modal — the user can click the
+    // "Rate Your Experience" button manually after the order has been processed.
     useEffect(() => {
         if (paramOrderId) {
             setOrderId(paramOrderId);
-            setTimeout(() => setIsReviewOpen(true), 1500); // Auto-open if param exists
+            // Review modal is NOT auto-opened — it's triggered manually by the user
         } else if (user) {
             // Fallback: Fetch latest order only if logged in
             const fetchLatestOrder = async () => {
                 setIsLoadingId(true);
                 try {
-                    // Check if we can get the latest order
                     const res = await api.get<{ data: { orders: { id: string }[] } }>("/orders?limit=1");
 
                     // @ts-ignore

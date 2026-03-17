@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Minus, Plus, Trash2, ArrowRight, ShoppingBag } from "lucide-react";
+import { Minus, Plus, Trash2, ArrowRight, ShoppingBag, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCartStore } from "@/stores/cart-store";
@@ -25,6 +25,10 @@ export default function CartPage() {
     const subtotal = getTotalPrice();
     const deliveryFee = 60; // Fixed delivery fee for now
     const total = subtotal + (items.length > 0 ? deliveryFee : 0);
+
+    // Check if all items are from the same provider
+    const uniqueProviderIds = new Set(items.map((i) => i.providerProfile?.id).filter(Boolean));
+    const hasMultipleProviders = uniqueProviderIds.size > 1;
 
     if (items.length === 0) {
         return (
@@ -55,7 +59,7 @@ export default function CartPage() {
                             {items.map((item) => (
                                 <div key={item.id} className="flex flex-col sm:flex-row gap-4">
                                     {/* Item Image */}
-                                    <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border bg-muted">
+                                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md border bg-muted">
                                         {item.image ? (
                                             <Image
                                                 src={getMediaUrl(item.image)}
@@ -156,8 +160,24 @@ export default function CartPage() {
                             </div>
                         </div>
 
+                        {/* Multi-provider warning banner */}
+                        {hasMultipleProviders && (
+                            <div className="flex items-start gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-4 mb-4">
+                                <AlertTriangle className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
+                                <div className="text-sm">
+                                    <p className="font-semibold text-yellow-800">Multiple restaurants in your cart</p>
+                                    <p className="text-yellow-700 mt-1">
+                                        You have items from {uniqueProviderIds.size} different restaurants. Orders can only contain items from one restaurant at a time. Please remove items from one restaurant before checking out.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
                         <Link href="/checkout" className="w-full">
-                            <Button className="w-full gap-2 text-lg py-6 shadow-lg shadow-primary/20">
+                            <Button 
+                                className="w-full gap-2 text-lg py-6 shadow-lg shadow-primary/20"
+                                disabled={hasMultipleProviders}
+                            >
                                 Proceed to Checkout
                                 <ArrowRight className="h-5 w-5" />
                             </Button>
