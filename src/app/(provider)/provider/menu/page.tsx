@@ -307,7 +307,7 @@ export default function ProviderMenuPage() {
 
             {/* Create/Edit Modal */}
             <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
-                <DialogContent className="sm:max-w-[500px]">
+                <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{editingMeal ? "Edit Meal" : "Add New Meal"}</DialogTitle>
                         <DialogDescription>
