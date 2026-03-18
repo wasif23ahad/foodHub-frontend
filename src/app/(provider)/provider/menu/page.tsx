@@ -73,6 +73,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import Image from "next/image";
+import Link from "next/link";
 import { getMediaUrl } from "@/lib/utils";
 import { ImageUpload } from "@/components/ui/image-upload";
 
@@ -104,7 +105,7 @@ export default function ProviderMenuPage() {
                 return res.data;
             } catch (err: any) {
                 if (err.message?.includes("profile not found")) {
-                    return [];
+                    return null;
                 }
                 throw err;
             }
@@ -201,6 +202,23 @@ export default function ProviderMenuPage() {
         return (
             <div className="flex h-[80vh] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (meals === null) {
+        return (
+            <div className="flex h-[80vh] flex-col items-center justify-center space-y-4 text-center">
+                <div className="rounded-full bg-primary/10 p-6">
+                    <Utensils className="h-12 w-12 text-primary" />
+                </div>
+                <h2 className="text-2xl font-bold">Business Profile Required</h2>
+                <p className="text-muted-foreground max-w-[400px]">
+                    You need to complete your business profile before you can start managing your menu.
+                </p>
+                <Link href="/provider/profile" className="mt-4">
+                    <Button>Setup Profile Now</Button>
+                </Link>
             </div>
         );
     }
