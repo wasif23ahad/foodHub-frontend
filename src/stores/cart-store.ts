@@ -11,28 +11,28 @@ interface CartState {
     clearCart: () => void;
     getTotalItems: () => number;
     getTotalPrice: () => number;
+    checkProviderConsistency: (meal: Meal) => boolean;
 }
 
 export const useCartStore = create<CartState>()(
     persist(
         (set, get) => ({
             items: [],
+            checkProviderConsistency: (meal) => {
+                const currentItems = get().items;
+                if (currentItems.length === 0) return true;
+                const cartProviderId = currentItems[0].providerProfileId;
+                const newProviderId = meal.providerProfileId;
+                return !cartProviderId || !newProviderId || cartProviderId === newProviderId;
+            },
             addItem: (meal, quantity = 1) => {
                 const currentItems = get().items;
                 const existingItem = currentItems.find((item) => item.id === meal.id);
 
-                // Check for multi-provider conflict
-                if (currentItems.length > 0 && !existingItem) {
-                    const cartProviderId = currentItems[0].providerProfileId;
-                    const newProviderId = meal.providerProfileId;
-                    if (cartProviderId && newProviderId && cartProviderId !== newProviderId) {
-                        // Clear cart and add new item, warn user
-                        toast.warning('Cart cleared — you can only order from one restaurant at a time.', {
-                            duration: 4000,
-                        });
-                        set({ items: [{ ...meal, quantity }] });
-                        return;
-                    }
+                // Block if inconsistent, rely on UI to handle clearing
+                if (!get().checkProviderConsistency(meal)) {
+                    toast.error('You can only order from one restaurant at a time.');
+                    return;
                 }
 
                 if (existingItem) {
@@ -68,6 +68,7 @@ export const useCartStore = create<CartState>()(
         {
             name: 'foodhub-cart',
             storage: createJSONStorage(() => localStorage),
+            skipHydration: false, // Disabling skipHydration because standard Next.js approach is to handle mounted state in components to avoid breaking the store API.
         }
     )
 );

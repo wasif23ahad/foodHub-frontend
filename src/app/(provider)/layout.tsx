@@ -39,8 +39,14 @@ export default function ProviderLayout({
   useEffect(() => {
     if (!isLoading && (!user || user.role.toUpperCase() !== "PROVIDER")) {
       router.push("/login");
+    } else if (!isLoading && user && user.role.toUpperCase() === "PROVIDER") {
+      // Check if provider profile exists, if not and not already on setup page, redirect to setup
+      const hasProfile = !!(user as any).providerProfile;
+      if (!hasProfile && pathname !== "/provider/setup") {
+        router.push("/provider/setup");
+      }
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, router, pathname]);
 
   if (isLoading || !user || user.role.toUpperCase() !== "PROVIDER") {
     return (
@@ -48,6 +54,11 @@ export default function ProviderLayout({
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
+  }
+
+  // If on setup page, render children without sidebar
+  if (pathname === "/provider/setup") {
+    return <main className="flex-1 bg-muted/30">{children}</main>;
   }
 
   const SidebarContent = () => (

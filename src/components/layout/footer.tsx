@@ -4,22 +4,22 @@ import { Separator } from "@/components/ui/separator";
 
 const footerLinks = {
     support: [
-        { href: "/help", label: "Help Center" },
-        { href: "/safety", label: "Safety" },
-        { href: "/refund-policy", label: "Refund Policy" },
-        { href: "/faq", label: "FAQ" },
+        { href: "#", label: "Help Center" },
+        { href: "#", label: "Safety" },
+        { href: "#", label: "Refund Policy" },
+        { href: "#", label: "FAQ" },
     ],
     company: [
         { href: "/about", label: "About Us" },
-        { href: "/providers", label: "Become a Provider" },
-        { href: "/careers", label: "Careers" },
-        { href: "/newsroom", label: "Newsroom" },
+        { href: "/register?role=PROVIDER", label: "Become a Provider" },
+        { href: "#", label: "Careers" },
+        { href: "#", label: "Newsroom" },
     ],
     legal: [
-        { href: "/privacy", label: "Privacy Policy" },
-        { href: "/terms", label: "Terms of Service" },
-        { href: "/cookies", label: "Cookie Policy" },
-        { href: "/cookie-settings", label: "Cookie Settings" },
+        { href: "#", label: "Privacy Policy" },
+        { href: "#", label: "Terms of Service" },
+        { href: "#", label: "Cookie Policy" },
+        { href: "#", label: "Cookie Settings" },
     ],
 };
 
