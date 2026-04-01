@@ -14,19 +14,23 @@ import {
     MapPin,
     MessageSquare,
     CheckCircle2,
+    Star,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
 import { Order, ApiResponse, OrderStatus } from "@/types";
 import { useAuth } from "@/components/providers/auth-provider";
+import { getMediaUrl } from "@/lib/utils";
 
 const STATUS_STEPS: OrderStatus[] = ["PLACED", "PREPARING", "READY", "DELIVERED"];
 
@@ -44,6 +48,13 @@ export default function OrderDetailPage() {
     const queryClient = useQueryClient();
     const { user, isLoading: isAuthLoading } = useAuth();
     const orderId = params.id as string;
+
+    // Review state
+    const [reviewRating, setReviewRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [reviewComment, setReviewComment] = useState("");
+    const [hasReviewed, setHasReviewed] = useState(false);
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     if (!isAuthLoading && !user) {
         router.push(`/login?redirect=/orders/${orderId}`);
@@ -70,6 +81,26 @@ export default function OrderDetailPage() {
             toast.error(err.message || "Failed to cancel order");
         },
     });
+
+    const handleReviewSubmit = async () => {
+        if (reviewRating === 0) {
+            toast.error("Please select a star rating");
+            return;
+        }
+        setIsSubmittingReview(true);
+        try {
+            await api.post(`/orders/${orderId}/reviews`, {
+                rating: reviewRating,
+                comment: reviewComment || undefined,
+            });
+            toast.success("Thank you for your review!");
+            setHasReviewed(true);
+        } catch (err: any) {
+            toast.error(err.message || "Failed to submit review");
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
 
     if (isLoading || isAuthLoading) {
         return (
@@ -169,7 +200,7 @@ export default function OrderDetailPage() {
                                 <div className="flex items-center gap-3">
                                     {item.meal?.image && (
                                         <img
-                                            src={item.meal.image}
+                                            src={getMediaUrl(item.meal.image)}
                                             alt={item.meal.name}
                                             className="h-12 w-12 rounded-lg object-cover"
                                         />
@@ -224,6 +255,70 @@ export default function OrderDetailPage() {
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Rate Your Order — shown only for DELIVERED orders */}
+                {order.status === "DELIVERED" && (
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                                Rate Your Order
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {hasReviewed ? (
+                                <div className="flex items-center gap-3 text-sm text-muted-foreground py-2">
+                                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                                    <span>Thanks for your feedback! Your review has been submitted.</span>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <p className="text-sm text-muted-foreground">How was your experience with this order?</p>
+                                    {/* Star Selector */}
+                                    <div className="flex gap-2">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <button
+                                                key={star}
+                                                type="button"
+                                                id={`review-star-${star}`}
+                                                className="focus:outline-none transition-transform hover:scale-110"
+                                                onClick={() => setReviewRating(star)}
+                                                onMouseEnter={() => setHoverRating(star)}
+                                                onMouseLeave={() => setHoverRating(0)}
+                                                aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                                            >
+                                                <Star
+                                                    className={`w-8 h-8 transition-colors ${
+                                                        star <= (hoverRating || reviewRating)
+                                                            ? "fill-yellow-400 text-yellow-400"
+                                                            : "text-slate-200"
+                                                    }`}
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {/* Comment */}
+                                    <Textarea
+                                        id="review-comment"
+                                        placeholder="Share your experience (optional)..."
+                                        className="resize-none"
+                                        value={reviewComment}
+                                        onChange={(e) => setReviewComment(e.target.value)}
+                                        rows={3}
+                                    />
+                                    <Button
+                                        id="submit-review-btn"
+                                        onClick={handleReviewSubmit}
+                                        disabled={isSubmittingReview || reviewRating === 0}
+                                        className="w-full sm:w-auto"
+                                    >
+                                        {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                                    </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Actions */}
                 {order.status === "PLACED" && (

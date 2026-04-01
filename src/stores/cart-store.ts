@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Meal, CartItem } from '@/types';
+import { toast } from 'sonner';
 
 interface CartState {
     items: CartItem[];
@@ -19,6 +20,20 @@ export const useCartStore = create<CartState>()(
             addItem: (meal, quantity = 1) => {
                 const currentItems = get().items;
                 const existingItem = currentItems.find((item) => item.id === meal.id);
+
+                // Check for multi-provider conflict
+                if (currentItems.length > 0 && !existingItem) {
+                    const cartProviderId = currentItems[0].providerProfileId;
+                    const newProviderId = meal.providerProfileId;
+                    if (cartProviderId && newProviderId && cartProviderId !== newProviderId) {
+                        // Clear cart and add new item, warn user
+                        toast.warning('Cart cleared — you can only order from one restaurant at a time.', {
+                            duration: 4000,
+                        });
+                        set({ items: [{ ...meal, quantity }] });
+                        return;
+                    }
+                }
 
                 if (existingItem) {
                     set({

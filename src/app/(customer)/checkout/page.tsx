@@ -87,6 +87,7 @@ export default function CheckoutPage() {
             const res = await api.post<{ data: { id: string } }>("/orders", payload);
 
             toast.success("Order placed successfully!");
+            clearCart();
             router.push(`/checkout/success?orderId=${res.data.id}`);
         } catch (error: any) {
             console.error("Checkout error:", error);

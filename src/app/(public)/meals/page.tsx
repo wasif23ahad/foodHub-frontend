@@ -11,7 +11,7 @@ import { Meal, Category, ApiResponse, DietaryPreference } from "@/types";
 import { useSearchParams } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
 import { MealSkeleton } from "@/components/meals/meal-skeleton";
-import { StaggerContainer, fadeIn } from "@/components/animations";
+
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 const DIETARY_OPTIONS: { label: string; value: DietaryPreference | "all" }[] = [

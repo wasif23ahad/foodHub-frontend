@@ -9,12 +9,50 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Star, Minus, Plus, ShoppingCart, Store, ArrowLeft } from "lucide-react";
+import { Star, Minus, Plus, ShoppingCart, Store, ArrowLeft, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useCartStore } from "@/stores/cart-store";
 import { getMediaUrl } from "@/lib/utils";
+import { format } from "date-fns";
+
+interface Review {
+    id: string;
+    rating: number;
+    comment?: string;
+    createdAt: string;
+    user: {
+        id: string;
+        name: string;
+        image?: string;
+    };
+}
+
+interface ReviewsResponse {
+    reviews: Review[];
+    meta: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+        averageRating: number;
+    };
+}
+
+function StarDisplay({ rating, size = "sm" }: { rating: number; size?: "sm" | "md" }) {
+    const cls = size === "sm" ? "h-3.5 w-3.5" : "h-5 w-5";
+    return (
+        <div className="flex items-center gap-0.5">
+            {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                    key={star}
+                    className={`${cls} ${star <= rating ? "fill-yellow-400 text-yellow-400" : "text-slate-200"}`}
+                />
+            ))}
+        </div>
+    );
+}
 
 export default function MealDetailsPage() {
     const params = useParams();
@@ -38,7 +76,18 @@ export default function MealDetailsPage() {
         retry: 1
     });
 
+    const { data: reviewsData, isLoading: isLoadingReviews } = useQuery({
+        queryKey: ["meal-reviews", mealId],
+        queryFn: async () => {
+            const res = await api.get<{ data: ReviewsResponse }>(`/meals/${mealId}/reviews`);
+            return res.data;
+        },
+        enabled: !!mealId,
+    });
+
     const meal = apiMeal;
+    const reviews = reviewsData?.reviews || [];
+    const totalReviews = reviewsData?.meta?.total ?? 0;
 
     const handleAddToCart = () => {
         if (!meal) return;
@@ -81,6 +130,8 @@ export default function MealDetailsPage() {
         );
     }
 
+    const hasRating = meal.avgRating && meal.avgRating > 0;
+
     return (
         <div className="container mx-auto px-4 py-8">
             <Button
@@ -93,7 +144,7 @@ export default function MealDetailsPage() {
 
             <div className="grid md:grid-cols-2 gap-10 items-start">
                 {/* Image Section */}
-                <div className="relative aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border bg-muted">
+                <div className="relative aspect-square md:aspect-4/3 rounded-2xl overflow-hidden shadow-lg border bg-muted">
                     {meal.image ? (
                         <Image
                             src={getMediaUrl(meal.image)}
@@ -126,16 +177,19 @@ export default function MealDetailsPage() {
                                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
                                     {meal.name}
                                 </h1>
-                                {meal.dietaryPreference && meal.dietaryPreference !== "REGULAR" && (
-                                    <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5">
-                                        {meal.dietaryPreference.replace("_", " ")}
-                                    </Badge>
-                                )}
                             </div>
-                            <div className="flex items-center gap-1 bg-primary/10 px-3 py-1 rounded-full">
-                                <Star className="h-5 w-5 text-primary fill-primary" />
-                                <span className="font-bold text-primary">{(meal.avgRating || 4.5).toFixed(1)}</span>
-                            </div>
+                            {/* Rating display — only show if actual ratings exist */}
+                            {hasRating ? (
+                                <div className="flex items-center gap-1 bg-primary/10 px-3 py-1 rounded-full">
+                                    <Star className="h-5 w-5 text-primary fill-primary" />
+                                    <span className="font-bold text-primary">{meal.avgRating!.toFixed(1)}</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-1 bg-muted px-3 py-1 rounded-full">
+                                    <Star className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-xs text-muted-foreground font-medium">No ratings yet</span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-2 text-muted-foreground mt-2">
@@ -189,12 +243,73 @@ export default function MealDetailsPage() {
                             </div>
                         </div>
 
-                        <Button size="lg" className="w-full text-lg font-semibold shadow-lg shadow-primary/20" onClick={handleAddToCart}>
+                        <Button id="add-to-cart-btn" size="lg" className="w-full text-lg font-semibold shadow-lg shadow-primary/20" onClick={handleAddToCart}>
                             <ShoppingCart className="mr-2 h-5 w-5" />
                             Add to Cart — ৳ {(meal.price * quantity).toFixed(2)}
                         </Button>
                     </div>
                 </div>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="mt-12">
+                <Separator className="mb-8" />
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                        <MessageSquare className="h-6 w-6 text-primary" />
+                        Customer Reviews
+                        {totalReviews > 0 && (
+                            <span className="text-lg font-normal text-muted-foreground">({totalReviews})</span>
+                        )}
+                    </h2>
+                    {hasRating && (
+                        <div className="flex items-center gap-2">
+                            <StarDisplay rating={Math.round(meal.avgRating!)} size="md" />
+                            <span className="font-bold text-lg">{meal.avgRating!.toFixed(1)}</span>
+                            <span className="text-muted-foreground text-sm">/ 5</span>
+                        </div>
+                    )}
+                </div>
+
+                {isLoadingReviews ? (
+                    <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                            <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                        ))}
+                    </div>
+                ) : reviews.length === 0 ? (
+                    <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed">
+                        <Star className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                        <p className="text-muted-foreground font-medium">No reviews yet</p>
+                        <p className="text-sm text-muted-foreground/70 mt-1">Be the first to review this meal after ordering!</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {reviews.map((review) => (
+                            <div key={review.id} className="bg-card border rounded-xl p-5 space-y-3">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                                            {review.user.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-sm">{review.user.name}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {format(new Date(review.createdAt), "PPP")}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <StarDisplay rating={review.rating} />
+                                </div>
+                                {review.comment && (
+                                    <p className="text-sm text-muted-foreground leading-relaxed pl-12">
+                                        {review.comment}
+                                    </p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

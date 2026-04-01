@@ -28,7 +28,7 @@ export function MealCard({ meal }: MealCardProps) {
             className="h-full"
         >
             <Card className="overflow-hidden group transition-shadow duration-300 border-none shadow-sm h-full flex flex-col hover:shadow-xl">
-                <Link href={`/meals/${meal.id}`} className="block overflow-hidden flex-1 flex flex-col">
+                <Link href={`/meals/${meal.id}`} className="overflow-hidden flex-1 flex flex-col">
                     <div className="relative h-48 w-full overflow-hidden bg-slate-100">
                         <Image
                             src={imgSrc}
@@ -38,8 +38,14 @@ export function MealCard({ meal }: MealCardProps) {
                             onError={() => setImgSrc("/placeholder-meal.jpg")}
                         />
                         <Badge className="absolute top-3 right-3 bg-white/90 text-foreground hover:bg-white backdrop-blur-sm shadow-sm gap-1 z-10">
-                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                            <span className="font-semibold text-xs">{(meal.avgRating || 4.5).toFixed(1)}</span>
+                            {meal.avgRating && meal.avgRating > 0 ? (
+                                <>
+                                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                    <span className="font-semibold text-xs">{meal.avgRating.toFixed(1)}</span>
+                                </>
+                            ) : (
+                                <span className="font-semibold text-xs text-primary">New</span>
+                            )}
                         </Badge>
                     </div>
 
