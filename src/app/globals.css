@@ -145,44 +145,45 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
 
-  /* ─── Cursor rules ─── */
+/* ─── Cursor rules (Global Override) ─── */
+/* Must be placed outside of layers to guarantee maximum precedence */
 
-  /* 1. Kill I-beam on every element */
-  *,
-  *::before,
-  *::after {
-    cursor: default !important;
-  }
+/* 1. Kill I-beam globally on every single element type */
+*,
+*::before,
+*::after {
+  cursor: default !important;
+}
 
-  /* 2. Restore pointer on interactive elements + ALL their descendants */
-  a, a *,
-  button, button *,
-  [role="button"], [role="button"] *,
-  [role="link"], [role="link"] *,
-  [role="menuitem"], [role="menuitem"] *,
-  [role="tab"], [role="tab"] *,
-  [role="option"], [role="option"] *,
-  [role="checkbox"], [role="checkbox"] *,
-  [role="radio"], [role="radio"] *,
-  [type="submit"], [type="submit"] *,
-  [type="button"], [type="button"] *,
-  [type="reset"], [type="reset"] *,
-  label[for], label[for] *,
-  select, select *,
-  summary, summary * {
-    cursor: pointer !important;
-  }
+/* 2. Restore pointer on interactive elements + ALL their descendants */
+a, a *,
+button, button *,
+[role="button"], [role="button"] *,
+[role="link"], [role="link"] *,
+[role="menuitem"], [role="menuitem"] *,
+[role="tab"], [role="tab"] *,
+[role="option"], [role="option"] *,
+[role="checkbox"], [role="checkbox"] *,
+[role="radio"], [role="radio"] *,
+[type="submit"], [type="submit"] *,
+[type="button"], [type="button"] *,
+[type="reset"], [type="reset"] *,
+label[for], label[for] *,
+select, select *,
+summary, summary * {
+  cursor: pointer !important;
+}
 
-  /* 3. Restore text cursor on inputs */
-  input,
-  input *,
-  textarea,
-  textarea *,
-  [contenteditable="true"],
-  [contenteditable="true"] *,
-  [contenteditable=""],
-  [contenteditable=""] * {
-    cursor: text !important;
-  }
+/* 3. Restore text cursor ONLY on inputs/search bars */
+input,
+input *,
+textarea,
+textarea *,
+[contenteditable="true"],
+[contenteditable="true"] *,
+[contenteditable=""],
+[contenteditable=""] * {
+  cursor: text !important;
 }
