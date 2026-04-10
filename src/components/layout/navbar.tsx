@@ -53,6 +53,7 @@ export function Navbar() {
     const cartItemCount = mounted ? cartItems.reduce((acc, item) => acc + item.quantity, 0) : 0;
     const isProvider = mounted && user?.role.toUpperCase() === "PROVIDER";
     const isAdmin = mounted && user?.role.toUpperCase() === "ADMIN";
+    const isCustomer = mounted && user?.role.toUpperCase() === "CUSTOMER";
 
     const getInitials = (name: string) => {
         return name
@@ -130,8 +131,8 @@ export function Navbar() {
 
                 {/* Right Side - Cart & Auth */}
                 <div className="flex items-center gap-2 md:gap-4">
-                    {/* Cart - hidden for providers */}
-                    {!isProvider && (
+                    {/* Cart - only visible for customers */}
+                    {(!user || isCustomer) && (
                         <Link href="/cart" className="relative">
                             <Button variant="ghost" size="icon" className="relative">
                                 <ShoppingCart className="h-5 w-5" />

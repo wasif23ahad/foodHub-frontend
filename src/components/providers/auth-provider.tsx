@@ -5,6 +5,7 @@ import { User, LoginCredentials, RegisterData } from "@/types";
 import { api, API_URL } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useCartStore } from "@/stores/cart-store";
 
 interface AuthContextType {
     user: User | null;
@@ -137,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await api.post("/auth/sign-out");
             setUser(null);
+            useCartStore.getState().clearCart();
             toast.success("Logged out successfully");
             router.push("/login");
         } catch (error) {

@@ -46,7 +46,7 @@ export default function ProviderDashboardPage() {
             const res = await api.get<ApiResponse<Order[]>>("/provider/orders");
             return res.data;
         },
-        enabled: !!user && user.role?.toLowerCase() === "provider",
+        enabled: !!user && user.role?.toLowerCase() === "provider" && !!(user as any).providerProfile,
     });
 
     // Fetch meals to show menu status
@@ -56,7 +56,7 @@ export default function ProviderDashboardPage() {
             const res = await api.get<ApiResponse<Meal[]>>("/provider/meals");
             return res.data;
         },
-        enabled: !!user && user.role?.toLowerCase() === "provider",
+        enabled: !!user && user.role?.toLowerCase() === "provider" && !!(user as any).providerProfile,
     });
 
     if (isAuthLoading || isOrdersLoading) {

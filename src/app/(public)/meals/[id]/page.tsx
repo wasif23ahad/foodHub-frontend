@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useCartStore } from "@/stores/cart-store";
+import { useAuth } from "@/components/providers/auth-provider";
 import { getMediaUrl } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -60,6 +61,8 @@ export default function MealDetailsPage() {
     const mealId = params?.id as string;
     const [quantity, setQuantity] = useState(1);
     const addItem = useCartStore((state) => state.addItem);
+    const { user } = useAuth();
+    const isCustomer = !user || user?.role?.toUpperCase() === "CUSTOMER";
 
     const { data: apiMeal, isLoading, error } = useQuery({
         queryKey: ["meal", mealId],
@@ -79,14 +82,16 @@ export default function MealDetailsPage() {
     const { data: reviewsData, isLoading: isLoadingReviews } = useQuery({
         queryKey: ["meal-reviews", mealId],
         queryFn: async () => {
-            const res = await api.get<{ data: ReviewsResponse }>(`/meals/${mealId}/reviews`);
-            return res.data;
+            // api.get returns res.json() directly — the full HTTP body:
+            // { success: true, data: [...reviews], meta: { page, total, ... } }
+            const body = await api.get<{ success: boolean; data: Review[]; meta: ReviewsResponse["meta"] }>(`/meals/${mealId}/reviews`);
+            return body;
         },
         enabled: !!mealId,
     });
 
     const meal = apiMeal;
-    const reviews = reviewsData?.reviews || [];
+    const reviews = reviewsData?.data || [];
     const totalReviews = reviewsData?.meta?.total ?? 0;
 
     const handleAddToCart = () => {
@@ -217,7 +222,8 @@ export default function MealDetailsPage() {
                         </p>
                     </div>
 
-                    {/* Actions */}
+                    {/* Actions — only for customers */}
+                    {isCustomer && (
                     <div className="bg-card border p-6 rounded-xl shadow-sm space-y-6 mt-8">
                         <div className="flex items-center justify-between">
                             <span className="font-medium">Quantity</span>
@@ -248,6 +254,7 @@ export default function MealDetailsPage() {
                             Add to Cart — ৳ {(meal.price * quantity).toFixed(2)}
                         </Button>
                     </div>
+                    )}
                 </div>
             </div>
 

@@ -50,7 +50,7 @@ export default function ProviderSetupPage() {
     async function onSubmit(data: SetupFormValues) {
         setIsSubmitting(true);
         try {
-            await api.put(`/provider/profile`, data);
+            await api.post(`/provider/profile`, data);
             toast.success("Profile created successfully!");
             // Force reload to update auth context
             window.location.href = "/provider/dashboard";

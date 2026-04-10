@@ -64,8 +64,9 @@ export default function AdminProvidersPage() {
         queryKey: ["admin-providers"],
         queryFn: async () => {
             try {
-                const res = await api.get<ApiResponse<Provider[]>>("/providers");
-                return res.data;
+                // api.get returns res.json() directly = { success, data: providers[] }
+                const body = await api.get<ApiResponse<Provider[]>>("/providers");
+                return body.data ?? [];
             } catch (err) {
                 console.error("Providers fetch failed", err);
                 return [];
@@ -125,8 +126,8 @@ export default function AdminProvidersPage() {
         {
             label: "Avg Rating",
             value: providersData && providersData.length > 0
-                ? (providersData.reduce((sum, p) => sum + (p.rating || 0), 0) / providersData.length).toFixed(1)
-                : "0.0",
+                ? (providersData.reduce((sum, p) => sum + (p.avgRating || 0), 0) / providersData.length).toFixed(1)
+                : "N/A",
             color: "text-yellow-600",
             icon: Store
         }
@@ -255,9 +256,15 @@ export default function AdminProvidersPage() {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge className="bg-yellow-100 text-yellow-800 border-none">
-                                                    ⭐ {(provider.rating || 4.5).toFixed(1)}
-                                                </Badge>
+                                                {(provider.avgRating && provider.avgRating > 0) ? (
+                                                    <Badge className="bg-yellow-100 text-yellow-800 border-none">
+                                                        ⭐ {provider.avgRating.toFixed(1)}
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge className="bg-gray-100 text-gray-500 border-none text-xs">
+                                                        No reviews
+                                                    </Badge>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge className={provider.isActive ? "bg-green-100 text-green-800 border-none" : "bg-gray-100 text-gray-800 border-none"}>

@@ -94,9 +94,28 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Remove default button styles */
-button {
-  cursor: pointer;
+/* Global cursor — prevent I-beam on regular text */
+*, *::before, *::after {
+  cursor: default !important;
+}
+
+/* Restore pointer for interactive elements */
+a,
+button,
+[role="button"],
+[role="link"],
+label[for],
+select,
+summary {
+  cursor: pointer !important;
+}
+
+/* Restore text cursor for input elements */
+input,
+textarea,
+[contenteditable="true"],
+[contenteditable=""] {
+  cursor: text !important;
 }
 
 /* Focus styles */

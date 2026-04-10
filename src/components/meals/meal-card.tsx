@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Meal } from "@/types";
 import { useCartStore } from "@/stores/cart-store";
+import { useAuth } from "@/components/providers/auth-provider";
 import { getMediaUrl } from "@/lib/utils";
 import {
     AlertDialog,
@@ -29,6 +30,8 @@ interface MealCardProps {
 
 export function MealCard({ meal }: MealCardProps) {
     const { addItem, checkProviderConsistency, clearCart } = useCartStore();
+    const { user } = useAuth();
+    const isCustomer = !user || user?.role?.toUpperCase() === "CUSTOMER";
     const [imgSrc, setImgSrc] = useState(getMediaUrl(meal.image) || "/placeholder-meal.jpg");
     const [showConflictDialog, setShowConflictDialog] = useState(false);
 
@@ -108,14 +111,16 @@ export function MealCard({ meal }: MealCardProps) {
                         <span className="text-xl font-bold text-primary">
                             ৳{meal.price}
                         </span>
-                        <Button
-                            size="sm"
-                            className="bg-slate-900 text-white hover:bg-slate-800 rounded-full h-8 w-8 p-0"
-                            onClick={handleAddToCart}
-                        >
-                            <Plus className="h-4 w-4" />
-                            <span className="sr-only">Add to cart</span>
-                        </Button>
+                        {isCustomer && (
+                            <Button
+                                size="sm"
+                                className="bg-slate-900 text-white hover:bg-slate-800 rounded-full h-8 w-8 p-0"
+                                onClick={handleAddToCart}
+                            >
+                                <Plus className="h-4 w-4" />
+                                <span className="sr-only">Add to cart</span>
+                            </Button>
+                        )}
                     </CardFooter>
                 </Card>
             </motion.div>

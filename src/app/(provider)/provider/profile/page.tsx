@@ -48,8 +48,9 @@ export default function ProviderProfilePage() {
         queryKey: ["provider-profile"],
         queryFn: async () => {
             try {
-                const res = await api.get<ApiResponse<ProviderProfile>>("/provider/profile");
-                return res.data ?? null;
+                // api.get returns res.json() directly = { success, data: profile|null }
+                const body = await api.get<ApiResponse<ProviderProfile>>("/provider/profile");
+                return body.data ?? null;
             } catch {
                 // New provider — no profile exists yet. Return null to trigger create mode.
                 return null;

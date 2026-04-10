@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Loader2,
   LayoutDashboard,
@@ -19,6 +19,8 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { api } from "@/lib/api";
+import { ApiResponse, ProviderProfile } from "@/types";
 
 const sidebarLinks = [
   { name: "Dashboard", href: "/provider/dashboard", icon: LayoutDashboard },
@@ -35,20 +37,40 @@ export default function ProviderLayout({
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [profileChecked, setProfileChecked] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && (!user || user.role.toUpperCase() !== "PROVIDER")) {
+    if (isLoading) return;
+
+    // Not a provider → redirect to login
+    if (!user || user.role.toUpperCase() !== "PROVIDER") {
       router.push("/login");
-    } else if (!isLoading && user && user.role.toUpperCase() === "PROVIDER") {
-      // Check if provider profile exists, if not and not already on setup page, redirect to setup
-      const hasProfile = !!(user as any).providerProfile;
-      if (!hasProfile && pathname !== "/provider/setup") {
-        router.push("/provider/setup");
-      }
+      return;
     }
+
+    // On setup page — no need to check profile
+    if (pathname === "/provider/setup") {
+      setProfileChecked(true);
+      return;
+    }
+
+    // Check if provider profile exists via API
+    api.get<ApiResponse<ProviderProfile>>("/provider/profile")
+      .then((body) => {
+        if (!body.data) {
+          router.push("/provider/setup");
+        } else {
+          setProfileChecked(true);
+        }
+      })
+      .catch(() => {
+        // Error (404 / network) = no profile
+        router.push("/provider/setup");
+      });
   }, [user, isLoading, router, pathname]);
 
-  if (isLoading || !user || user.role.toUpperCase() !== "PROVIDER") {
+  // Show spinner while: auth loading, no user, wrong role, or profile check pending
+  if (isLoading || !user || user.role.toUpperCase() !== "PROVIDER" || (pathname !== "/provider/setup" && !profileChecked)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
