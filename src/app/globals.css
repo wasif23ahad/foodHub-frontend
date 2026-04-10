@@ -85,37 +85,15 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-body {
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-}
-
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+  cursor: default;
 }
 
-/* Global cursor — prevent I-beam on regular text */
-*, *::before, *::after {
-  cursor: default !important;
-}
-
-/* Restore pointer for interactive elements AND their children */
-a, a *,
-button, button *,
-[role="button"], [role="button"] *,
-[role="link"], [role="link"] *,
-label[for], label[for] *,
-select, select *,
-summary, summary * {
-  cursor: pointer !important;
-}
-
-/* Restore text cursor for input elements */
-input,
-textarea,
-[contenteditable="true"],
-[contenteditable=""] {
-  cursor: text !important;
+body {
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  cursor: default;
 }
 
 /* Focus styles */
@@ -159,11 +137,52 @@ textarea,
 }
 
 @layer base {
+  /* Tailwind base resets */
   * {
     @apply border-border outline-ring/50;
   }
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* ─── Cursor rules ─── */
+
+  /* 1. Kill I-beam on every element */
+  *,
+  *::before,
+  *::after {
+    cursor: default !important;
+  }
+
+  /* 2. Restore pointer on interactive elements + ALL their descendants */
+  a, a *,
+  button, button *,
+  [role="button"], [role="button"] *,
+  [role="link"], [role="link"] *,
+  [role="menuitem"], [role="menuitem"] *,
+  [role="tab"], [role="tab"] *,
+  [role="option"], [role="option"] *,
+  [role="checkbox"], [role="checkbox"] *,
+  [role="radio"], [role="radio"] *,
+  [type="submit"], [type="submit"] *,
+  [type="button"], [type="button"] *,
+  [type="reset"], [type="reset"] *,
+  label[for], label[for] *,
+  select, select *,
+  summary, summary * {
+    cursor: pointer !important;
+  }
+
+  /* 3. Restore text cursor on inputs */
+  input,
+  input *,
+  textarea,
+  textarea *,
+  [contenteditable="true"],
+  [contenteditable="true"] *,
+  [contenteditable=""],
+  [contenteditable=""] * {
+    cursor: text !important;
   }
 }
