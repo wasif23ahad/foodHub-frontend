@@ -99,14 +99,14 @@ html {
   cursor: default !important;
 }
 
-/* Restore pointer for interactive elements */
-a,
-button,
-[role="button"],
-[role="link"],
-label[for],
-select,
-summary {
+/* Restore pointer for interactive elements AND their children */
+a, a *,
+button, button *,
+[role="button"], [role="button"] *,
+[role="link"], [role="link"] *,
+label[for], label[for] *,
+select, select *,
+summary, summary * {
   cursor: pointer !important;
 }
 
