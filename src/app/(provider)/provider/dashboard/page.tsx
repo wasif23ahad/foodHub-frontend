@@ -43,10 +43,16 @@ export default function ProviderDashboardPage() {
     const { data: ordersData, isLoading: isOrdersLoading } = useQuery({
         queryKey: ["provider-orders"],
         queryFn: async () => {
-            const res = await api.get<ApiResponse<Order[]>>("/provider/orders");
-            return res.data;
+            try {
+                const res = await api.get<ApiResponse<Order[]>>("/provider/orders");
+                return res.data;
+            } catch (err: any) {
+                if (err.message?.includes("profile not found")) return [];
+                console.error("Dashboard orders fetch failed:", err);
+                return [];
+            }
         },
-        enabled: !!user && user.role?.toLowerCase() === "provider" && !!(user as any).providerProfile,
+        enabled: !!user && user.role?.toLowerCase() === "provider",
         refetchOnWindowFocus: true,
         staleTime: 0,
     });
@@ -55,10 +61,15 @@ export default function ProviderDashboardPage() {
     const { data: mealsData } = useQuery({
         queryKey: ["provider-meals"],
         queryFn: async () => {
-            const res = await api.get<ApiResponse<Meal[]>>("/provider/meals");
-            return res.data;
+            try {
+                const res = await api.get<ApiResponse<Meal[]>>("/provider/meals");
+                return res.data;
+            } catch (err: any) {
+                console.error("Dashboard meals fetch failed:", err);
+                return [];
+            }
         },
-        enabled: !!user && user.role?.toLowerCase() === "provider" && !!(user as any).providerProfile,
+        enabled: !!user && user.role?.toLowerCase() === "provider",
         refetchOnWindowFocus: true,
         staleTime: 0,
     });
@@ -79,11 +90,11 @@ export default function ProviderDashboardPage() {
     // Derive stats
     const totalRevenue = orders
         .filter(o => o.status === "DELIVERED")
-        .reduce((sum, o) => sum + o.totalAmount, 0);
+        .reduce((sum, o) => sum + Number(o.totalAmount), 0);
 
     const pendingOrders = orders.filter(o => o.status === "PLACED" || o.status === "PREPARING").length;
     const completedOrders = orders.filter(o => o.status === "DELIVERED").length;
-    const totalMeals = meals.length;
+    const totalMeals = (mealsData || []).length;
 
     const stats = [
         {
