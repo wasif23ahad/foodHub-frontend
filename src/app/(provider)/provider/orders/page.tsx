@@ -83,6 +83,7 @@ export default function ProviderOrdersPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["provider-orders-own"] });
+            queryClient.invalidateQueries({ queryKey: ["provider-orders"] });
             toast.success("Order status updated");
         },
         onError: (err: any) => {

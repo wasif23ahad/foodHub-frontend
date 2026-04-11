@@ -47,6 +47,8 @@ export default function ProviderDashboardPage() {
             return res.data;
         },
         enabled: !!user && user.role?.toLowerCase() === "provider" && !!(user as any).providerProfile,
+        refetchOnWindowFocus: true,
+        staleTime: 0,
     });
 
     // Fetch meals to show menu status
@@ -57,6 +59,8 @@ export default function ProviderDashboardPage() {
             return res.data;
         },
         enabled: !!user && user.role?.toLowerCase() === "provider" && !!(user as any).providerProfile,
+        refetchOnWindowFocus: true,
+        staleTime: 0,
     });
 
     if (isAuthLoading || isOrdersLoading) {
