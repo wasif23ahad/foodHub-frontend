@@ -15,7 +15,7 @@ export const authService = {
     },
 
     async getMe(): Promise<ApiResponse<{ user: User }>> {
-        return api.get<ApiResponse<{ user: User }>>("/auth/me");
+        return api.get<ApiResponse<{ user: User }>>("/auth/me", { skipAuthRedirect: true });
     },
 
     async googleLogin(idToken: string): Promise<ApiResponse<{ user: User, token: string }>> {

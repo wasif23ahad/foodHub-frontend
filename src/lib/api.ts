@@ -6,19 +6,21 @@ type RequestOptions = {
     headers?: Record<string, string>;
     cache?: RequestCache;
     next?: { revalidate?: number; tags?: string[] };
+    skipAuthRedirect?: boolean;
 };
 
-async function handleResponse<T>(res: Response): Promise<T> {
+async function handleResponse<T>(res: Response, options?: RequestOptions): Promise<T> {
     const contentType = res.headers.get("content-type") ?? "";
     const isJson = contentType.includes("application/json");
 
     if (!res.ok) {
-        if (res.status === 401) {
+        if (res.status === 401 && !options?.skipAuthRedirect) {
             // Clear local auth state on unauthorized
             if (typeof window !== "undefined") {
                 useAuthStore.getState().logout();
-                // Avoid infinite redirect loop if already on login page
-                if (window.location.pathname !== "/login") {
+                // Avoid infinite redirect loop if already on login or register page
+                const isAuthPage = ["/login", "/register"].includes(window.location.pathname);
+                if (!isAuthPage) {
                     window.location.href = "/login";
                 }
             }
@@ -37,7 +39,11 @@ async function handleResponse<T>(res: Response): Promise<T> {
             if (text?.startsWith("<")) errorMsg = "Server returned an HTML page instead of JSON. Check backend deployment.";
             else if (text) errorMsg = text.slice(0, 200);
         }
-        throw new Error(errorMsg);
+        
+        // Wrap in a custom error object to allow checking status
+        const error = new Error(errorMsg) as any;
+        error.status = res.status;
+        throw error;
     }
 
     if (!isJson) {
@@ -45,7 +51,6 @@ async function handleResponse<T>(res: Response): Promise<T> {
         if (text?.startsWith("<")) {
             throw new Error("Server returned an HTML page instead of JSON.");
         }
-        // Handle 204 No Content
         if (res.status === 204) return {} as T;
         return {} as T;
     }
@@ -62,7 +67,7 @@ export const api = {
             cache: options?.cache,
             next: options?.next,
         });
-        return handleResponse<T>(res);
+        return handleResponse<T>(res, options);
     },
 
     async post<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
@@ -76,7 +81,7 @@ export const api = {
             credentials: "include",
             body: isFormData ? (data as FormData) : (data ? JSON.stringify(data) : undefined),
         });
-        return handleResponse<T>(res);
+        return handleResponse<T>(res, options);
     },
 
     async put<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
@@ -86,7 +91,7 @@ export const api = {
             credentials: "include",
             body: data ? JSON.stringify(data) : undefined,
         });
-        return handleResponse<T>(res);
+        return handleResponse<T>(res, options);
     },
 
     async patch<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
@@ -96,7 +101,7 @@ export const api = {
             credentials: "include",
             body: data ? JSON.stringify(data) : undefined,
         });
-        return handleResponse<T>(res);
+        return handleResponse<T>(res, options);
     },
 
     async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
@@ -105,7 +110,7 @@ export const api = {
             headers: { "Content-Type": "application/json", ...options?.headers },
             credentials: "include",
         });
-        return handleResponse<T>(res);
+        return handleResponse<T>(res, options);
     },
 };
 
