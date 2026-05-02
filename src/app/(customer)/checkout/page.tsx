@@ -84,15 +84,22 @@ export default function CheckoutPage() {
                 deliveryNotes: data.notes,
             };
 
-            const res = await api.post<{ data: { id: string } }>("/orders", payload);
+            const orderRes = await api.post<{ data: { id: string } }>("/orders", payload);
+            const orderId = orderRes.data.id;
 
-            toast.success("Order placed successfully!");
-            clearCart();
-            router.push(`/checkout/success?orderId=${res.data.id}`);
+            // Initialize Payment
+            const paymentRes = await api.post<{ success: boolean, url: string }>("/payment/init", { orderId });
+            
+            if (paymentRes.success && paymentRes.url) {
+                window.location.href = paymentRes.url;
+            } else {
+                toast.error("Failed to initialize payment");
+                router.push(`/checkout/fail`);
+            }
+
         } catch (error: any) {
             console.error("Checkout error:", error);
             toast.error(error.message || "Failed to place order");
-        } finally {
             setIsSubmitting(false);
         }
     };
