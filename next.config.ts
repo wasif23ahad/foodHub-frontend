@@ -45,10 +45,16 @@ const nextConfig: NextConfig = {
     unoptimized: true, // Required for local development with private IP backend serving
   },
   async rewrites() {
+    const backendApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://foodhub-backend-silk.vercel.app/api";
+    // Ensure we don't use localhost in production rewrites
+    const finalDest = (process.env.NODE_ENV === "production" && backendApiUrl.includes("localhost"))
+      ? "https://foodhub-backend-silk.vercel.app/api"
+      : backendApiUrl;
+
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL || "https://foodhub-backend-silk.vercel.app/api"}/:path*`,
+        destination: `${finalDest}/:path*`,
       },
     ];
   },
