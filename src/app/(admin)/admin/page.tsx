@@ -10,6 +10,7 @@ import {
     TrendingUp,
     Clock,
     ArrowUpRight,
+    Settings,
 } from "lucide-react";
 import {
     Card,
@@ -145,9 +146,12 @@ export default function AdminDashboardPage() {
                         Download Report
                         <TrendingUp className="h-4 w-4" />
                     </Button>
-                    <Button className="gap-2 font-bold rounded-xl shadow-lg shadow-primary/20">
-                        System Settings
-                    </Button>
+                    <Link href="/admin/settings">
+                        <Button className="gap-2 font-bold rounded-xl shadow-lg shadow-primary/20">
+                            <Settings className="h-4 w-4" />
+                            System Settings
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
