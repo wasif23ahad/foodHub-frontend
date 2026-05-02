@@ -94,8 +94,15 @@ function SuccessContent() {
             confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
         }, 250);
 
-        return () => clearInterval(interval);
-    }, []);
+        const redirectTimer = setTimeout(() => {
+            router.push("/orders");
+        }, 5000);
+
+        return () => {
+            clearInterval(interval);
+            clearTimeout(redirectTimer);
+        };
+    }, [router]);
 
     const handleRatingSubmit = async () => {
         if (rating === 0) {
@@ -135,9 +142,9 @@ function SuccessContent() {
                                 <CheckCircle2 className="h-14 w-14" />
                             </div>
                         </div>
-                        <CardTitle className="text-3xl font-bold text-foreground">Order Placed!</CardTitle>
+                        <CardTitle className="text-3xl font-bold text-foreground">Payment Complete!</CardTitle>
                         <p className="text-muted-foreground mt-2 max-w-xs mx-auto">
-                            Thank you for your order. We&apos;ve received it and are preparing your meal.
+                            Thank you for your order. Redirecting to your dashboard in 5 seconds...
                         </p>
                     </CardHeader>
                     <CardContent className="py-10 space-y-4">
