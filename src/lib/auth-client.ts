@@ -8,9 +8,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/a
 
 export const authClient = {
     signIn: {
-        social: async ({ provider }: { provider: string }) => {
+        social: async ({ provider, callbackURL }: { provider: string, callbackURL?: string }) => {
+            // Social login redirection logic
             if (provider === "google") {
-                window.location.href = `${API_BASE_URL}/auth/google`;
+                const targetUrl = callbackURL ? `${API_BASE_URL}/auth/google?callbackURL=${encodeURIComponent(callbackURL)}` : `${API_BASE_URL}/auth/google`;
+                window.location.href = targetUrl;
             }
         },
         email: async ({ email, password }: any) => {
