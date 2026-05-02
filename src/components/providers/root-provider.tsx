@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 
 export function RootProvider({ children }: { children: ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({
@@ -25,7 +26,9 @@ export function RootProvider({ children }: { children: ReactNode }) {
                 disableTransitionOnChange
             >
                 <AuthProvider>
-                    {children}
+                    <SmoothScrollProvider>
+                        {children}
+                    </SmoothScrollProvider>
                 </AuthProvider>
                 <Toaster />
             </ThemeProvider>
