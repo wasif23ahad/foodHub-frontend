@@ -27,6 +27,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkAuth = useCallback(async () => {
         setLoading(true);
         try {
+            // Check for token in URL (from Google Auth redirect)
+            if (typeof window !== "undefined") {
+                const params = new URLSearchParams(window.location.search);
+                const urlToken = params.get("token");
+                const urlError = params.get("error");
+                
+                if (urlError) {
+                    toast.error(`Authentication failed: ${urlError}`);
+                    // Clean URL
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.delete("error");
+                    window.history.replaceState({}, "", newUrl.toString());
+                } else if (urlToken) {
+                    // Save token as a first-party cookie for middleware and future requests
+                    document.cookie = `token=${urlToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+                    
+                    // Clean URL
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.delete("token");
+                    window.history.replaceState({}, "", newUrl.toString());
+                    
+                    toast.success("Successfully logged in with Google");
+                }
+            }
+
             const res = await authService.getMe();
             if (res.success && res.data?.user) {
                 setUser(res.data.user);
@@ -66,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!res.success) throw new Error(res.message || "Login failed");
 
             const loggedInUser = res.data.user;
+            const token = res.data.token;
             const userRole = (loggedInUser?.role || "").toUpperCase();
 
             // Strict role checking if requested
@@ -74,6 +100,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const portalName = requireRole.toUpperCase() === "PROVIDER" ? "Seller" : "Customer";
                 toast.error(`This account is not a ${portalName} account. Please use the correct login option.`);
                 throw new Error("Access denied: Insufficient permissions.");
+            }
+
+            if (token) {
+                document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
             }
 
             setUser(loggedInUser);
@@ -102,6 +132,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (!res.success) throw new Error(res.message || "Registration failed");
 
             const newUser = res.data.user;
+            const token = res.data.token;
+            
+            if (token) {
+                document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+            }
+
             setUser(newUser);
 
             toast.success("Account created successfully");
@@ -124,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = async () => {
         try {
             await authService.logout();
+            document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
             clearStore();
             useCartStore.getState().clearCart();
             toast.success("Logged out successfully");

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MealCard } from "@/components/meals/meal-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, SlidersHorizontal, Loader2, X } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { Meal, Category, ApiResponse, DietaryPreference } from "@/types";
 import { useSearchParams } from "next/navigation";
@@ -52,6 +52,7 @@ function MealsContent() {
     const [sort, setSort] = useState("newest");
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
+    const [page, setPage] = useState(1);
 
     const debouncedSearch = useDebounce(search, 500);
     const debouncedMinPrice = useDebounce(minPrice, 500);
@@ -74,7 +75,7 @@ function MealsContent() {
     const categories = categoriesData || [];
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ["meals", debouncedSearch, category, dietary, sort, debouncedMinPrice, debouncedMaxPrice, categories.length],
+        queryKey: ["meals", debouncedSearch, category, dietary, sort, debouncedMinPrice, debouncedMaxPrice, page, categories.length],
         queryFn: async () => {
             const params = new URLSearchParams();
             if (debouncedSearch) params.append("search", debouncedSearch);
@@ -98,22 +99,23 @@ function MealsContent() {
             if (sort) params.append("sort", sort);
             if (debouncedMinPrice) params.append("minPrice", debouncedMinPrice);
             if (debouncedMaxPrice) params.append("maxPrice", debouncedMaxPrice);
-            params.append("limit", "100"); // Show more items by default
+            params.append("page", String(page));
+            params.append("limit", "12");
 
             try {
                 const queryString = params.toString();
                 const url = `/meals${queryString ? `?${queryString}` : ""}`;
-                const res = await api.get<ApiResponse<Meal[]>>(url);
-                return res.data;
-            } catch (err: any) {
+                return await api.get<ApiResponse<Meal[]>>(url);
+            } catch (err) {
                 console.error("Meals fetch failed", err);
-                return [];
+                return { success: false, data: [], message: "Failed to load meals" };
             }
         },
         enabled: !category || category === "all" || categories.length > 0,
     });
 
-    const meals = data || [];
+    const meals = data?.data || [];
+    const totalPages = data?.meta?.totalPages || 1;
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -133,7 +135,10 @@ function MealsContent() {
                             placeholder="Search meals..."
                             className="pl-9"
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
                         />
                         {search && (
                             <button
@@ -150,10 +155,13 @@ function MealsContent() {
                         <select
                             className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
                             value={category}
-                            onChange={(e) => setCategory(e.target.value)}
+                            onChange={(e) => {
+                                setCategory(e.target.value);
+                                setPage(1);
+                            }}
                         >
                             <option value="all">All Categories</option>
-                            {categories.map((c: any) => (
+                            {categories.map((c: Category) => (
                                 <option key={c.id} value={c.id}>
                                     {c.name}
                                 </option>
@@ -167,7 +175,10 @@ function MealsContent() {
                         <select
                             className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
                             value={dietary}
-                            onChange={(e) => setDietary(e.target.value as any)}
+                            onChange={(e) => {
+                                setDietary(e.target.value as DietaryPreference | "all");
+                                setPage(1);
+                            }}
                         >
                             {DIETARY_OPTIONS.map((opt) => (
                                 <option key={opt.value} value={opt.value}>
@@ -184,7 +195,10 @@ function MealsContent() {
                         <select
                             className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
                             value={sort}
-                            onChange={(e) => setSort(e.target.value)}
+                            onChange={(e) => {
+                                setSort(e.target.value);
+                                setPage(1);
+                            }}
                         >
                             <option value="newest">Newest</option>
                             <option value="oldest">Oldest</option>
@@ -204,7 +218,10 @@ function MealsContent() {
                             className="w-[80px] h-10"
                             min="0"
                             value={minPrice}
-                            onChange={(e) => setMinPrice(e.target.value)}
+                            onChange={(e) => {
+                                setMinPrice(e.target.value);
+                                setPage(1);
+                            }}
                         />
                         <span className="text-muted-foreground">-</span>
                         <Input
@@ -213,7 +230,10 @@ function MealsContent() {
                             className="w-[80px] h-10"
                             min="0"
                             value={maxPrice}
-                            onChange={(e) => setMaxPrice(e.target.value)}
+                            onChange={(e) => {
+                                setMaxPrice(e.target.value);
+                                setPage(1);
+                            }}
                         />
                     </div>
                 </div>
@@ -246,25 +266,41 @@ function MealsContent() {
                     </Button>
                 </div>
             ) : (
-                <AnimatePresence mode="popLayout">
-                    <motion.div
-                        variants={gridVariants}
-                        initial="initial"
-                        animate="animate"
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-                    >
-                        {meals.map((meal) => (
-                            <motion.div
-                                key={meal.id}
-                                variants={cardVariants}
-                                transition={{ duration: 0.3 }}
-                                layout
-                            >
-                                <MealCard meal={meal} />
-                            </motion.div>
-                        ))}
-                    </motion.div>
-                </AnimatePresence>
+                <>
+                    <AnimatePresence mode="popLayout">
+                        <motion.div
+                            variants={gridVariants}
+                            initial="initial"
+                            animate="animate"
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                        >
+                            {meals.map((meal) => (
+                                <motion.div
+                                    key={meal.id}
+                                    variants={cardVariants}
+                                    transition={{ duration: 0.3 }}
+                                    layout
+                                >
+                                    <MealCard meal={meal} />
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    </AnimatePresence>
+
+                    <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-xl border bg-card p-4 sm:flex-row">
+                        <p className="text-sm text-muted-foreground">
+                            Page {page} of {totalPages}
+                        </p>
+                        <div className="flex gap-2">
+                            <Button variant="outline" disabled={page <= 1 || isLoading} onClick={() => setPage((current) => Math.max(1, current - 1))}>
+                                Previous
+                            </Button>
+                            <Button variant="outline" disabled={page >= totalPages || isLoading} onClick={() => setPage((current) => Math.min(totalPages, current + 1))}>
+                                Next
+                            </Button>
+                        </div>
+                    </div>
+                </>
             )}
         </div>
     );

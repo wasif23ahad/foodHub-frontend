@@ -60,9 +60,14 @@ async function handleResponse<T>(res: Response, options?: RequestOptions): Promi
 
 export const api = {
     async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
+        const headers: Record<string, string> = { ...options?.headers };
+        if (typeof document !== "undefined") {
+            const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+        }
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "GET",
-            headers: options?.headers,
+            headers,
             credentials: "include",
             cache: options?.cache,
             next: options?.next,
@@ -72,8 +77,12 @@ export const api = {
 
     async post<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
         const isFormData = data instanceof FormData;
-        const headers = { ...options?.headers };
+        const headers: Record<string, string> = { ...options?.headers };
         if (!isFormData) headers["Content-Type"] = "application/json";
+        if (typeof document !== "undefined") {
+            const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+        }
 
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "POST",
@@ -85,9 +94,14 @@ export const api = {
     },
 
     async put<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
+        const headers: Record<string, string> = { "Content-Type": "application/json", ...options?.headers };
+        if (typeof document !== "undefined") {
+            const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+        }
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json", ...options?.headers },
+            headers,
             credentials: "include",
             body: data ? JSON.stringify(data) : undefined,
         });
@@ -95,9 +109,14 @@ export const api = {
     },
 
     async patch<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
+        const headers: Record<string, string> = { "Content-Type": "application/json", ...options?.headers };
+        if (typeof document !== "undefined") {
+            const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+        }
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json", ...options?.headers },
+            headers,
             credentials: "include",
             body: data ? JSON.stringify(data) : undefined,
         });
@@ -105,9 +124,14 @@ export const api = {
     },
 
     async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
+        const headers: Record<string, string> = { "Content-Type": "application/json", ...options?.headers };
+        if (typeof document !== "undefined") {
+            const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+        }
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "DELETE",
-            headers: { "Content-Type": "application/json", ...options?.headers },
+            headers,
             credentials: "include",
         });
         return handleResponse<T>(res, options);

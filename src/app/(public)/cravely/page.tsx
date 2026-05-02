@@ -1,28 +1,20 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Send, Sparkles, Loader2, Bot, Trash2, History, Utensils, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAuth } from "@/components/providers/auth-provider";
-import { ApiResponse } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { streamCravelyChat } from "@/lib/cravely-stream";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
-  citations?: any[];
-}
-
-interface ChatResponse {
-  message: string;
-  sessionId: string;
-  citations: any[];
+  citations?: string[];
 }
 
 export default function CravelyPage() {
@@ -33,7 +25,6 @@ export default function CravelyPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -53,23 +44,34 @@ export default function CravelyPage() {
     setIsLoading(true);
 
     try {
-      const res = await api.post<ApiResponse<ChatResponse>>("/ai/chat", {
+      setMessages(prev => [...prev, { role: "assistant", content: "", citations: [] }]);
+      await streamCravelyChat({
         message: userMessage,
-        sessionId: sessionId
+        sessionId,
+        onToken: (text) => {
+          setMessages(prev => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant") {
+              next[next.length - 1] = { ...last, content: `${last.content}${text}` };
+            }
+            return next;
+          });
+        },
+        onCitations: (ids) => {
+          setMessages(prev => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant") {
+              next[next.length - 1] = { ...last, citations: ids };
+            }
+            return next;
+          });
+        },
+        onDone: (payload) => setSessionId(payload.sessionId),
       });
-
-      if (res.success) {
-        setMessages(prev => [...prev, { 
-            role: "assistant", 
-            content: res.data.message,
-            citations: res.data.citations
-        }]);
-        setSessionId(res.data.sessionId);
-      } else {
-        setMessages(prev => [...prev, { role: "assistant", content: res.message || "My culinary circuits are a bit jammed. Can you try again?" }]);
-      }
-    } catch (error: any) {
-      const errorMessage = error.message || "I'm having trouble connecting to my culinary brain. Give me a second and try again?";
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "I'm having trouble connecting to my culinary brain. Give me a second and try again?";
       setMessages(prev => [...prev, { role: "assistant", content: errorMessage }]);
     } finally {
       setIsLoading(false);
@@ -169,7 +171,7 @@ export default function CravelyPage() {
                         </div>
                         <h4 className="font-black text-sm mb-2">Prompt Tip</h4>
                         <p className="text-xs font-medium opacity-70 leading-relaxed">
-                            "Show me the most popular desserts from providers with a 4.5+ rating."
+                            &quot;Show me the most popular desserts from providers with a 4.5+ rating.&quot;
                         </p>
                     </div>
                 </Card>
@@ -201,19 +203,19 @@ export default function CravelyPage() {
                                             ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-br-none shadow-2xl shadow-slate-200 dark:shadow-none font-medium" 
                                             : "bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-800/50"
                                     )}>
-                                        {m.content}
+                                        {m.content.replace(/<cite\s+id=["'][^"']+["']\s*\/?>/g, "")}
                                     </div>
                                     
                                     {m.citations && m.citations.length > 0 && (
                                         <div className="flex flex-wrap gap-2 px-2 animate-in fade-in slide-in-from-top-2 duration-500">
-                                            {m.citations.map((c: any) => (
+                                            {m.citations.map((id) => (
                                                 <Badge 
-                                                    key={c.id} 
+                                                    key={id} 
                                                     variant="secondary" 
                                                     className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 font-bold px-4 py-2 rounded-xl shadow-sm hover:border-primary/30 transition-colors cursor-pointer group"
                                                 >
                                                     <Utensils className="h-3 w-3 mr-2 text-primary group-hover:scale-110 transition-transform" />
-                                                    {c.name}
+                                                    {id}
                                                 </Badge>
                                             ))}
                                         </div>

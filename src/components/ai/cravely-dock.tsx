@@ -2,25 +2,17 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, X, Send, Sparkles, Loader2, Minimize2, Maximize2, Bot } from "lucide-react";
+import { X, Send, Sparkles, Loader2, Minimize2, Maximize2, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAuth } from "@/components/providers/auth-provider";
-import { ApiResponse } from "@/types";
+import { streamCravelyChat } from "@/lib/cravely-stream";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
-}
-
-interface ChatResponse {
-  message: string;
-  sessionId: string;
-  citations: any[];
 }
 
 export function CravelyDock() {
@@ -34,7 +26,6 @@ export function CravelyDock() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -54,19 +45,24 @@ export function CravelyDock() {
     setIsLoading(true);
 
     try {
-      const res = await api.post<ApiResponse<ChatResponse>>("/ai/chat", {
+      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+      await streamCravelyChat({
         message: userMessage,
-        sessionId: sessionId
+        sessionId,
+        onToken: (text) => {
+          setMessages(prev => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last?.role === "assistant") {
+              next[next.length - 1] = { ...last, content: `${last.content}${text}` };
+            }
+            return next;
+          });
+        },
+        onDone: (payload) => setSessionId(payload.sessionId),
       });
-
-      if (res.success) {
-        setMessages(prev => [...prev, { role: "assistant", content: res.data.message }]);
-        setSessionId(res.data.sessionId);
-      } else {
-        setMessages(prev => [...prev, { role: "assistant", content: res.message || "My circuits are a bit jammed. Can you try again?" }]);
-      }
-    } catch (error: any) {
-      const errorMessage = error.message || "Sorry, I hit a snag. Can you check your connection?";
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Sorry, I hit a snag. Can you check your connection?";
       setMessages(prev => [...prev, { role: "assistant", content: errorMessage }]);
     } finally {
       setIsLoading(false);
@@ -156,7 +152,7 @@ export function CravelyDock() {
                               ? "bg-slate-900 text-white rounded-br-none shadow-xl shadow-slate-200/50 dark:shadow-none font-medium" 
                               : "bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-800"
                           )}>
-                            {m.content}
+                            {m.content.replace(/<cite\s+id=["'][^"']+["']\s*\/?>/g, "")}
                           </div>
                         </motion.div>
                       ))}

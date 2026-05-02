@@ -64,8 +64,7 @@ export default function AdminProvidersPage() {
         queryKey: ["admin-providers"],
         queryFn: async () => {
             try {
-                // api.get returns res.json() directly = { success, data: providers[] }
-                const body = await api.get<ApiResponse<Provider[]>>("/providers");
+                const body = await api.get<ApiResponse<Provider[]>>("/admin/providers?limit=100");
                 return body.data ?? [];
             } catch (err) {
                 console.error("Providers fetch failed", err);
@@ -76,28 +75,28 @@ export default function AdminProvidersPage() {
 
     const deleteProviderMutation = useMutation({
         mutationFn: async (providerId: string) => {
-            return api.delete<ApiResponse<any>>(`/admin/providers/${providerId}`);
+            return api.delete<ApiResponse<{ message: string }>>(`/admin/providers/${providerId}`);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["admin-providers"] });
             toast.success("Provider deleted successfully");
             setDeleteTarget(null);
         },
-        onError: (err: any) => {
-            toast.error(err.message || "Failed to delete provider");
+        onError: (err) => {
+            toast.error(err instanceof Error ? err.message : "Failed to delete provider");
         }
     });
 
-    const banProviderMutation = useMutation({
-        mutationFn: async ({ userId, banned }: { userId: string; banned: boolean }) => {
-            return api.patch<ApiResponse<any>>(`/admin/users/${userId}/ban`, { banned });
+    const updateProviderStatusMutation = useMutation({
+        mutationFn: async ({ providerId, isActive }: { providerId: string; isActive: boolean }) => {
+            return api.patch<ApiResponse<Provider>>(`/admin/providers/${providerId}/status`, { isActive });
         },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["admin-providers"] });
-            toast.success(variables.banned ? "Provider banned successfully" : "Provider unbanned successfully");
+            toast.success(variables.isActive ? "Provider activated successfully" : "Provider suspended successfully");
         },
-        onError: (err: any) => {
-            toast.error(err.message || "Failed to update provider status");
+        onError: (err) => {
+            toast.error(err instanceof Error ? err.message : "Failed to update provider status");
         }
     });
 
@@ -281,22 +280,20 @@ export default function AdminProvidersPage() {
                                                     <DropdownMenuContent align="end" className="w-48">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                         <DropdownMenuSeparator />
-                                                        {provider.userId && (
-                                                            provider.isActive ? (
-                                                                <DropdownMenuItem
-                                                                    className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-                                                                    onClick={() => banProviderMutation.mutate({ userId: provider.userId, banned: true })}
-                                                                >
-                                                                    <UserMinus className="mr-2 h-4 w-4" /> Ban Provider
-                                                                </DropdownMenuItem>
-                                                            ) : (
-                                                                <DropdownMenuItem
-                                                                    className="text-green-600 focus:text-green-600 focus:bg-green-50 cursor-pointer"
-                                                                    onClick={() => banProviderMutation.mutate({ userId: provider.userId, banned: false })}
-                                                                >
-                                                                    <UserCheck className="mr-2 h-4 w-4" /> Unban Provider
-                                                                </DropdownMenuItem>
-                                                            )
+                                                        {provider.isActive ? (
+                                                            <DropdownMenuItem
+                                                                className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                                                                onClick={() => updateProviderStatusMutation.mutate({ providerId: provider.id, isActive: false })}
+                                                            >
+                                                                <UserMinus className="mr-2 h-4 w-4" /> Suspend Provider
+                                                            </DropdownMenuItem>
+                                                        ) : (
+                                                            <DropdownMenuItem
+                                                                className="text-green-600 focus:text-green-600 focus:bg-green-50 cursor-pointer"
+                                                                onClick={() => updateProviderStatusMutation.mutate({ providerId: provider.id, isActive: true })}
+                                                            >
+                                                                <UserCheck className="mr-2 h-4 w-4" /> Activate Provider
+                                                            </DropdownMenuItem>
                                                         )}
                                                         <DropdownMenuItem
                                                             className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
