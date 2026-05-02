@@ -79,130 +79,193 @@ export default function CravelyPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-50/50 flex flex-col">
-      <div className="container mx-auto max-w-5xl flex-1 flex flex-col py-8 px-4">
+    <div className="min-h-[calc(100vh-64px)] bg-slate-50/50 dark:bg-slate-950 flex flex-col">
+      <div className="container mx-auto max-w-6xl flex-1 flex flex-col py-12 px-4">
         
-        {/* Header Area */}
-        <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-[1.5rem] bg-primary flex items-center justify-center shadow-xl shadow-primary/20">
-                    <Sparkles className="h-8 w-8 text-white" />
+        {/* Premium Header */}
+        <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8">
+            <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-6"
+            >
+                <div className="h-20 w-20 rounded-[2rem] bg-gradient-to-br from-slate-900 to-slate-800 dark:from-primary dark:to-rose-600 flex items-center justify-center shadow-2xl shadow-slate-200 dark:shadow-primary/20 relative group">
+                    <Sparkles className="h-10 w-10 text-white animate-pulse" />
+                    <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-emerald-500 border-4 border-slate-50 dark:border-slate-950 flex items-center justify-center">
+                        <div className="h-2 w-2 rounded-full bg-white animate-ping" />
+                    </div>
                 </div>
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-900">Cravely <span className="text-primary">AI</span></h1>
-                    <p className="text-sm font-medium text-slate-500">Your AI-powered Gourmet Assistant</p>
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-1">
+                        Cravely <span className="text-primary italic">Intelligence</span>
+                    </h1>
+                    <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+                            System Active
+                        </Badge>
+                        <span className="text-xs font-bold text-slate-400">Ver 2.0.4</span>
+                    </div>
                 </div>
-            </div>
+            </motion.div>
+            
             <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" onClick={clearChat} className="rounded-xl font-bold text-xs uppercase tracking-widest gap-2">
-                    <Trash2 className="h-3.5 w-3.5" /> Clear
+                <Button 
+                    variant="outline" 
+                    size="lg" 
+                    onClick={clearChat} 
+                    className="rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] gap-2 border-slate-200 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 h-12 shadow-sm"
+                >
+                    <Trash2 className="h-4 w-4 text-rose-500" /> Reset Session
                 </Button>
-                <Button variant="outline" size="sm" className="rounded-xl font-bold text-xs uppercase tracking-widest gap-2">
-                    <History className="h-3.5 w-3.5" /> History
+                <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] gap-2 border-slate-200 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 h-12 shadow-sm"
+                >
+                    <History className="h-4 w-4 text-slate-400" /> Archive
                 </Button>
             </div>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-8 flex-1 items-start">
-            {/* Sidebar info */}
-            <div className="hidden lg:block space-y-6">
-                <Card className="p-6 border-none shadow-xl shadow-slate-100 rounded-[2rem] bg-white">
-                    <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-4 flex items-center gap-2">
-                        <Info className="h-4 w-4" /> Capabilities
+        <div className="grid lg:grid-cols-4 gap-10 flex-1 items-stretch">
+            {/* Intelligent Sidebar */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="hidden lg:flex flex-col gap-6"
+            >
+                <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[2.5rem] bg-white dark:bg-slate-900/50 backdrop-blur-xl border border-white/20 dark:border-slate-800">
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-6 flex items-center gap-2">
+                        <Sparkles className="h-4 w-4" /> Capabilities
                     </h4>
-                    <ul className="space-y-4">
+                    <div className="space-y-5">
                         {[
-                            { icon: Utensils, text: "Meal Recommendations" },
-                            { icon: Bot, text: "Dietary Advice" },
-                            { icon: Info, text: "Order Support" }
+                            { icon: Utensils, text: "Personalized Menus", desc: "Based on your cravings" },
+                            { icon: Bot, text: "Dietary Architect", desc: "Calorie & macro advice" },
+                            { icon: Info, text: "Kitchen Scout", desc: "Finding the best local chefs" }
                         ].map((cap, i) => (
-                            <li key={i} className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                                <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center">
-                                    <cap.icon className="h-4 w-4 text-slate-400" />
-                                </div>
-                                {cap.text}
-                            </li>
-                        ))}
-                    </ul>
-                </Card>
-
-                <Card className="p-6 border-none shadow-xl shadow-slate-100 rounded-[2rem] bg-primary text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full -mr-16 -mt-16" />
-                    <h4 className="text-sm font-black mb-2 relative z-10">Pro Tip</h4>
-                    <p className="text-xs font-medium text-white/80 leading-relaxed relative z-10">
-                        Try asking: "What's the best spicy Biriyani under 500 BDT?"
-                    </p>
-                </Card>
-            </div>
-
-            {/* Chat Area */}
-            <Card className="lg:col-span-3 h-[70vh] border-none shadow-2xl shadow-slate-200 rounded-[3rem] bg-white overflow-hidden flex flex-col">
-                <ScrollArea className="flex-1 p-8" ref={scrollRef}>
-                    <div className="space-y-8 pb-4">
-                        {messages.map((m, i) => (
-                            <div 
-                                key={i} 
-                                className={cn(
-                                    "flex flex-col",
-                                    m.role === "user" ? "items-end" : "items-start"
-                                )}
-                            >
-                                <div className={cn(
-                                    "max-w-[80%] p-6 rounded-[2rem] text-sm md:text-base font-medium leading-relaxed shadow-sm",
-                                    m.role === "user" 
-                                        ? "bg-slate-900 text-white rounded-tr-none" 
-                                        : "bg-slate-50 text-slate-800 rounded-tl-none border border-slate-100"
-                                )}>
-                                    {m.content}
-                                </div>
-                                {m.citations && m.citations.length > 0 && (
-                                    <div className="mt-4 flex flex-wrap gap-2">
-                                        <span className="text-[10px] font-black uppercase text-slate-400 w-full mb-1">Cravely suggests:</span>
-                                        {m.citations.map((c: any) => (
-                                            <Badge key={c.id} variant="secondary" className="bg-primary/5 text-primary border-primary/10 font-bold px-3 py-1">
-                                                {c.name}
-                                            </Badge>
-                                        ))}
+                            <div key={i} className="group">
+                                <div className="flex items-center gap-4 mb-1">
+                                    <div className="h-10 w-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                        <cap.icon className="h-5 w-5" />
                                     </div>
-                                )}
+                                    <div className="font-bold text-sm text-slate-700 dark:text-slate-200">{cap.text}</div>
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-medium pl-14">{cap.desc}</p>
                             </div>
                         ))}
-                        {isLoading && (
-                            <div className="flex justify-start items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    </div>
+                </Card>
+
+                <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[2.5rem] bg-slate-900 dark:bg-white text-white dark:text-slate-900 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 group-hover:bg-primary/30 transition-colors blur-3xl rounded-full -mr-20 -mt-20" />
+                    <div className="relative z-10">
+                        <div className="h-8 w-8 rounded-lg bg-white/10 dark:bg-slate-900/10 flex items-center justify-center mb-4">
+                            <Info className="h-4 w-4" />
+                        </div>
+                        <h4 className="font-black text-sm mb-2">Prompt Tip</h4>
+                        <p className="text-xs font-medium opacity-70 leading-relaxed">
+                            "Show me the most popular desserts from providers with a 4.5+ rating."
+                        </p>
+                    </div>
+                </Card>
+            </motion.div>
+
+            {/* Chat Command Center */}
+            <Card className="lg:col-span-3 min-h-[650px] border-none shadow-[0_20px_50px_rgba(0,0,0,0.08)] rounded-[3rem] bg-white dark:bg-slate-900/20 backdrop-blur-xl border border-white/20 dark:border-slate-800 overflow-hidden flex flex-col relative">
+                <ScrollArea className="flex-1 px-8 py-10" ref={scrollRef}>
+                    <div className="space-y-10 pb-4">
+                        {messages.map((m, i) => (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                key={i} 
+                                className={cn(
+                                    "flex items-end gap-4",
+                                    m.role === "user" ? "flex-row-reverse" : "flex-row"
+                                )}
+                            >
+                                {m.role === "assistant" && (
+                                    <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 mb-1 border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+                                        <Bot className="h-6 w-6 text-primary" />
+                                    </div>
+                                )}
+                                <div className="flex flex-col gap-3 max-w-[80%]">
+                                    <div className={cn(
+                                        "p-6 rounded-[2rem] text-base leading-relaxed",
+                                        m.role === "user" 
+                                            ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-br-none shadow-2xl shadow-slate-200 dark:shadow-none font-medium" 
+                                            : "bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-800/50"
+                                    )}>
+                                        {m.content}
+                                    </div>
+                                    
+                                    {m.citations && m.citations.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 px-2 animate-in fade-in slide-in-from-top-2 duration-500">
+                                            {m.citations.map((c: any) => (
+                                                <Badge 
+                                                    key={c.id} 
+                                                    variant="secondary" 
+                                                    className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 font-bold px-4 py-2 rounded-xl shadow-sm hover:border-primary/30 transition-colors cursor-pointer group"
+                                                >
+                                                    <Utensils className="h-3 w-3 mr-2 text-primary group-hover:scale-110 transition-transform" />
+                                                    {c.name}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                                <span className="text-sm font-bold text-slate-400 italic">Thinking...</span>
+                            </motion.div>
+                        ))}
+                        {isLoading && (
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200/50">
+                                    <Bot className="h-6 w-6 text-primary animate-pulse" />
+                                </div>
+                                <div className="flex gap-2 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] rounded-bl-none border border-slate-100 dark:border-slate-800/50">
+                                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="h-2 w-2 rounded-full bg-primary" />
+                                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="h-2 w-2 rounded-full bg-primary" />
+                                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="h-2 w-2 rounded-full bg-primary" />
+                                </div>
                             </div>
                         )}
                     </div>
                 </ScrollArea>
 
-                <div className="p-6 bg-slate-50/50 border-t">
+                {/* Intelligent Input Hub */}
+                <div className="p-8 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/50">
                     <form 
                         onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-                        className="relative flex items-center gap-4"
+                        className="relative group"
                     >
-                        <div className="relative flex-1">
-                            <Input
-                                placeholder="Message Cravely..."
-                                className="h-16 pl-8 pr-16 rounded-[2rem] border-none shadow-inner bg-white focus-visible:ring-primary/20 text-lg font-medium"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                            />
-                            <Button 
-                                type="submit"
-                                size="icon"
-                                disabled={!input.trim() || isLoading}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 h-12 w-12 rounded-2xl shadow-xl shadow-primary/20 transition-transform active:scale-90"
-                            >
-                                <Send className="h-5 w-5" />
-                            </Button>
-                        </div>
+                        <Input
+                            placeholder="Ask Cravely Intelligence..."
+                            className="h-20 pl-10 pr-24 rounded-[2.5rem] border-none bg-slate-50 dark:bg-slate-800/50 focus-visible:ring-2 focus-visible:ring-primary/20 text-lg font-medium placeholder:text-slate-400 dark:text-white"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                        />
+                        <Button 
+                            type="submit"
+                            size="icon"
+                            disabled={!input.trim() || isLoading}
+                            className={cn(
+                                "absolute right-3 top-1/2 -translate-y-1/2 h-14 w-14 rounded-3xl transition-all duration-300",
+                                input.trim() ? "bg-primary text-white shadow-2xl shadow-primary/20 scale-100 rotate-0" : "bg-slate-200 dark:bg-slate-700 text-slate-400 scale-95 opacity-50"
+                            )}
+                        >
+                            {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Send className="h-6 w-6" />}
+                        </Button>
                     </form>
-                    <p className="text-[10px] text-center text-slate-400 mt-4 font-black uppercase tracking-widest">
-                        Always verify AI-generated information. Powered by Google Gemini.
-                    </p>
+                    <div className="flex items-center justify-between mt-6 px-4">
+                        <div className="flex items-center gap-6 opacity-30">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Gemini 1.5 Flash</span>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">RAG Pipeline v2</span>
+                        </div>
+                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                            FoodHub AI Command Center
+                        </p>
+                    </div>
                 </div>
             </Card>
         </div>
