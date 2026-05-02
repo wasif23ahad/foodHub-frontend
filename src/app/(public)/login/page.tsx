@@ -61,6 +61,11 @@ export default function LoginPage() {
     form.setValue("email", email);
     form.setValue("password", password);
     setLoginRole(role);
+    
+    // Auto-submit for better UX
+    setTimeout(() => {
+        form.handleSubmit(onSubmit)();
+    }, 150);
   };
 
   const handleGoogleLogin = async () => {
