@@ -9,13 +9,10 @@ export function middleware(request: NextRequest) {
     const isProtected = PROTECTED_ROUTES.some((r) => pathname.startsWith(r));
     if (!isProtected) return NextResponse.next();
 
-    // BetterAuth sets a session cookie — check for its presence
-    // The cookie name varies between HTTP (dev) and HTTPS (prod)
-    const sessionCookie =
-        request.cookies.get('better-auth.session_token') ||
-        request.cookies.get('__Secure-better-auth.session_token');
+    // Check for our custom JWT token cookie
+    const sessionToken = request.cookies.get('token');
 
-    if (!sessionCookie) {
+    if (!sessionToken) {
         const loginUrl = new URL(`/login`, request.url);
         loginUrl.searchParams.set('redirect', pathname);
         return NextResponse.redirect(loginUrl);
