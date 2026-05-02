@@ -8,6 +8,7 @@ import { Eye, EyeOff, Loader2, User, Utensils, ShieldCheck } from "lucide-react"
 import { useState } from "react";
 
 import { useAuth } from "@/components/providers/auth-provider";
+import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,8 +63,11 @@ export default function LoginPage() {
     setLoginRole(role);
   };
 
-  const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login/google`;
+  const handleGoogleLogin = async () => {
+    await signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    });
   };
 
   return (
