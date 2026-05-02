@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
-import { Eye, EyeOff, Loader2, User, Utensils } from "lucide-react";
+import { Eye, EyeOff, Loader2, User, Utensils, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
 import { useAuth } from "@/components/providers/auth-provider";
@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Icons } from "@/components/ui/icons";
+import { DemoLoginPanel } from "@/components/auth/demo-login-panel";
 
 import {
   Form,
@@ -32,7 +34,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const { login, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [loginRole, setLoginRole] = useState<"user" | "seller">("user");
+  const [loginRole, setLoginRole] = useState<"user" | "seller" | "admin">("user");
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -44,17 +46,30 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormValues) {
     try {
-      const requireRole = loginRole === "seller" ? "PROVIDER" : "CUSTOMER";
+      let requireRole: "CUSTOMER" | "PROVIDER" | "ADMIN" = "CUSTOMER";
+      if (loginRole === "seller") requireRole = "PROVIDER";
+      if (loginRole === "admin") requireRole = "ADMIN";
+      
       await login(data, requireRole);
     } catch {
       // Error handling is done in AuthProvider
     }
   }
 
+  const handleDemoSelect = (email: string, password: string, role: "user" | "seller" | "admin") => {
+    form.setValue("email", email);
+    form.setValue("password", password);
+    setLoginRole(role);
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login/google`;
+  };
+
   return (
-    <div className="flex bg-slate-50 min-h-[calc(100vh-4rem)] items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md shadow-lg border-none sm:border-border">
-        <CardHeader className="space-y-1">
+    <div className="flex bg-slate-50 dark:bg-background min-h-[calc(100vh-4rem)] items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors">
+      <Card className="w-full max-w-md shadow-lg border-none sm:border-border overflow-hidden">
+        <CardHeader className="space-y-1 bg-white dark:bg-card">
           <CardTitle className="text-2xl font-bold tracking-tight text-center text-primary">
             Welcome back
           </CardTitle>
@@ -62,12 +77,34 @@ export default function LoginPage() {
             Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="bg-white dark:bg-card pt-6">
+          <div className="mb-6 space-y-4">
+            <Button 
+              variant="outline" 
+              className="w-full gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-accent transition-colors"
+              onClick={handleGoogleLogin}
+              type="button"
+            >
+              <Icons.google className="h-4 w-4" />
+              Continue with Google
+            </Button>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white dark:bg-card px-2 text-slate-500 font-medium">
+                  Or continue with email
+                </span>
+              </div>
+            </div>
+          </div>
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <div className="space-y-3">
                 <Label className="text-base font-semibold">Sign in as</Label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
                   <div className="relative">
                     <input
                       id="login-role-user"
@@ -79,10 +116,10 @@ export default function LoginPage() {
                     />
                     <Label
                       htmlFor="login-role-user"
-                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary peer-checked:text-primary cursor-pointer transition-all"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 sm:p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary peer-checked:text-primary cursor-pointer transition-all"
                     >
-                      <User className="mb-2 h-6 w-6" />
-                      <span className="font-semibold">Customer</span>
+                      <User className="mb-2 h-5 w-5 sm:h-6 sm:w-6" />
+                      <span className="font-semibold text-[10px] sm:text-xs">Customer</span>
                     </Label>
                   </div>
                   <div className="relative">
@@ -96,10 +133,27 @@ export default function LoginPage() {
                     />
                     <Label
                       htmlFor="login-role-seller"
-                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary peer-checked:text-primary cursor-pointer transition-all"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 sm:p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary peer-checked:text-primary cursor-pointer transition-all"
                     >
-                      <Utensils className="mb-2 h-6 w-6" />
-                      <span className="font-semibold">Sell Food</span>
+                      <Utensils className="mb-2 h-5 w-5 sm:h-6 sm:w-6" />
+                      <span className="font-semibold text-[10px] sm:text-xs">Seller</span>
+                    </Label>
+                  </div>
+                  <div className="relative">
+                    <input
+                      id="login-role-admin"
+                      type="radio"
+                      className="peer sr-only"
+                      checked={loginRole === "admin"}
+                      onChange={() => setLoginRole("admin")}
+                      name="loginRole"
+                    />
+                    <Label
+                      htmlFor="login-role-admin"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 sm:p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary peer-checked:text-primary cursor-pointer transition-all"
+                    >
+                      <ShieldCheck className="mb-2 h-5 w-5 sm:h-6 sm:w-6" />
+                      <span className="font-semibold text-[10px] sm:text-xs">Admin</span>
                     </Label>
                   </div>
                 </div>
@@ -112,7 +166,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@example.com" {...field} />
+                      <Input placeholder="name@example.com" {...field} className="bg-slate-50/50 dark:bg-background/50" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -134,7 +188,7 @@ export default function LoginPage() {
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className="pr-10"
+                          className="pr-10 bg-slate-50/50 dark:bg-background/50"
                           {...field}
                         />
                         <button
@@ -159,27 +213,28 @@ export default function LoginPage() {
               />
               <Button
                 type="submit"
-                className="w-full bg-primary hover:bg-primary-dark font-bold relative"
+                className="w-full bg-primary hover:bg-primary-dark font-bold py-6 text-white text-lg shadow-md shadow-primary/20 transition-all active:scale-[0.98]"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Signing in...
                   </>
                 ) : (
-                  `Sign In as ${loginRole === "seller" ? "Seller" : "Customer"}`
+                  `Sign In as ${loginRole === "seller" ? "Seller" : loginRole === "admin" ? "Admin" : "Customer"}`
                 )}
               </Button>
-
             </form>
           </Form>
+
+          <DemoLoginPanel onSelect={handleDemoSelect} />
         </CardContent>
-        <CardFooter className="flex flex-col gap-4 text-center">
+        <CardFooter className="flex flex-col gap-4 text-center bg-slate-50/50 dark:bg-accent/10 border-t py-6">
           <div className="text-sm text-slate-500">
             Don't have an account?{" "}
-            <Link href="/register" className="text-primary hover:underline font-semibold">
-              Sign up
+            <Link href="/register" className="text-primary hover:underline font-bold">
+              Sign up for free
             </Link>
           </div>
         </CardFooter>

@@ -29,14 +29,20 @@ import {
 import { useCartStore } from "@/stores/cart-store";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useEffect, useState } from "react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 import { cn, getMediaUrl } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-const navLinks = [
+const publicLinks = [
     { href: "/", label: "Home" },
-    { href: "/meals", label: "Meals" },
+    { href: "/meals", label: "Explore" },
     { href: "/providers", label: "Providers" },
+    { href: "/contact", label: "Contact" },
+];
+
+const authLinks = [
+    { href: "/cravely", label: "Cravely AI", highlight: true },
 ];
 
 export function Navbar() {
@@ -64,6 +70,8 @@ export function Navbar() {
             .substring(0, 2);
     };
 
+    const activeLinks = user ? [...publicLinks, ...authLinks] : publicLinks;
+
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -83,15 +91,17 @@ export function Navbar() {
 
                 {/* Desktop Navigation */}
                 <nav className="hidden md:flex items-center gap-8">
-                    {navLinks.map((link) => {
+                    {activeLinks.map((link) => {
                         const isActive = pathname === link.href;
+                        const isSpecial = "highlight" in link && link.highlight;
                         return (
                             <Link
                                 key={link.href}
                                 href={link.href}
                                 className={cn(
-                                    "text-sm font-medium transition-colors hover:text-primary relative py-1",
-                                    isActive ? "text-foreground" : "text-muted-foreground"
+                                    "text-sm font-medium transition-all hover:text-primary relative py-1",
+                                    isActive ? "text-foreground" : "text-muted-foreground",
+                                    isSpecial && "text-primary font-bold hover:scale-105"
                                 )}
                             >
                                 {link.label}
@@ -107,30 +117,11 @@ export function Navbar() {
                             </Link>
                         );
                     })}
-                    {/* Admin Dashboard Quick Link */}
-                    {mounted && user?.role.toUpperCase() === "ADMIN" && (
-                        <Link
-                            href="/admin"
-                            className={cn(
-                                "text-sm font-medium transition-colors hover:text-primary relative py-1",
-                                pathname.startsWith("/admin") ? "text-primary" : "text-muted-foreground"
-                            )}
-                        >
-                            Dashboard
-                            {pathname.startsWith("/admin") && (
-                                <motion.span
-                                    layoutId="nav-underline"
-                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                />
-                            )}
-                        </Link>
-                    )}
                 </nav>
 
-                {/* Right Side - Cart & Auth */}
+                {/* Right Side - Actions */}
                 <div className="flex items-center gap-2 md:gap-4">
+                    <ThemeToggle />
                     {/* Cart - only visible for customers */}
                     {(!user || isCustomer) && (
                         <Link href="/cart" className="relative">
@@ -247,7 +238,7 @@ export function Navbar() {
                                 </SheetTitle>
                             </SheetHeader>
                             <nav className="mt-8 flex flex-col gap-4">
-                                {navLinks.map((link) => (
+                                {activeLinks.map((link) => (
                                     <Link
                                         key={link.href}
                                         href={link.href}
@@ -255,7 +246,8 @@ export function Navbar() {
                                             "text-lg font-medium transition-colors hover:text-primary py-2 border-b border-border/40",
                                             pathname === link.href
                                                 ? "text-primary"
-                                                : "text-muted-foreground"
+                                                : "text-muted-foreground",
+                                            "highlight" in link && link.highlight && "text-primary font-bold"
                                         )}
                                     >
                                         {link.label}

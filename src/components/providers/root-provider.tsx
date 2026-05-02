@@ -5,6 +5,7 @@ import { ReactNode, useState } from "react";
 import { Toaster } from "sonner";
 
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 export function RootProvider({ children }: { children: ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({
@@ -17,10 +18,17 @@ export function RootProvider({ children }: { children: ReactNode }) {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-                {children}
-            </AuthProvider>
-            <Toaster />
+            <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+            >
+                <AuthProvider>
+                    {children}
+                </AuthProvider>
+                <Toaster />
+            </ThemeProvider>
         </QueryClientProvider>
     );
 }
