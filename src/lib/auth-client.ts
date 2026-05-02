@@ -8,6 +8,8 @@ export const authClient = {
     signIn: {
         social: async ({ provider }: { provider: string }) => {
             if (provider === "google") {
+                // For manual JWT, we typically redirect to a backend route that initiates Google OAuth
+                // or use a frontend library to get an idToken.
                 window.location.href = `${API_BASE_URL}/auth/google`;
             }
         },
@@ -18,10 +20,14 @@ export const authClient = {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password }),
                 });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || "Login failed");
+                const result = await res.json();
+                if (!res.ok || !result.success) {
+                    throw new Error(result.message || "Login failed");
+                }
+                
+                // Persistence is handled by the HttpOnly cookie set by the backend
                 window.location.reload();
-                return { data };
+                return { data: result.data };
             } catch (error: any) {
                 return { error };
             }
@@ -35,10 +41,13 @@ export const authClient = {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password, name, role }),
                 });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || "Registration failed");
+                const result = await res.json();
+                if (!res.ok || !result.success) {
+                    throw new Error(result.message || "Registration failed");
+                }
+                
                 window.location.reload();
-                return { data };
+                return { data: result.data };
             } catch (error: any) {
                 return { error };
             }
@@ -46,8 +55,11 @@ export const authClient = {
     },
     signOut: async () => {
         try {
-            await fetch(`${API_BASE_URL}/auth/logout`, { method: "POST" });
-            window.location.href = "/login";
+            const res = await fetch(`${API_BASE_URL}/auth/logout`, { method: "POST" });
+            const result = await res.json();
+            if (result.success) {
+                window.location.href = "/login";
+            }
         } catch (error) {
             console.error("Logout error:", error);
         }
@@ -61,10 +73,14 @@ export const useSession = () => {
 
     const fetchSession = useCallback(async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/auth/get-session`);
+            const res = await fetch(`${API_BASE_URL}/auth/me`);
             if (res.ok) {
-                const data = await res.json();
-                setSession(data);
+                const result = await res.json();
+                if (result.success && result.data?.user) {
+                    setSession({ user: result.data.user });
+                } else {
+                    setSession(null);
+                }
             } else {
                 setSession(null);
             }
