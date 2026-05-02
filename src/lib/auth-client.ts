@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
+import { useAuthStore } from "@/stores/auth-store";
+import { authService } from "@/services/auth.service";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -8,26 +10,17 @@ export const authClient = {
     signIn: {
         social: async ({ provider }: { provider: string }) => {
             if (provider === "google") {
-                // For manual JWT, we typically redirect to a backend route that initiates Google OAuth
-                // or use a frontend library to get an idToken.
                 window.location.href = `${API_BASE_URL}/auth/google`;
             }
         },
         email: async ({ email, password }: any) => {
             try {
-                const res = await fetch(`${API_BASE_URL}/auth/login`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password }),
-                });
-                const result = await res.json();
-                if (!res.ok || !result.success) {
-                    throw new Error(result.message || "Login failed");
-                }
+                const res = await authService.login({ email, password });
+                if (!res.success) throw new Error(res.message || "Login failed");
                 
-                // Persistence is handled by the HttpOnly cookie set by the backend
+                useAuthStore.getState().setUser(res.data.user);
                 window.location.reload();
-                return { data: result.data };
+                return { data: res.data };
             } catch (error: any) {
                 return { error };
             }
@@ -36,18 +29,12 @@ export const authClient = {
     signUp: {
         email: async ({ email, password, name, role }: any) => {
             try {
-                const res = await fetch(`${API_BASE_URL}/auth/register`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password, name, role }),
-                });
-                const result = await res.json();
-                if (!res.ok || !result.success) {
-                    throw new Error(result.message || "Registration failed");
-                }
+                const res = await authService.register({ email, password, name, role });
+                if (!res.success) throw new Error(res.message || "Registration failed");
                 
+                useAuthStore.getState().setUser(res.data.user);
                 window.location.reload();
-                return { data: result.data };
+                return { data: res.data };
             } catch (error: any) {
                 return { error };
             }
@@ -55,11 +42,9 @@ export const authClient = {
     },
     signOut: async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/auth/logout`, { method: "POST" });
-            const result = await res.json();
-            if (result.success) {
-                window.location.href = "/login";
-            }
+            await authService.logout();
+            useAuthStore.getState().logout();
+            window.location.href = "/login";
         } catch (error) {
             console.error("Logout error:", error);
         }
@@ -67,36 +52,31 @@ export const authClient = {
 };
 
 export const useSession = () => {
-    const [session, setSession] = useState<{ user: any } | null>(null);
-    const [isPending, setIsPending] = useState(true);
-    const [error, setError] = useState<any>(null);
+    const { user, isLoading, setUser, setLoading } = useAuthStore();
 
     const fetchSession = useCallback(async () => {
+        setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/auth/me`);
-            if (res.ok) {
-                const result = await res.json();
-                if (result.success && result.data?.user) {
-                    setSession({ user: result.data.user });
-                } else {
-                    setSession(null);
-                }
+            const res = await authService.getMe();
+            if (res.success && res.data?.user) {
+                setUser(res.data.user);
             } else {
-                setSession(null);
+                setUser(null);
             }
         } catch (err) {
-            setError(err);
-            setSession(null);
+            setUser(null);
         } finally {
-            setIsPending(false);
+            setLoading(false);
         }
-    }, []);
+    }, [setUser, setLoading]);
 
     useEffect(() => {
-        fetchSession();
-    }, [fetchSession]);
+        if (!user && isLoading) {
+            fetchSession();
+        }
+    }, [fetchSession, user, isLoading]);
 
-    return { data: session, isPending, error, refetch: fetchSession };
+    return { data: user ? { user } : null, isPending: isLoading, refetch: fetchSession };
 };
 
 export const { signIn, signUp, signOut } = authClient;

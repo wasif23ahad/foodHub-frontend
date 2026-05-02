@@ -1,11 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, ReactNode, useCallback } from "react";
 import { User, LoginCredentials, RegisterData } from "@/types";
-import { api, API_URL } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useCartStore } from "@/stores/cart-store";
+import { useAuthStore } from "@/stores/auth-store";
+import { authService } from "@/services/auth.service";
 
 interface AuthContextType {
     user: User | null;
@@ -19,47 +20,36 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const { user, setUser, isLoading, setLoading, logout: clearStore } = useAuthStore();
     const router = useRouter();
 
-    // Helper to fetch fresh user data
-    const fetchFreshUser = async (userFromSession: User) => {
-        try {
-            // Fetch fresh data from DB to bypass BetterAuth session cache
-            const freshProfile = await api.get<{ data: User }>("/user/profile");
-            return freshProfile.data || freshProfile;
-        } catch (error) {
-            console.error("Failed to fetch fresh profile, using session data:", error);
-            return userFromSession;
-        }
-    };
-
     // Check for existing session on mount
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const session = await api.get<{ user: User } | null>("/auth/get-session");
-                if (session?.user) {
-                    const freshUser = await fetchFreshUser(session.user);
-                    setUser(freshUser as User);
-                }
-            } catch (error) {
-                console.error("Auth check failed:", error);
-            } finally {
-                setIsLoading(false);
+    const checkAuth = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await authService.getMe();
+            if (res.success && res.data?.user) {
+                setUser(res.data.user);
+            } else {
+                setUser(null);
             }
-        };
+        } catch (error) {
+            console.error("Auth check failed:", error);
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
+    }, [setUser, setLoading]);
 
+    useEffect(() => {
         checkAuth();
-    }, []);
+    }, [checkAuth]);
 
     const refreshUser = async () => {
         try {
-            const session = await api.get<{ user: User } | null>("/auth/get-session");
-            if (session?.user) {
-                const freshUser = await fetchFreshUser(session.user);
-                setUser(freshUser as User);
+            const res = await authService.getMe();
+            if (res.success && res.data?.user) {
+                setUser(res.data.user);
             }
         } catch (error) {
             console.error("Refresh user failed:", error);
@@ -67,23 +57,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const login = async (credentials: LoginCredentials, requireRole?: string) => {
-        setIsLoading(true);
+        setLoading(true);
         try {
-            const res = await api.post<any>("/auth/sign-in/email", credentials);
+            const res = await authService.login(credentials);
+            if (!res.success) throw new Error(res.message || "Login failed");
 
-            // BetterAuth returns { user: {...}, session: {...} }
-            const user = res?.user || res;
-            const userRole = (user?.role || "").toUpperCase();
+            const loggedInUser = res.data.user;
+            const userRole = (loggedInUser?.role || "").toUpperCase();
 
             // Strict role checking if requested
             if (requireRole && userRole !== requireRole.toUpperCase() && userRole !== "ADMIN") {
-                await api.post("/auth/sign-out");
+                await authService.logout();
                 const portalName = requireRole.toUpperCase() === "PROVIDER" ? "Seller" : "Customer";
                 toast.error(`This account is not a ${portalName} account. Please use the correct login option.`);
                 throw new Error("Access denied: Insufficient permissions.");
             }
 
-            setUser(user as User);
+            setUser(loggedInUser);
             toast.success("Logged in successfully");
 
             // Role-based redirection
@@ -98,26 +88,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
             throw error;
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
     const register = async (data: RegisterData) => {
-        setIsLoading(true);
+        setLoading(true);
         try {
-            const res = await api.post<{ user: User }>("/auth/sign-up/email", {
-                email: data.email,
-                password: data.password,
-                name: data.name,
-                role: data.role.toUpperCase()
-            });
+            const res = await authService.register(data);
+            if (!res.success) throw new Error(res.message || "Registration failed");
 
-            const user = res.user || res;
-            setUser(user as User);
+            const newUser = res.data.user;
+            setUser(newUser);
 
             toast.success("Account created successfully");
 
-            const userRole = (user as User)?.role?.toUpperCase() || "";
+            const userRole = (newUser?.role || "").toUpperCase();
             if (userRole === "PROVIDER") {
                 router.push("/provider/dashboard");
             } else {
@@ -128,16 +114,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             toast.error(error.message || "Registration failed. Please try again.");
             throw error;
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
-
-
     const logout = async () => {
         try {
-            await api.post("/auth/sign-out");
-            setUser(null);
+            await authService.logout();
+            clearStore();
             useCartStore.getState().clearCart();
             toast.success("Logged out successfully");
             router.push("/login");
