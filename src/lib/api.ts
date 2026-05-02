@@ -1,3 +1,5 @@
+import { useAuthStore } from "@/stores/auth-store";
+
 const API_URL = process.env.NODE_ENV === "production" ? "/api" : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api");
 
 type RequestOptions = {
@@ -6,68 +8,67 @@ type RequestOptions = {
     next?: { revalidate?: number; tags?: string[] };
 };
 
+async function handleResponse<T>(res: Response): Promise<T> {
+    const contentType = res.headers.get("content-type") ?? "";
+    const isJson = contentType.includes("application/json");
+
+    if (!res.ok) {
+        if (res.status === 401) {
+            // Clear local auth state on unauthorized
+            if (typeof window !== "undefined") {
+                useAuthStore.getState().logout();
+                // Avoid infinite redirect loop if already on login page
+                if (window.location.pathname !== "/login") {
+                    window.location.href = "/login";
+                }
+            }
+        }
+
+        let errorMsg = `API Error: ${res.status} ${res.statusText}`;
+        if (isJson) {
+            try {
+                const errorData = await res.json();
+                errorMsg = errorData.message || errorMsg;
+            } catch {
+                // ignore
+            }
+        } else {
+            const text = await res.text().catch(() => "");
+            if (text?.startsWith("<")) errorMsg = "Server returned an HTML page instead of JSON. Check backend deployment.";
+            else if (text) errorMsg = text.slice(0, 200);
+        }
+        throw new Error(errorMsg);
+    }
+
+    if (!isJson) {
+        const text = await res.text().catch(() => "");
+        if (text?.startsWith("<")) {
+            throw new Error("Server returned an HTML page instead of JSON.");
+        }
+        // Handle 204 No Content
+        if (res.status === 204) return {} as T;
+        return {} as T;
+    }
+
+    return await res.json();
+}
+
 export const api = {
     async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-        const url = `${API_URL}${endpoint}`;
-
-        const res = await fetch(url, {
+        const res = await fetch(`${API_URL}${endpoint}`, {
             method: "GET",
-            headers: {
-                ...options?.headers,
-            },
+            headers: options?.headers,
             credentials: "include",
             cache: options?.cache,
             next: options?.next,
         });
-
-        const contentType = res.headers.get("content-type") ?? "";
-        const isJson = contentType.includes("application/json");
-
-        if (!res.ok) {
-            if (res.status === 401) {
-                if (typeof window !== "undefined") {
-                    window.location.href = "/login";
-                }
-            }
-            let errorMsg = `API Error: ${res.status} ${res.statusText}`;
-            if (isJson) {
-                try {
-                    const errorData = await res.json();
-                    errorMsg = errorData.message || errorMsg;
-                } catch {
-                    // ignore
-                }
-            } else {
-                const text = await res.text().catch(() => "");
-                if (text?.startsWith("<")) errorMsg = "Server returned an HTML page instead of JSON. Check backend deployment.";
-                else if (text) errorMsg = text.slice(0, 200);
-            }
-            throw new Error(errorMsg);
-        }
-
-        if (!isJson) {
-            const text = await res.text().catch(() => "");
-            if (text?.startsWith("<")) {
-                console.error("Backend returned HTML instead of JSON. URL:", url);
-                throw new Error("Server returned an HTML page instead of JSON. The backend may be down or misconfigured.");
-            }
-            throw new Error("Invalid response from server");
-        }
-        try {
-            return await res.json();
-        } catch (e) {
-            console.error("Failed to parse JSON response:", e);
-            throw new Error("Invalid response from server");
-        }
+        return handleResponse<T>(res);
     },
 
     async post<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
         const isFormData = data instanceof FormData;
         const headers = { ...options?.headers };
-
-        if (!isFormData) {
-            headers["Content-Type"] = "application/json";
-        }
+        if (!isFormData) headers["Content-Type"] = "application/json";
 
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "POST",
@@ -75,69 +76,36 @@ export const api = {
             credentials: "include",
             body: isFormData ? (data as FormData) : (data ? JSON.stringify(data) : undefined),
         });
-
-        if (!res.ok) {
-            const error = await res.json().catch(() => ({}));
-            throw new Error(error.message || `API Error: ${res.status}`);
-        }
-
-        return res.json();
+        return handleResponse<T>(res);
     },
 
     async put<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                ...options?.headers,
-            },
+            headers: { "Content-Type": "application/json", ...options?.headers },
             credentials: "include",
             body: data ? JSON.stringify(data) : undefined,
         });
-
-        if (!res.ok) {
-            const error = await res.json().catch(() => ({}));
-            throw new Error(error.message || `API Error: ${res.status}`);
-        }
-
-        return res.json();
+        return handleResponse<T>(res);
     },
 
     async patch<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                ...options?.headers,
-            },
+            headers: { "Content-Type": "application/json", ...options?.headers },
             credentials: "include",
             body: data ? JSON.stringify(data) : undefined,
         });
-
-        if (!res.ok) {
-            const error = await res.json().catch(() => ({}));
-            throw new Error(error.message || `API Error: ${res.status}`);
-        }
-
-        return res.json();
+        return handleResponse<T>(res);
     },
 
     async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                ...options?.headers,
-            },
+            headers: { "Content-Type": "application/json", ...options?.headers },
             credentials: "include",
         });
-
-        if (!res.ok) {
-            const error = await res.json().catch(() => ({}));
-            throw new Error(error.message || `API Error: ${res.status}`);
-        }
-
-        return res.json();
+        return handleResponse<T>(res);
     },
 };
 
