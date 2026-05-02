@@ -65,9 +65,12 @@ export default function CravelyPage() {
             citations: res.data.citations
         }]);
         setSessionId(res.data.sessionId);
+      } else {
+        setMessages(prev => [...prev, { role: "assistant", content: res.message || "My culinary circuits are a bit jammed. Can you try again?" }]);
       }
-    } catch (error) {
-      setMessages(prev => [...prev, { role: "assistant", content: "I'm having trouble connecting to my culinary brain. Give me a second and try again?" }]);
+    } catch (error: any) {
+      const errorMessage = error.message || "I'm having trouble connecting to my culinary brain. Give me a second and try again?";
+      setMessages(prev => [...prev, { role: "assistant", content: errorMessage }]);
     } finally {
       setIsLoading(false);
     }

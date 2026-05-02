@@ -62,9 +62,12 @@ export function CravelyDock() {
       if (res.success) {
         setMessages(prev => [...prev, { role: "assistant", content: res.data.message }]);
         setSessionId(res.data.sessionId);
+      } else {
+        setMessages(prev => [...prev, { role: "assistant", content: res.message || "My circuits are a bit jammed. Can you try again?" }]);
       }
-    } catch (error) {
-      setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I hit a snag. Can you try again?" }]);
+    } catch (error: any) {
+      const errorMessage = error.message || "Sorry, I hit a snag. Can you check your connection?";
+      setMessages(prev => [...prev, { role: "assistant", content: errorMessage }]);
     } finally {
       setIsLoading(false);
     }
@@ -130,7 +133,7 @@ export function CravelyDock() {
               {!isMinimized && (
                 <>
                   {/* Messages */}
-                  <ScrollArea className="flex-1 px-6 py-4" ref={scrollRef}>
+                  <ScrollArea className="flex-1 min-h-0 px-6 py-4" ref={scrollRef}>
                     <div className="space-y-6 pb-4">
                       {messages.map((m, i) => (
                         <motion.div 
