@@ -17,6 +17,7 @@ import { useCartStore } from "@/stores/cart-store";
 import { useAuth } from "@/components/providers/auth-provider";
 import { getMediaUrl } from "@/lib/utils";
 import { format } from "date-fns";
+import { RelatedMeals } from "@/components/meals/related-meals";
 
 interface Review {
     id: string;
@@ -318,6 +319,7 @@ export default function MealDetailsPage() {
                     </div>
                 )}
             </div>
+            <RelatedMeals mealId={mealId} />
         </div>
     );
 }

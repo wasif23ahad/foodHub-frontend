@@ -45,6 +45,8 @@ const authLinks = [
     { href: "/cravely", label: "Cravely AI", highlight: true },
 ];
 
+import { SearchSuggestions } from "./search-suggestions";
+
 export function Navbar() {
     const pathname = usePathname();
     const cartItems = useCartStore((state) => state.items);
@@ -76,18 +78,22 @@ export function Navbar() {
         <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 group">
-                    <motion.div
-                        whileHover={{ rotate: 15, scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary"
-                    >
-                        <UtensilsCrossed className="h-5 w-5 text-white" />
-                    </motion.div>
-                    <span className="text-xl font-bold text-foreground">
-                        Food<span className="text-primary">Hub</span>
-                    </span>
-                </Link>
+                <div className="flex items-center gap-8">
+                    <Link href="/" className="flex items-center gap-2 group">
+                        <motion.div
+                            whileHover={{ rotate: 15, scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary"
+                        >
+                            <UtensilsCrossed className="h-5 w-5 text-white" />
+                        </motion.div>
+                        <span className="text-xl font-bold text-foreground">
+                            Food<span className="text-primary">Hub</span>
+                        </span>
+                    </Link>
+
+                    <SearchSuggestions />
+                </div>
 
                 {/* Desktop Navigation */}
                 <nav className="hidden md:flex items-center gap-8">
