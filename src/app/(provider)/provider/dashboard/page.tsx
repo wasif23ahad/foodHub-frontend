@@ -11,7 +11,8 @@ import {
     DollarSign,
     Loader2,
     ArrowUpRight,
-    Utensils
+    Utensils,
+    TrendingUp
 } from "lucide-react";
 import {
     Card,
@@ -21,12 +22,19 @@ import {
     CardDescription
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import { Order, ApiResponse, Meal } from "@/types";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
+import { CustomLineChart, CustomBarChart } from "@/components/ui/charts";
+
+interface ProviderAnalytics {
+    timeSeries: Array<{ date: string; revenue: number; orders: number }>;
+    topMeals: Array<{ name: string; orders: number }>;
+}
 
 export default function ProviderDashboardPage() {
     const { user, isLoading: isAuthLoading } = useAuth();
@@ -43,41 +51,36 @@ export default function ProviderDashboardPage() {
     const { data: ordersData, isLoading: isOrdersLoading } = useQuery({
         queryKey: ["provider-orders"],
         queryFn: async () => {
-            try {
-                const res = await api.get<ApiResponse<Order[]>>("/provider/orders");
-                return res.data;
-            } catch (err: any) {
-                if (err.message?.includes("profile not found")) return [];
-                console.error("Dashboard orders fetch failed:", err);
-                return [];
-            }
+            const res = await api.get<ApiResponse<Order[]>>("/provider/orders");
+            return res.data;
         },
         enabled: !!user && user.role?.toLowerCase() === "provider",
-        refetchOnWindowFocus: true,
-        staleTime: 0,
+    });
+
+    // Fetch analytics data (charts)
+    const { data: analyticsData, isLoading: isAnalyticsLoading } = useQuery({
+        queryKey: ["provider-analytics"],
+        queryFn: async () => {
+            const res = await api.get<ApiResponse<ProviderAnalytics>>("/analytics/provider?days=30");
+            return res.data;
+        },
+        enabled: !!user && user.role?.toLowerCase() === "provider",
     });
 
     // Fetch meals to show menu status
     const { data: mealsData } = useQuery({
         queryKey: ["provider-meals"],
         queryFn: async () => {
-            try {
-                const res = await api.get<ApiResponse<Meal[]>>("/provider/meals");
-                return res.data;
-            } catch (err: any) {
-                console.error("Dashboard meals fetch failed:", err);
-                return [];
-            }
+            const res = await api.get<ApiResponse<Meal[]>>("/provider/meals");
+            return res.data;
         },
         enabled: !!user && user.role?.toLowerCase() === "provider",
-        refetchOnWindowFocus: true,
-        staleTime: 0,
     });
 
-    if (isAuthLoading || isOrdersLoading) {
+    if (isAuthLoading || isOrdersLoading || isAnalyticsLoading) {
         return (
             <div className="flex h-[80vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
         );
     }
@@ -87,14 +90,13 @@ export default function ProviderDashboardPage() {
     const orders = ordersData || [];
     const meals = mealsData || [];
 
-    // Derive stats
     const totalRevenue = orders
         .filter(o => o.status === "DELIVERED")
         .reduce((sum, o) => sum + Number(o.totalAmount), 0);
 
     const pendingOrders = orders.filter(o => o.status === "PLACED" || o.status === "PREPARING").length;
     const completedOrders = orders.filter(o => o.status === "DELIVERED").length;
-    const totalMeals = (mealsData || []).length;
+    const totalMealsCount = meals.length;
 
     const stats = [
         {
@@ -123,7 +125,7 @@ export default function ProviderDashboardPage() {
         },
         {
             title: "Active Menu",
-            value: totalMeals,
+            value: totalMealsCount,
             icon: Utensils,
             description: "Total meals listed",
             color: "text-purple-600",
@@ -135,19 +137,19 @@ export default function ProviderDashboardPage() {
         <div className="container mx-auto p-6 space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Provider Dashboard</h1>
-                    <p className="text-muted-foreground mt-1">
-                        Welcome back, {user.name}. Here's what's happening today.
+                    <h1 className="text-3xl font-black tracking-tight">Provider Dashboard</h1>
+                    <p className="text-muted-foreground mt-1 font-medium">
+                        Welcome back, {user.name}. Here's your kitchen performance.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Link href="/provider/menu">
-                        <Button variant="outline" className="gap-2">
+                        <Button variant="outline" className="gap-2 font-bold rounded-xl border-2">
                             Manage Menu
                         </Button>
                     </Link>
                     <Link href="/provider/orders">
-                        <Button className="gap-2">
+                        <Button className="gap-2 font-bold rounded-xl shadow-lg shadow-primary/20">
                             View All Orders
                             <ArrowUpRight className="h-4 w-4" />
                         </Button>
@@ -160,18 +162,18 @@ export default function ProviderDashboardPage() {
                 {stats.map((stat, i) => {
                     const Icon = stat.icon;
                     return (
-                        <Card key={i} className="border-none shadow-sm overflow-hidden">
+                        <Card key={i} className="border-none shadow-md overflow-hidden bg-background hover:shadow-lg transition-all group">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                <CardTitle className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
                                     {stat.title}
                                 </CardTitle>
-                                <div className={`p-2 rounded-lg ${stat.bg}`}>
-                                    <Icon className={`h-4 w-4 ${stat.color}`} />
+                                <div className={`p-2.5 rounded-xl ${stat.bg} group-hover:scale-110 transition-transform`}>
+                                    <Icon className={`h-5 w-5 ${stat.color}`} />
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stat.value}</div>
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <div className="text-3xl font-black tracking-tighter">{stat.value}</div>
+                                <p className="text-xs text-muted-foreground mt-1 font-semibold">
                                     {stat.description}
                                 </p>
                             </CardContent>
@@ -180,96 +182,135 @@ export default function ProviderDashboardPage() {
                 })}
             </div>
 
+            {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Card className="shadow-lg border-none bg-background rounded-3xl overflow-hidden">
+                    <CardHeader className="border-b border-muted/50 pb-6">
+                        <CardTitle className="text-xl font-bold">Revenue History</CardTitle>
+                        <CardDescription>Earnings over the last 30 days.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-8">
+                        <CustomLineChart 
+                            data={analyticsData?.timeSeries || []} 
+                            xKey="date" 
+                            yKey="revenue" 
+                            height={300} 
+                        />
+                    </CardContent>
+                </Card>
+
+                <Card className="shadow-lg border-none bg-background rounded-3xl overflow-hidden">
+                    <CardHeader className="border-b border-muted/50 pb-6">
+                        <CardTitle className="text-xl font-bold">Top Selling Meals</CardTitle>
+                        <CardDescription>Most popular items in your menu.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-8">
+                        <CustomBarChart 
+                            data={analyticsData?.topMeals || []} 
+                            xKey="name" 
+                            yKey="orders" 
+                            height={300} 
+                        />
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Recent Orders */}
-                <Card className="col-span-1 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <ShoppingBag className="h-5 w-5 text-primary" />
+                <Card className="lg:col-span-2 shadow-lg border-none bg-background rounded-3xl overflow-hidden">
+                    <CardHeader className="border-b border-muted/50">
+                        <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                            <ShoppingBag className="h-6 w-6 text-primary" />
                             Recent Orders
                         </CardTitle>
                         <CardDescription>
-                            Your last 5 orders from customers.
+                            Manage your incoming orders.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                         {orders.length === 0 ? (
-                            <div className="py-8 text-center text-muted-foreground">
-                                No orders yet.
+                            <div className="py-20 text-center text-muted-foreground font-medium">
+                                No orders yet. Start promoting your kitchen!
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 {orders.slice(0, 5).map((order) => (
-                                    <div key={order.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                                        <div className="space-y-1">
-                                            <p className="text-sm font-medium leading-none">
-                                                Order #{order.id.slice(-6).toUpperCase()}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {new Date(order.createdAt).toLocaleDateString()}
-                                            </p>
+                                    <div key={order.id} className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-muted/20 hover:bg-muted/50 transition-all group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <ShoppingBag className="h-6 w-6 text-primary" />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm">Order #{order.id.slice(-6).toUpperCase()}</p>
+                                                <p className="text-xs text-muted-foreground font-medium">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                            </div>
                                         </div>
-                                        <div className="text-right space-y-1">
-                                            <p className="text-sm font-bold">৳ {order.totalAmount}</p>
-                                            <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${order.status === 'PLACED' ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                                                    order.status === 'DELIVERED' ? 'bg-green-50 text-green-600 border-green-200' :
-                                                        'bg-blue-50 text-blue-600 border-blue-200'
+                                        <div className="flex items-center gap-6">
+                                            <div className="text-right">
+                                                <p className="text-sm font-black text-foreground">৳{order.totalAmount}</p>
+                                                <Badge className={`text-[10px] h-5 font-black uppercase ${
+                                                    order.status === 'DELIVERED' ? 'bg-emerald-500 hover:bg-emerald-600' : 
+                                                    order.status === 'PLACED' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-primary hover:bg-primary/90'
                                                 }`}>
-                                                {order.status}
-                                            </span>
+                                                    {order.status}
+                                                </Badge>
+                                            </div>
+                                            <Link href={`/provider/orders/${order.id}`}>
+                                                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary hover:text-white transition-colors">
+                                                    <ArrowUpRight className="h-5 w-5" />
+                                                </Button>
+                                            </Link>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         )}
                         <Link href="/provider/orders" className="w-full">
-                            <Button variant="ghost" className="w-full mt-4 text-primary hover:text-primary hover:bg-primary/5">
-                                View All Orders
+                            <Button variant="ghost" className="w-full mt-6 text-primary font-bold hover:bg-primary/5 rounded-xl">
+                                View Full History
                             </Button>
                         </Link>
                     </CardContent>
                 </Card>
 
-                {/* Quick Actions / Tips */}
-                <Card className="col-span-1 shadow-sm">
+                {/* Growth Tips */}
+                <Card className="shadow-lg border-none bg-primary/5 rounded-3xl overflow-hidden">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <LayoutDashboard className="h-5 w-5 text-primary" />
-                            Quick Insights
+                        <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                            <LayoutDashboard className="h-6 w-6 text-primary" />
+                            Growth Hub
                         </CardTitle>
                         <CardDescription>
-                            Manage your business efficiently.
+                            Tips to increase your sales.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
-                            <h4 className="font-semibold text-sm mb-1">Boost your visibility</h4>
-                            <p className="text-xs text-muted-foreground">
-                                Adding high-quality photos to your meals can increase orders by up to 30%.
+                    <CardContent className="space-y-4 pt-4">
+                        <div className="p-5 rounded-2xl bg-white border border-primary/10 shadow-sm">
+                            <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
+                                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                                Boost Visibility
+                            </h4>
+                            <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                                Adding high-quality photos to your menu items can increase orders by up to 30%.
                             </p>
                             <Link href="/provider/menu">
-                                <Button size="sm" className="mt-3 text-xs" variant="outline">
-                                    Edit Menu
+                                <Button size="sm" className="mt-4 text-xs font-bold rounded-lg" variant="outline">
+                                    Update Menu
                                 </Button>
                             </Link>
                         </div>
-                        <div className="p-4 rounded-xl bg-secondary/5 border border-secondary/10">
-                            <h4 className="font-semibold text-sm mb-1">Peak Hours</h4>
-                            <p className="text-xs text-muted-foreground">
-                                Most of your orders come in between 7:00 PM and 9:00 PM.
-                            </p>
-                        </div>
+                        
                         <div className="grid grid-cols-2 gap-4">
                             <Link href="/provider/menu">
-                                <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
-                                    <Utensils className="h-5 w-5" />
-                                    <span className="text-xs">New Meal</span>
+                                <Button variant="outline" className="w-full h-24 flex flex-col gap-3 bg-background hover:bg-primary/10 hover:border-primary/20 transition-all rounded-2xl border-2">
+                                    <Utensils className="h-5 w-5 text-primary" />
+                                    <span className="text-xs font-bold uppercase tracking-tighter">New Meal</span>
                                 </Button>
                             </Link>
                             <Link href="/provider/profile">
-                                <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
-                                    <LayoutDashboard className="h-5 w-5" />
-                                    <span className="text-xs">Edit Profile</span>
+                                <Button variant="outline" className="w-full h-24 flex flex-col gap-3 bg-background hover:bg-primary/10 hover:border-primary/20 transition-all rounded-2xl border-2">
+                                    <LayoutDashboard className="h-5 w-5 text-amber-500" />
+                                    <span className="text-xs font-bold uppercase tracking-tighter">Profile</span>
                                 </Button>
                             </Link>
                         </div>
