@@ -38,6 +38,8 @@ const publicLinks = [
     { href: "/", label: "Home" },
     { href: "/meals", label: "Explore" },
     { href: "/providers", label: "Providers" },
+    { href: "/about", label: "About" },
+    { href: "/help", label: "Help" },
     { href: "/contact", label: "Contact" },
 ];
 
@@ -99,7 +101,7 @@ export function Navbar() {
                 <nav className="hidden md:flex items-center gap-8">
                     {activeLinks.map((link) => {
                         const isActive = pathname === link.href;
-                        const isSpecial = "highlight" in link && link.highlight;
+                        const isSpecial = (link as any).highlight;
                         return (
                             <Link
                                 key={link.href}
@@ -253,7 +255,7 @@ export function Navbar() {
                                             pathname === link.href
                                                 ? "text-primary"
                                                 : "text-muted-foreground",
-                                            "highlight" in link && link.highlight && "text-primary font-bold"
+                                            (link as any).highlight && "text-primary font-bold"
                                         )}
                                     >
                                         {link.label}

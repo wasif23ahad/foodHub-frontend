@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google"; // Using Inter for a clean modern look
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { RootProvider } from "@/components/providers/root-provider";
 import { cn } from "@/lib/utils";
+import { PageTransition } from "@/components/animations/page-transition";
+import { CravelyDock } from "@/components/ai/cravely-dock";
 
 const inter = Inter({
     subsets: ["latin"],
-    variable: "--font-geist-sans", // Mapping to the existing variable in globals.css
+    variable: "--font-geist-sans",
 });
 
 export const metadata: Metadata = {
@@ -16,15 +18,13 @@ export const metadata: Metadata = {
     description: "Order your favorite meals from top local providers.",
 };
 
-import { PageTransition } from "@/components/animations/page-transition";
-
 export default function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className="scroll-smooth" data-scroll-behavior="smooth">
+        <html lang="en" className="scroll-smooth" data-scroll-behavior="smooth" suppressHydrationWarning>
             <body className={cn(
                 "min-h-screen bg-background font-sans antialiased",
                 inter.variable
@@ -38,6 +38,7 @@ export default function RootLayout({
                             </PageTransition>
                         </main>
                         <Footer />
+                        <CravelyDock />
                     </div>
                 </RootProvider>
             </body>

@@ -10,10 +10,17 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/components/providers/auth-provider";
+import { ApiResponse } from "@/types";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+}
+
+interface ChatResponse {
+  message: string;
+  sessionId: string;
+  citations: any[];
 }
 
 export function CravelyDock() {
@@ -31,9 +38,12 @@ export function CravelyDock() {
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, isMinimized]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -44,14 +54,14 @@ export function CravelyDock() {
     setIsLoading(true);
 
     try {
-      const res = await api.post<{ success: boolean, data: { message: string, sessionId: string } }>("/ai/chat", {
+      const res = await api.post<ApiResponse<ChatResponse>>("/ai/chat", {
         message: userMessage,
         sessionId: sessionId
       });
 
-      if (res.data.success) {
-        setMessages(prev => [...prev, { role: "assistant", content: res.data.data.message }]);
-        setSessionId(res.data.data.sessionId);
+      if (res.success) {
+        setMessages(prev => [...prev, { role: "assistant", content: res.data.message }]);
+        setSessionId(res.data.sessionId);
       }
     } catch (error) {
       setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I hit a snag. Can you try again?" }]);
@@ -61,7 +71,7 @@ export function CravelyDock() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end pointer-events-none">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -113,8 +123,8 @@ export function CravelyDock() {
               {!isMinimized && (
                 <>
                   {/* Messages */}
-                  <ScrollArea className="flex-1 p-6 overflow-y-auto" ref={scrollRef}>
-                    <div className="space-y-6">
+                  <ScrollArea className="flex-1 p-6" ref={scrollRef}>
+                    <div className="space-y-6 pb-4">
                       {messages.map((m, i) => (
                         <div 
                           key={i} 
@@ -187,7 +197,7 @@ export function CravelyDock() {
           isOpen && "scale-0 rotate-90"
         )}
       >
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
         <Bot className="h-8 w-8 relative z-10" />
       </motion.button>
     </div>
