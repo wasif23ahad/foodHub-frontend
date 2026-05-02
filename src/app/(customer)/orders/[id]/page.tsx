@@ -2,6 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -56,8 +57,13 @@ export default function OrderDetailPage() {
     const [hasReviewed, setHasReviewed] = useState(false);
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-    if (!isAuthLoading && !user) {
-        router.push(`/login?redirect=/orders/${orderId}`);
+    useEffect(() => {
+        if (!isAuthLoading && !user) {
+            router.push(`/login?redirect=/orders/${orderId}`);
+        }
+    }, [isAuthLoading, user, router, orderId]);
+
+    if (!user) {
         return null;
     }
 

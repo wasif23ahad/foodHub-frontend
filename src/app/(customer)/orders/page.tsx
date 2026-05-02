@@ -2,6 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Package, ShoppingBag, Clock, XCircle, Truck, ArrowUpRight, Search } from "lucide-react";
@@ -71,8 +72,13 @@ export default function OrderHistoryPage() {
         );
     }
 
+    useEffect(() => {
+        if (!isAuthLoading && !user) {
+            router.push("/login?redirect=/orders");
+        }
+    }, [isAuthLoading, user, router]);
+
     if (!user) {
-        router.push("/login?redirect=/orders");
         return null;
     }
 
