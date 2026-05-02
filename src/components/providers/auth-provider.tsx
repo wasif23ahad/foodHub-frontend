@@ -33,8 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } else {
                 setUser(null);
             }
-        } catch (error) {
-            console.error("Auth check failed:", error);
+        } catch (error: any) {
+            // Only log actual errors, not 401s (which just mean guest user)
+            if (error.status !== 401) {
+                console.error("Auth check failed:", error);
+            }
             setUser(null);
         } finally {
             setLoading(false);
