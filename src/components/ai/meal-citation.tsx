@@ -42,7 +42,7 @@ export function MealCitation({ id }: MealCitationProps) {
       className="inline-block mx-1 align-middle"
     >
       <div className="group relative inline-flex items-center gap-2 p-1.5 pr-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer">
-        <div className="relative h-8 w-8 rounded-xl overflow-hidden flex-shrink-0">
+        <div className="relative h-8 w-8 rounded-xl overflow-hidden shrink-0">
           <Image 
             src={meal.image || "/placeholder-meal.jpg"} 
             alt={meal.name}
