@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Plus,
@@ -14,7 +14,8 @@ import {
     Banknote,
     Tag,
     ChefHat,
-    Loader2
+    Loader2,
+    Search
 } from "lucide-react";
 import {
     Table,
@@ -103,6 +104,16 @@ export default function ProviderMenuPage() {
     const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
     const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
     const [deletingMeal, setDeletingMeal] = useState<Meal | null>(null);
+
+    // Search and Pagination
+    const [search, setSearch] = useState("");
+    const [page, setPage] = useState(1);
+    const limit = 10;
+
+    // Reset to page 1 on search
+    useEffect(() => {
+        setPage(1);
+    }, [search]);
 
     // Fetch meals
     const { data: meals, isLoading, error } = useQuery({
@@ -232,6 +243,15 @@ export default function ProviderMenuPage() {
     const activeMeals = meals?.filter(m => m.isAvailable).length || 0;
     const avgPrice = totalMeals > 0 ? ((meals || []).reduce((s, m) => s + m.price, 0) / totalMeals).toFixed(0) : 0;
 
+    const filteredMeals = (meals || []).filter(meal =>
+        search === "" ||
+        meal.name.toLowerCase().includes(search.toLowerCase()) ||
+        meal.description?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filteredMeals.length / limit) || 1;
+    const paginatedMeals = filteredMeals.slice((page - 1) * limit, page * limit);
+
     const stats = [
         { label: "Menu Items", value: totalMeals, color: "text-blue-500", icon: Utensils },
         { label: "On Air", value: activeMeals, color: "text-emerald-500", icon: Sparkles },
@@ -276,6 +296,22 @@ export default function ProviderMenuPage() {
                 })}
             </div>
 
+            {/* Toolbar */}
+            <div className="flex flex-col lg:flex-row gap-6 items-center">
+                <div className="relative flex-1 w-full group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input
+                        placeholder="Search for dishes by name or description..."
+                        className="pl-12 h-14 bg-card border-2 border-border rounded-2xl focus:border-primary/20 focus:ring-primary/10 transition-all font-medium"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+                <Badge variant="outline" className="h-10 px-6 rounded-2xl font-black border-2 text-primary border-primary/20 bg-primary/5 uppercase tracking-widest text-[10px] shrink-0">
+                    Matches: {filteredMeals.length}
+                </Badge>
+            </div>
+
             <div className="rounded-[2.5rem] border-2 border-border bg-card shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <Table>
@@ -308,8 +344,18 @@ export default function ProviderMenuPage() {
                                     </EmptyState>
                                 </TableCell>
                             </TableRow>
+                        ) : filteredMeals.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={7} className="py-24 text-center">
+                                    <EmptyState
+                                        icon={Utensils}
+                                        title="No dishes found"
+                                        description={search ? `No culinary matches for "${search}".` : "The platform menu is currently empty."}
+                                    />
+                                </TableCell>
+                            </TableRow>
                         ) : (
-                            meals?.map((meal) => (
+                            paginatedMeals.map((meal) => (
                                 <TableRow key={meal.id} className="hover:bg-muted/30 transition-all group/row border-b border-border/50">
                                     <TableCell className="px-8 py-6">
                                         <div className="relative h-16 w-16 rounded-[1.25rem] overflow-hidden border-2 border-border bg-muted flex items-center justify-center transition-transform group-hover/row:scale-110">
@@ -379,6 +425,33 @@ export default function ProviderMenuPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between bg-card p-4 rounded-2xl border-2 border-border shadow-sm">
+                    <div className="text-sm font-bold text-muted-foreground">
+                        Showing page <span className="text-foreground">{page}</span> of <span className="text-foreground">{totalPages}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            className="rounded-xl font-bold border-2"
+                            disabled={page === 1}
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="rounded-xl font-bold border-2"
+                            disabled={page === totalPages}
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
 
             {/* Create/Edit Modal */}

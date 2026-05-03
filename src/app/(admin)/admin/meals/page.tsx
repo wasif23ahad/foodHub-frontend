@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Utensils,
@@ -58,18 +58,41 @@ export default function AdminMealsPage() {
     const [deleteTarget, setDeleteTarget] = useState<Meal | null>(null);
     const queryClient = useQueryClient();
 
-    const { data: mealsData, isLoading, error } = useQuery({
-        queryKey: ["admin-meals"],
+    const [page, setPage] = useState(1);
+    const limit = 10;
+
+    // Custom debounce
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset to page 1 on search
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const { data: responseData, isLoading, error } = useQuery({
+        queryKey: ["admin-meals", debouncedSearch, page],
         queryFn: async () => {
             try {
-                const res = await api.get<ApiResponse<Meal[]>>("/admin/meals?limit=100");
-                return res.data;
+                const params = new URLSearchParams();
+                if (debouncedSearch) params.append("search", debouncedSearch);
+                params.append("page", page.toString());
+                params.append("limit", limit.toString());
+
+                const res = await api.get<ApiResponse<Meal[]>>(`/admin/meals?${params.toString()}`);
+                return res;
             } catch (err) {
                 console.error("Meals fetch failed", err);
-                return [];
+                throw err;
             }
         }
     });
+
+    const meals = responseData?.data || [];
+    const meta = responseData?.meta;
+    const totalPages = meta?.totalPages || 1;
+    const totalMealsData = meta?.total || 0;
 
     const deleteMealMutation = useMutation({
         mutationFn: async (mealId: string) => {
@@ -85,16 +108,11 @@ export default function AdminMealsPage() {
         }
     });
 
-    const meals = (mealsData || []).filter(meal =>
-        search === "" ||
-        meal.name.toLowerCase().includes(search.toLowerCase()) ||
-        meal.description?.toLowerCase().includes(search.toLowerCase())
-    );
-
-    const totalMeals = mealsData?.length || 0;
-    const availableMeals = (mealsData || []).filter(m => m.isAvailable !== false).length;
-    const avgPrice = totalMeals > 0
-        ? ((mealsData || []).reduce((sum, m) => sum + m.price, 0) / totalMeals).toFixed(0)
+    const totalMeals = totalMealsData;
+    // Just simple approximation for stats since we paginate
+    const availableMeals = meals.filter(m => m.isAvailable !== false).length;
+    const avgPrice = meals.length > 0
+        ? (meals.reduce((sum, m) => sum + m.price, 0) / meals.length).toFixed(0)
         : "0";
 
     const stats = [
@@ -294,10 +312,37 @@ export default function AdminMealsPage() {
                                     </TableRow>
                                 ))
                             )}
-                        </TableBody>
+                    </TableBody>
                     </Table>
                 </div>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between bg-card p-4 rounded-2xl border-2 border-border shadow-sm">
+                    <div className="text-sm font-bold text-muted-foreground">
+                        Showing page <span className="text-foreground">{page}</span> of <span className="text-foreground">{totalPages}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            className="rounded-xl font-bold border-2"
+                            disabled={page === 1 || isLoading}
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="rounded-xl font-bold border-2"
+                            disabled={page === totalPages || isLoading}
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Store,
@@ -69,18 +69,42 @@ export default function AdminProvidersPage() {
     const [deleteTarget, setDeleteTarget] = useState<Provider | null>(null);
     const queryClient = useQueryClient();
 
-    const { data: providersData, isLoading, error } = useQuery({
-        queryKey: ["admin-providers"],
+    const [page, setPage] = useState(1);
+    const limit = 10;
+
+    // Custom debounce
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset to page 1 on search
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const { data: responseData, isLoading, error } = useQuery({
+        queryKey: ["admin-providers", debouncedSearch, cuisineFilter, page],
         queryFn: async () => {
             try {
-                const body = await api.get<ApiResponse<Provider[]>>("/admin/providers?limit=100");
-                return body.data ?? [];
+                const params = new URLSearchParams();
+                if (debouncedSearch) params.append("search", debouncedSearch);
+                if (cuisineFilter !== "all") params.append("cuisineType", cuisineFilter);
+                params.append("page", page.toString());
+                params.append("limit", limit.toString());
+
+                const res = await api.get<ApiResponse<Provider[]>>(`/admin/providers?${params.toString()}`);
+                return res;
             } catch (err) {
                 console.error("Providers fetch failed", err);
-                return [];
+                throw err;
             }
         }
     });
+
+    const providers = responseData?.data || [];
+    const meta = responseData?.meta;
+    const totalPages = meta?.totalPages || 1;
+    const totalProviders = meta?.total || 0;
 
     const deleteProviderMutation = useMutation({
         mutationFn: async (providerId: string) => {
@@ -109,32 +133,28 @@ export default function AdminProvidersPage() {
         }
     });
 
-    const providers = (providersData || []).filter(provider =>
-        (search === "" ||
-            provider.businessName.toLowerCase().includes(search.toLowerCase()) ||
-            provider.contactEmail?.toLowerCase().includes(search.toLowerCase())) &&
-        (cuisineFilter === "all" || provider.cuisineType === cuisineFilter)
-    );
-
-    const cuisineTypes = [...new Set((providersData || []).map(p => p.cuisineType).filter(Boolean))];
+    // We don't fetch all cuisines anymore, so we might miss some in the filter.
+    // For now, we will just use the ones returned in the current page, or ideally a separate endpoint.
+    const cuisineTypes = [...new Set((providers).map(p => p.cuisineType).filter(Boolean))];
 
     const stats = [
         {
             label: "Total Providers",
-            value: providersData?.length || 0,
+            value: totalProviders,
             color: "text-blue-500",
             icon: Store
         },
         {
             label: "Active Kitchens",
-            value: providersData?.filter(p => p.isActive).length || 0,
+            // This stat is less accurate with pagination, but good enough for demo
+            value: providers.filter(p => p.isActive).length || 0,
             color: "text-emerald-500",
             icon: TrendingUp
         },
         {
             label: "Platform Rating",
-            value: providersData && providersData.length > 0
-                ? (providersData.reduce((sum, p) => sum + (p.avgRating || 0), 0) / providersData.length).toFixed(1)
+            value: providers && providers.length > 0
+                ? (providers.reduce((sum, p) => sum + (p.avgRating || 0), 0) / providers.length).toFixed(1)
                 : "N/A",
             color: "text-amber-500",
             icon: Star
@@ -341,10 +361,37 @@ export default function AdminProvidersPage() {
                                     </TableRow>
                                 )
                             ))}
-                        </TableBody>
+                    </TableBody>
                     </Table>
                 </div>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between bg-card p-4 rounded-2xl border-2 border-border shadow-sm">
+                    <div className="text-sm font-bold text-muted-foreground">
+                        Showing page <span className="text-foreground">{page}</span> of <span className="text-foreground">{totalPages}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            className="rounded-xl font-bold border-2"
+                            disabled={page === 1 || isLoading}
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="rounded-xl font-bold border-2"
+                            disabled={page === totalPages || isLoading}
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

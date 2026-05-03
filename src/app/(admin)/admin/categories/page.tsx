@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search, Plus, MoreHorizontal, Tags, Edit, Trash, ImageIcon, Save, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -56,11 +56,23 @@ export default function AdminCategoriesPage() {
         }
     });
 
+    const [page, setPage] = useState(1);
+    const limit = 10;
+
     const categories = categoriesData || [];
     const filteredCategories = categories.filter(c => 
         c.name.toLowerCase().includes(search.toLowerCase()) || 
         (c.description && c.description.toLowerCase().includes(search.toLowerCase()))
     );
+
+    // Client-side pagination since categories API returns all by default
+    const totalPages = Math.ceil(filteredCategories.length / limit) || 1;
+    const paginatedCategories = filteredCategories.slice((page - 1) * limit, page * limit);
+
+    // Reset to page 1 on search
+    useEffect(() => {
+        setPage(1);
+    }, [search]);
 
     // Form setup for Create/Edit
     const form = useForm<CategoryFormData>({
@@ -219,7 +231,7 @@ export default function AdminCategoriesPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredCategories.map(cat => (
+                            paginatedCategories.map(cat => (
                                 <TableRow key={cat.id} className="hover:bg-muted/30 transition-all group/row border-b border-border/50">
                                     <TableCell className="px-8 py-6">
                                         <div className="h-16 w-16 rounded-[1.25rem] overflow-hidden bg-muted flex items-center justify-center border-2 border-border shadow-sm group-hover/row:scale-110 transition-transform">
@@ -279,6 +291,33 @@ export default function AdminCategoriesPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between bg-card p-4 rounded-2xl border-2 border-border shadow-sm">
+                    <div className="text-sm font-bold text-muted-foreground">
+                        Showing page <span className="text-foreground">{page}</span> of <span className="text-foreground">{totalPages}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            className="rounded-xl font-bold border-2"
+                            disabled={page === 1}
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="rounded-xl font-bold border-2"
+                            disabled={page === totalPages}
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
 
             {/* Create / Edit Dialog */}

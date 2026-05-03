@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Search,
@@ -69,22 +69,47 @@ import { EmptyState } from "@/components/dashboard/empty-state";
 export default function AdminUsersPage() {
     const [search, setSearch] = useState("");
     const [roleFilter, setRoleFilter] = useState<string>("all");
+    const [page, setPage] = useState(1);
+    const limit = 10;
     const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
     const [viewTarget, setViewTarget] = useState<User | null>(null);
     const queryClient = useQueryClient();
 
-    const { data: usersData, isLoading, error } = useQuery({
-        queryKey: ["admin-users"],
+    // Debounce search so we don't spam the API
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    
+    // Custom debounce
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset to page 1 on search
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const { data: responseData, isLoading, error } = useQuery({
+        queryKey: ["admin-users", debouncedSearch, roleFilter, page],
         queryFn: async () => {
             try {
-                const res = await api.get<ApiResponse<User[]>>("/admin/users");
-                return res.data;
+                const params = new URLSearchParams();
+                if (debouncedSearch) params.append("search", debouncedSearch);
+                if (roleFilter !== "all") params.append("role", roleFilter.toUpperCase());
+                params.append("page", page.toString());
+                params.append("limit", limit.toString());
+
+                const res = await api.get<ApiResponse<User[]>>(`/admin/users?${params.toString()}`);
+                return res; // Return the full response to get meta
             } catch (err) {
                 console.error("Failed to fetch users:", err);
-                return [];
+                throw err;
             }
         }
     });
+
+    const usersData = responseData?.data || [];
+    const meta = responseData?.meta;
+    const totalPages = meta?.totalPages || 1;
+    const totalUsers = meta?.total || 0;
 
     const banUserMutation = useMutation({
         mutationFn: async ({ userId, banned, banReason }: { userId: string; banned: boolean; banReason?: string }) => {
@@ -116,12 +141,7 @@ export default function AdminUsersPage() {
         }
     });
 
-    const filteredUsers = (usersData || []).filter(user => {
-        const matchesSearch = user.name.toLowerCase().includes(search.toLowerCase()) ||
-            user.email.toLowerCase().includes(search.toLowerCase());
-        const matchesRole = roleFilter === "all" || user.role.toLowerCase() === roleFilter.toLowerCase();
-        return matchesSearch && matchesRole;
-    });
+    const filteredUsers = usersData; // Filtering is now server-side
 
     const getRoleBadge = (role: string) => {
         const roleLower = role.toLowerCase();
@@ -158,7 +178,7 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <Badge variant="outline" className="h-10 px-6 rounded-2xl font-black border-2 text-primary border-primary/20 bg-primary/5 uppercase tracking-widest text-[10px]">
-                        Total: {usersData?.length || 0}
+                        Total: {totalUsers}
                     </Badge>
                 </div>
             </div>
@@ -314,6 +334,33 @@ export default function AdminUsersPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between bg-card p-4 rounded-2xl border-2 border-border shadow-sm">
+                    <div className="text-sm font-bold text-muted-foreground">
+                        Showing page <span className="text-foreground">{page}</span> of <span className="text-foreground">{totalPages}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            className="rounded-xl font-bold border-2"
+                            disabled={page === 1 || isLoading}
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="rounded-xl font-bold border-2"
+                            disabled={page === totalPages || isLoading}
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
 
             {/* Delete Confirmation Dialog */}
