@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { streamCravelyChat } from "@/lib/cravely-stream";
+import { RichText } from "@/components/ui/rich-text";
 
 interface Message {
   role: "user" | "assistant";
@@ -203,7 +204,11 @@ export default function CravelyPage() {
                                             ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-br-none shadow-2xl shadow-slate-200 dark:shadow-none font-medium" 
                                             : "bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-800/50"
                                     )}>
-                                        {m.content.replace(/<cite\s+id=["'][^"']+["']\s*\/?>/g, "")}
+                                        {m.role === "assistant" ? (
+                                          <RichText content={m.content} />
+                                        ) : (
+                                          m.content
+                                        )}
                                     </div>
                                     
                                     {m.citations && m.citations.length > 0 && (

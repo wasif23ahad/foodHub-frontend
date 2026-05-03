@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { streamCravelyChat } from "@/lib/cravely-stream";
+import { RichText } from "@/components/ui/rich-text";
 
 interface Message {
   role: "user" | "assistant";
@@ -152,7 +153,11 @@ export function CravelyDock() {
                               ? "bg-slate-900 text-white rounded-br-none shadow-xl shadow-slate-200/50 dark:shadow-none font-medium" 
                               : "bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-800"
                           )}>
-                            {m.content.replace(/<cite\s+id=["'][^"']+["']\s*\/?>/g, "")}
+                            {m.role === "assistant" ? (
+                              <RichText content={m.content} />
+                            ) : (
+                              m.content
+                            )}
                           </div>
                         </motion.div>
                       ))}
