@@ -104,7 +104,7 @@ export function Footer() {
 
                 <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                     <p className="text-sm text-muted-foreground font-medium">
-                        © {new Date().getFullYear()} FoodHub AI. Built with ❤️ for food lovers.
+                        All rights reserved. FoodHub 2026
                     </p>
                     <div className="flex items-center gap-8">
                         {footerLinks.legal.map((link) => (
