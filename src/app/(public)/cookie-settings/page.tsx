@@ -1,24 +1,36 @@
-import { StaticPageLayout } from "@/components/layout/static-page-layout";
+"use client";
+
+import { DocPage } from "@/components/layout/doc-page";
+import { Settings } from "lucide-react";
 
 export default function CookieSettingsPage() {
-    return (
-        <StaticPageLayout
-            title="Cookie Settings"
-            description="Manage your privacy and cookie preferences."
-        >
-            <div className="space-y-8 text-center py-10">
-                <p className="text-lg mb-8">You can control which cookies are active during your session.</p>
-                <div className="space-y-4 max-w-sm mx-auto">
-                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                        <span className="font-semibold text-slate-700">Strictly Necessary</span>
-                        <span className="text-sm text-primary font-bold">ALWAYS ON</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 border border-slate-200 rounded-lg opacity-60">
-                        <span className="font-semibold text-slate-700">Analytics</span>
-                        <span className="text-xs py-1 px-2 bg-slate-200 rounded">DISABLED</span>
-                    </div>
+  return (
+    <DocPage
+      eyebrow="Preference Center"
+      EyebrowIcon={Settings}
+      title="Cookie Settings"
+      subtitle="Manage your privacy and cookie preferences."
+      sections={[
+        {
+          id: "manage-preferences",
+          title: "Manage Preferences",
+          content: (
+            <div className="space-y-6">
+              <p>You can control which cookies are active during your session.</p>
+              <div className="space-y-4 max-w-sm">
+                <div className="flex items-center justify-between p-6 rounded-2xl bg-muted/50 border border-border">
+                  <span className="font-bold text-foreground">Strictly Necessary</span>
+                  <span className="text-xs font-black text-primary uppercase tracking-widest">Always On</span>
                 </div>
+                <div className="flex items-center justify-between p-6 rounded-2xl border border-border opacity-50 grayscale">
+                  <span className="font-bold text-foreground">Analytics</span>
+                  <span className="text-[10px] font-black py-1 px-3 bg-muted rounded-full uppercase tracking-widest">Disabled</span>
+                </div>
+              </div>
             </div>
-        </StaticPageLayout>
-    );
+          ),
+        },
+      ]}
+    />
+  );
 }

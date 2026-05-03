@@ -20,6 +20,7 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
+import { StatusPill } from "@/components/dashboard/badges";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -41,8 +42,6 @@ import {
 import {
     Card,
     CardContent,
-    CardHeader,
-    CardTitle
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -113,13 +112,13 @@ export default function AdminProvidersPage() {
         {
             label: "Total Providers",
             value: providersData?.length || 0,
-            color: "text-blue-600",
+            color: "text-blue-500",
             icon: Store
         },
         {
             label: "Active",
             value: providersData?.filter(p => p.isActive).length || 0,
-            color: "text-green-600",
+            color: "text-emerald-500",
             icon: TrendingUp
         },
         {
@@ -127,7 +126,7 @@ export default function AdminProvidersPage() {
             value: providersData && providersData.length > 0
                 ? (providersData.reduce((sum, p) => sum + (p.avgRating || 0), 0) / providersData.length).toFixed(1)
                 : "N/A",
-            color: "text-yellow-600",
+            color: "text-amber-500",
             icon: Store
         }
     ];
@@ -137,7 +136,7 @@ export default function AdminProvidersPage() {
             {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">Provider Management</h1>
-                <p className="text-muted-foreground mt-1">Monitor and manage all food providers on the platform.</p>
+                <p className="text-muted-foreground mt-1 font-medium italic">Monitor and manage all food providers on the platform.</p>
             </div>
 
             {/* Stats */}
@@ -145,15 +144,17 @@ export default function AdminProvidersPage() {
                 {stats.map((stat) => {
                     const Icon = stat.icon;
                     return (
-                        <Card key={stat.label} className="border-none shadow-md">
+                        <Card key={stat.label} className="border-border bg-card shadow-sm">
                             <CardContent className="pt-6 flex items-center justify-between">
                                 <div>
-                                    <div className={`text-3xl font-bold ${stat.color}`}>
+                                    <div className={`text-3xl font-bold ${stat.color} tabular-nums`}>
                                         {stat.value}
                                     </div>
-                                    <p className="text-sm text-muted-foreground mt-2">{stat.label}</p>
+                                    <p className="text-sm text-muted-foreground mt-1 font-medium">{stat.label}</p>
                                 </div>
-                                <Icon className={`h-10 w-10 ${stat.color} opacity-20`} />
+                                <div className={`p-3 rounded-xl ${stat.color} bg-current/10`}>
+                                    <Icon className="h-6 w-6" />
+                                </div>
                             </CardContent>
                         </Card>
                     );
@@ -161,161 +162,158 @@ export default function AdminProvidersPage() {
             </div>
 
             {/* Filters */}
-            <Card className="shadow-sm border-muted">
-                <CardHeader className="pb-4">
-                    <CardTitle className="text-lg">Filters</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="flex-1">
-                            <label className="text-sm font-medium mb-2 block">Search</label>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search by name or email..."
-                                    className="pl-10"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                        <div className="md:w-48">
-                            <label className="text-sm font-medium mb-2 block">Cuisine Type</label>
-                            <select
-                                className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
-                                value={cuisineFilter}
-                                onChange={(e) => setCuisineFilter(e.target.value)}
-                            >
-                                <option value="all">All Cuisines</option>
-                                {cuisineTypes.map(cuisine => (
-                                    <option key={cuisine} value={cuisine}>{cuisine}</option>
-                                ))}
-                            </select>
+            <div className="bg-card p-5 rounded-xl border border-border shadow-sm space-y-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Search Providers</label>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search by name or email..."
+                                className="pl-10 bg-background/50 border-border focus-visible:ring-primary/20"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                    <div className="md:w-64">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Cuisine Type</label>
+                        <select
+                            className="w-full h-10 px-3 py-2 border border-border rounded-md bg-background/50 text-foreground text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none cursor-pointer"
+                            value={cuisineFilter}
+                            onChange={(e) => setCuisineFilter(e.target.value)}
+                        >
+                            <option value="all">All Cuisines</option>
+                            {cuisineTypes.map(cuisine => (
+                                <option key={cuisine} value={cuisine}>{cuisine}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            </div>
 
             {/* Providers Table */}
-            <Card className="shadow-sm border-muted overflow-hidden">
-                <CardHeader className="pb-4">
-                    <CardTitle>Registered Providers</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <div className="space-y-2">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                                <Skeleton key={i} className="h-16 w-full" />
-                            ))}
-                        </div>
-                    ) : providers.length === 0 ? (
-                        <div className="text-center py-12 text-muted-foreground">
-                            <Store className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No providers found matching your filters.</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Provider</TableHead>
-                                        <TableHead>Cuisine</TableHead>
-                                        <TableHead>Location</TableHead>
-                                        <TableHead>Rating</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
+            <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted/50 border-b border-border hover:bg-muted/50 transition-none">
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Provider</TableHead>
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cuisine</TableHead>
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Location</TableHead>
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Rating</TableHead>
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading ? (
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell colSpan={6} className="p-0">
+                                            <Skeleton className="h-16 w-full rounded-none" />
+                                        </TableCell>
                                     </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {providers.map((provider) => (
-                                        <TableRow key={provider.id} className="hover:bg-muted/30">
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="h-8 w-8">
-                                                        <AvatarImage src={getMediaUrl(provider.logo)} alt={provider.businessName} />
-                                                        <AvatarFallback className="bg-primary/10 text-xs">
-                                                            {provider.businessName.slice(0, 2).toUpperCase()}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium text-sm">{provider.businessName}</span>
-                                                        <span className="text-xs text-muted-foreground">{provider.contactEmail}</span>
-                                                    </div>
+                                ))
+                            ) : providers.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-64 text-center">
+                                        <div className="flex flex-col items-center justify-center text-muted-foreground">
+                                            <Store className="h-12 w-12 mb-2 opacity-20" />
+                                            <p>No providers found matching your filters.</p>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                providers.map((provider) => (
+                                    <TableRow key={provider.id} className="hover:bg-muted/30 transition-colors group">
+                                        <TableCell className="px-4 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-10 w-10 border border-border shadow-sm shrink-0">
+                                                    <AvatarImage src={getMediaUrl(provider.logo)} alt={provider.businessName} className="object-cover" />
+                                                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                                                        {provider.businessName.slice(0, 2).toUpperCase()}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
+                                                        {provider.businessName}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider font-bold">
+                                                        {provider.contactEmail}
+                                                    </span>
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className="text-xs">
-                                                    {provider.cuisineType || "General"}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-sm text-muted-foreground">
-                                                <div className="flex items-center gap-1">
-                                                    <MapPin className="h-3 w-3" />
-                                                    {provider.address || "N/A"}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="px-4 py-4">
+                                            <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-foreground border border-border/50">
+                                                {provider.cuisineType || "General"}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="px-4 py-4">
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                                                <MapPin className="h-3.5 w-3.5 opacity-50 shrink-0" />
+                                                <span className="truncate max-w-[150px]">{provider.address || "N/A"}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="px-4 py-4">
+                                            {(provider.avgRating && provider.avgRating > 0) ? (
+                                                <div className="flex items-center gap-1 text-amber-500 font-bold tabular-nums">
+                                                    <span className="text-xs">⭐</span>
+                                                    <span>{provider.avgRating.toFixed(1)}</span>
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {(provider.avgRating && provider.avgRating > 0) ? (
-                                                    <Badge className="bg-yellow-100 text-yellow-800 border-none">
-                                                        ⭐ {provider.avgRating.toFixed(1)}
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge className="bg-gray-100 text-gray-500 border-none text-xs">
-                                                        No reviews
-                                                    </Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge className={provider.isActive ? "bg-green-100 text-green-800 border-none" : "bg-gray-100 text-gray-800 border-none"}>
-                                                    {provider.isActive ? "Active" : "Inactive"}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-48">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuSeparator />
-                                                        {provider.isActive ? (
-                                                            <DropdownMenuItem
-                                                                className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-                                                                onClick={() => updateProviderStatusMutation.mutate({ providerId: provider.id, isActive: false })}
-                                                            >
-                                                                <UserMinus className="mr-2 h-4 w-4" /> Suspend Provider
-                                                            </DropdownMenuItem>
-                                                        ) : (
-                                                            <DropdownMenuItem
-                                                                className="text-green-600 focus:text-green-600 focus:bg-green-50 cursor-pointer"
-                                                                onClick={() => updateProviderStatusMutation.mutate({ providerId: provider.id, isActive: true })}
-                                                            >
-                                                                <UserCheck className="mr-2 h-4 w-4" /> Activate Provider
-                                                            </DropdownMenuItem>
-                                                        )}
+                                            ) : (
+                                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">No reviews</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-4">
+                                            <StatusPill value={provider.isActive ? "active" : "inactive"} />
+                                        </TableCell>
+                                        <TableCell className="px-4 py-4 text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted/80">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-52 rounded-xl p-2 shadow-xl">
+                                                    <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Provider Actions</DropdownMenuLabel>
+                                                    <DropdownMenuSeparator className="my-1" />
+                                                    {provider.isActive ? (
                                                         <DropdownMenuItem
-                                                            className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-                                                            onClick={() => setDeleteTarget(provider)}
+                                                            className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-medium"
+                                                            onClick={() => updateProviderStatusMutation.mutate({ providerId: provider.id, isActive: false })}
                                                         >
-                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete Provider
+                                                            <UserMinus className="mr-2 h-4 w-4" /> Suspend Business
                                                         </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                                                    ) : (
+                                                        <DropdownMenuItem
+                                                            className="text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10 rounded-lg cursor-pointer font-medium"
+                                                            onClick={() => updateProviderStatusMutation.mutate({ providerId: provider.id, isActive: true })}
+                                                        >
+                                                            <UserCheck className="mr-2 h-4 w-4" /> Activate Business
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    <DropdownMenuItem
+                                                        className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-medium"
+                                                        onClick={() => setDeleteTarget(provider)}
+                                                    >
+                                                        <Trash2 className="mr-2 h-4 w-4" /> Permanent Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-                <AlertDialogContent>
+                <AlertDialogContent className="rounded-2xl">
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Provider</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -324,10 +322,11 @@ export default function AdminProvidersPage() {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             variant="destructive"
                             onClick={() => deleteTarget && deleteProviderMutation.mutate(deleteTarget.id)}
+                            className="rounded-xl"
                         >
                             Delete
                         </AlertDialogAction>

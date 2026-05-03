@@ -1,21 +1,38 @@
-import { StaticPageLayout } from "@/components/layout/static-page-layout";
+"use client";
+
+import { DocPage } from "@/components/layout/doc-page";
+import { Cookie } from "lucide-react";
 
 export default function CookiesPage() {
-    return (
-        <StaticPageLayout
-            title="Cookie Policy"
-            description="How we use cookies to improve your experience."
-        >
-            <div className="space-y-8">
-                <section>
-                    <h2 className="text-2xl font-bold mb-4">What are Cookies?</h2>
-                    <p>Cookies are small text files stored on your device that help us remember your preferences and keep you logged in.</p>
-                </section>
-                <section>
-                    <h2 className="text-2xl font-bold mb-4">Types of Cookies</h2>
-                    <p>We use essential cookies for authentication and performance cookies to understand how you use our site.</p>
-                </section>
-            </div>
-        </StaticPageLayout>
-    );
+  return (
+    <DocPage
+      eyebrow="Cookie Policy"
+      EyebrowIcon={Cookie}
+      title="Cookie Policy"
+      subtitle="How we use cookies to improve your experience."
+      sections={[
+        {
+          id: "what-are-cookies",
+          title: "What are Cookies?",
+          content: (
+            <p>
+              Cookies are small text files stored on your device that help us remember your 
+              preferences, keep you logged in, and understand how you interact with our platform.
+            </p>
+          ),
+        },
+        {
+          id: "types-of-cookies",
+          title: "Types of Cookies",
+          content: (
+            <p>
+              We use essential cookies for authentication and performance cookies to 
+              understand how you use our site. These allow us to provide a seamless 
+              and personalized experience.
+            </p>
+          ),
+        },
+      ]}
+    />
+  );
 }

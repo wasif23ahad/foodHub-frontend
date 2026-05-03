@@ -63,10 +63,6 @@ export default function OrderDetailPage() {
         }
     }, [isAuthLoading, user, router, orderId]);
 
-    if (!user) {
-        return null;
-    }
-
     const { data: order, isLoading, error } = useQuery({
         queryKey: ["order", orderId],
         queryFn: async () => {
@@ -87,6 +83,10 @@ export default function OrderDetailPage() {
             toast.error(err.message || "Failed to cancel order");
         },
     });
+
+    if (!user) {
+        return null;
+    }
 
     const handleReviewSubmit = async () => {
         if (reviewRating === 0) {

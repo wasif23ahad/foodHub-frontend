@@ -54,10 +54,15 @@ export function Navbar() {
     const cartItems = useCartStore((state) => state.items);
     const { user, isLoading, logout } = useAuth();
     const [mounted, setMounted] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
 
-    // Hydration fix
+    // Hydration fix & Scroll handler
     useEffect(() => {
         setMounted(true);
+        const onScroll = () => setScrolled(window.scrollY > 8);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
     }, []);
 
     const cartItemCount = mounted ? cartItems.reduce((acc, item) => acc + item.quantity, 0) : 0;
@@ -77,7 +82,14 @@ export function Navbar() {
     const activeLinks = user ? [...publicLinks, ...authLinks] : publicLinks;
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header 
+            className={cn(
+                "sticky top-0 z-50 w-full transition-all duration-300",
+                scrolled 
+                    ? "border-b border-border bg-background/85 backdrop-blur-md shadow-sm py-0" 
+                    : "border-b border-transparent bg-background/40 backdrop-blur-sm py-1"
+            )}
+        >
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
                 {/* Logo */}
                 <div className="flex items-center gap-8">

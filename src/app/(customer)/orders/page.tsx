@@ -54,6 +54,12 @@ export default function OrderHistoryPage() {
         enabled: !!user,
     });
 
+    useEffect(() => {
+        if (!isAuthLoading && !user) {
+            router.push("/login?redirect=/orders");
+        }
+    }, [isAuthLoading, user, router]);
+
     if (isAuthLoading || isLoading) {
         return (
             <div className="space-y-8">
@@ -71,12 +77,6 @@ export default function OrderHistoryPage() {
             </div>
         );
     }
-
-    useEffect(() => {
-        if (!isAuthLoading && !user) {
-            router.push("/login?redirect=/orders");
-        }
-    }, [isAuthLoading, user, router]);
 
     if (!user) {
         return null;

@@ -21,6 +21,7 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
+import { StatusPill } from "@/components/dashboard/badges";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -117,11 +118,11 @@ export default function AdminUsersPage() {
         const roleLower = role.toLowerCase();
         switch (roleLower) {
             case "admin":
-                return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-none">Admin</Badge>;
+                return <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/20 hover:bg-purple-500/20 transition-colors">Admin</Badge>;
             case "provider":
-                return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none">Provider</Badge>;
+                return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20 transition-colors">Provider</Badge>;
             default:
-                return <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100 border-none">Customer</Badge>;
+                return <Badge className="bg-muted text-muted-foreground border-border hover:bg-muted/80 transition-colors">Customer</Badge>;
         }
     };
 
@@ -153,12 +154,12 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 bg-background p-4 rounded-xl border shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Search by name or email..."
-                        className="pl-9 bg-muted/30 border-none focus-visible:ring-1"
+                        className="pl-9 bg-background/50 border-border focus-visible:ring-primary/20"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -166,7 +167,7 @@ export default function AdminUsersPage() {
                 <div className="flex items-center gap-2 min-w-[200px]">
                     <Filter className="h-4 w-4 text-muted-foreground" />
                     <select
-                        className="h-10 w-full rounded-md border border-input bg-muted/30 px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer"
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none appearance-none cursor-pointer"
                         value={roleFilter}
                         onChange={(e) => setRoleFilter(e.target.value)}
                     >
@@ -179,15 +180,16 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Users Table */}
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-                <Table>
-                    <TableHeader className="bg-muted/50">
-                        <TableRow>
-                            <TableHead className="w-[300px]">User</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Joined Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+            <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table>
+                    <TableHeader>
+                        <TableRow className="bg-muted/50 border-b border-border hover:bg-muted/50 transition-none">
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[300px]">User</TableHead>
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</TableHead>
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Joined Date</TableHead>
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -221,80 +223,75 @@ export default function AdminUsersPage() {
                         ) : (
                             filteredUsers.map((user) => (
                                 <TableRow key={user.id} className="hover:bg-muted/30 transition-colors group">
-                                    <TableCell>
+                                    <TableCell className="px-4 py-4">
                                         <div className="flex items-center gap-3">
-                                            <Avatar className="h-10 w-10 border border-muted shadow-sm">
-                                                <AvatarImage src={getMediaUrl(user.image)} alt={user.name} />
-                                                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                                                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                            <Avatar className="h-10 w-10 border border-border shadow-sm shrink-0">
+                                                <AvatarImage src={getMediaUrl(user.image)} alt={user.name} className="object-cover" />
+                                                <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                                                    {user.name.slice(0, 2).toUpperCase()}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div className="flex flex-col">
-                                                <span className="font-semibold text-sm group-hover:text-primary transition-colors">
+                                                <span className="font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
                                                     {user.name}
                                                 </span>
-                                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                                     <Mail className="h-3 w-3" /> {user.email}
                                                 </span>
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="px-4 py-4">
                                         {getRoleBadge(user.role)}
                                     </TableCell>
-                                    <TableCell className="text-sm text-muted-foreground">
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="h-3 w-3" />
+                                    <TableCell className="px-4 py-4 text-sm text-muted-foreground font-medium">
+                                        <div className="flex items-center gap-1.5">
+                                            <Calendar className="h-3.5 w-3.5 opacity-50" />
                                             {format(new Date(user.createdAt), "MMM d, yyyy")}
                                         </div>
                                     </TableCell>
-                                    <TableCell>
-                                        {user.banned ? (
-                                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Banned</Badge>
-                                        ) : (
-                                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
-                                        )}
+                                    <TableCell className="px-4 py-4">
+                                        <StatusPill value={user.banned ? "banned" : "active"} />
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="px-4 py-4 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted">
+                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted/80">
                                                     <MoreHorizontal className="h-4 w-4" />
-                                                    <span className="sr-only">Open menu</span>
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-48">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                            <DropdownMenuContent align="end" className="w-52 rounded-xl p-2 shadow-xl">
+                                                <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem
-                                                    className="cursor-pointer"
+                                                    className="rounded-lg cursor-pointer"
                                                     onClick={() => setViewTarget(user)}
                                                 >
-                                                    <UserIcon className="mr-2 h-4 w-4" /> View Profile
+                                                    <UserIcon className="mr-2 h-4 w-4" /> View Full Profile
                                                 </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
+                                                <DropdownMenuSeparator className="my-1" />
                                                 {!user.banned ? (
                                                     <DropdownMenuItem
-                                                        className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                                                        className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-medium"
                                                         onClick={() => banUserMutation.mutate({ userId: user.id, banned: true })}
                                                         disabled={banUserMutation.isPending}
                                                     >
-                                                        <UserMinus className="mr-2 h-4 w-4" /> Ban User
+                                                        <UserMinus className="mr-2 h-4 w-4" /> Ban This User
                                                     </DropdownMenuItem>
                                                 ) : (
                                                     <DropdownMenuItem
-                                                        className="text-green-600 focus:text-green-600 focus:bg-green-50 cursor-pointer"
+                                                        className="text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10 rounded-lg cursor-pointer font-medium"
                                                         onClick={() => banUserMutation.mutate({ userId: user.id, banned: false })}
                                                         disabled={banUserMutation.isPending}
                                                     >
-                                                        <UserCheck className="mr-2 h-4 w-4" /> Unban User
+                                                        <UserCheck className="mr-2 h-4 w-4" /> Restore Access
                                                     </DropdownMenuItem>
                                                 )}
                                                 {user.role.toUpperCase() !== "ADMIN" && (
                                                     <DropdownMenuItem
-                                                        className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                                                        className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-medium"
                                                         onClick={() => setDeleteTarget(user)}
                                                     >
-                                                        <Trash2 className="mr-2 h-4 w-4" /> Delete User
+                                                        <Trash2 className="mr-2 h-4 w-4" /> Delete Account
                                                     </DropdownMenuItem>
                                                 )}
                                             </DropdownMenuContent>
@@ -306,6 +303,7 @@ export default function AdminUsersPage() {
                     </TableBody>
                 </Table>
             </div>
+        </div>
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

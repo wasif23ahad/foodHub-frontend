@@ -243,6 +243,7 @@ export default function ProviderProfilePage() {
                                                     value={field.value}
                                                     onChange={field.onChange}
                                                     onRemove={() => form.setValue("logo", "", { shouldValidate: true })}
+                                                    aspectRatio="square"
                                                 />
                                             </FormControl>
                                             <FormDescription>

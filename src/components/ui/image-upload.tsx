@@ -6,14 +6,16 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { toast } from "sonner";
 import { api, API_URL } from "@/lib/api";
+import { getMediaUrl, cn } from "@/lib/utils";
 
 interface ImageUploadProps {
     value?: string;
     onChange: (url: string) => void;
     onRemove?: () => void;
+    aspectRatio?: "square" | "wide";
 }
 
-export function ImageUpload({ value, onChange, onRemove }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, onRemove, aspectRatio = "wide" }: ImageUploadProps) {
     const [isUploading, setIsUploading] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -71,13 +73,18 @@ export function ImageUpload({ value, onChange, onRemove }: ImageUploadProps) {
     return (
         <div className="w-full">
             {value ? (
-                <div className="relative rounded-lg overflow-hidden border bg-muted group flex items-center justify-center min-h-[150px]">
+                <div className={cn(
+                    "relative rounded-xl overflow-hidden border border-border bg-muted/30 group flex items-center justify-center transition-all duration-300",
+                    aspectRatio === "square" ? "w-48 h-48 mx-auto" : "w-full aspect-video min-h-[200px]"
+                )}>
                     <Image
-                        src={value.startsWith("http") ? value : `http://localhost:5000${value}`}
-                        alt="Uploaded Image"
-                        layout="fill"
-                        objectFit="contain"
-                        className="transition-all"
+                        src={getMediaUrl(value)}
+                        alt=""
+                        fill
+                        className="object-cover transition-all duration-300 group-hover:scale-105"
+                        onError={() => {
+                            toast.error("Failed to load current image");
+                        }}
                     />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <Button
@@ -106,9 +113,11 @@ export function ImageUpload({ value, onChange, onRemove }: ImageUploadProps) {
             ) : (
                 <div
                     onClick={() => !isUploading && inputRef.current?.click()}
-                    className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors hover:bg-muted/50 \${
-                        isUploading ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                    className={cn(
+                        "border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:bg-muted/50 hover:border-primary/50",
+                        isUploading ? "opacity-50 cursor-not-allowed" : "",
+                        aspectRatio === "square" ? "w-48 h-48 mx-auto" : "w-full min-h-[200px]"
+                    )}
                 >
                     {isUploading ? (
                         <>

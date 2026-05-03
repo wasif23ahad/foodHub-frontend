@@ -19,6 +19,7 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
+import { StatusPill, DietaryBadge } from "@/components/dashboard/badges";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -237,31 +238,46 @@ export default function ProviderMenuPage() {
                 </Button>
             </div>
 
-            <div className="border rounded-xl shadow-sm overflow-hidden bg-white">
-                <Table>
+            <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table>
                     <TableHeader>
-                        <TableRow className="bg-muted/50">
-                            <TableHead className="w-[100px]">Image</TableHead>
-                            <TableHead>Meal Name</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Dietary</TableHead>
-                            <TableHead>Price</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                        <TableRow className="bg-muted/50 border-b border-border hover:bg-muted/50 transition-none">
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[100px]">Image</TableHead>
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Meal Name</TableHead>
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</TableHead>
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dietary</TableHead>
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Price</TableHead>
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {meals?.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                                    No meals found. Start by adding one!
+                                <TableCell colSpan={7} className="h-40 text-center">
+                                    <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
+                                        <Utensils className="h-10 w-10 opacity-20" />
+                                        <div className="space-y-1">
+                                            <p className="font-semibold text-foreground text-base">No meals found</p>
+                                            <p className="text-sm">Start by adding a delicious dish to your menu.</p>
+                                        </div>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="mt-2"
+                                            onClick={() => handleOpenDialog()}
+                                        >
+                                            <Plus className="h-4 w-4 mr-2" /> Add Your First Meal
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ) : (
                             meals?.map((meal) => (
-                                <TableRow key={meal.id}>
-                                    <TableCell>
-                                        <div className="relative h-12 w-12 rounded-lg overflow-hidden border bg-muted flex items-center justify-center">
+                                <TableRow key={meal.id} className="hover:bg-muted/30 transition-colors group/row">
+                                    <TableCell className="px-4 py-4">
+                                        <div className="relative h-12 w-12 rounded-lg overflow-hidden border border-border bg-muted/50 flex items-center justify-center transition-transform group-hover/row:scale-105">
                                             {meal.image ? (
                                                 <Image
                                                     src={getMediaUrl(meal.image)}
@@ -270,48 +286,51 @@ export default function ProviderMenuPage() {
                                                     className="object-cover"
                                                 />
                                             ) : (
-                                                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                                                <ImageIcon className="h-6 w-6 text-muted-foreground/50" />
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-medium">{meal.name}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary">
+                                    <TableCell className="px-4 py-4">
+                                        <div className="font-semibold text-foreground leading-tight">{meal.name}</div>
+                                        <div className="text-xs text-muted-foreground mt-1 line-clamp-1 max-w-[200px]">
+                                            {meal.description}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="px-4 py-4">
+                                        <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground border border-border/50">
                                             {meal.category?.name || "Uncategorized"}
-                                        </Badge>
+                                        </span>
                                     </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="text-xs">
-                                            {meal.dietaryPreference || "REGULAR"}
-                                        </Badge>
+                                    <TableCell className="px-4 py-4">
+                                        <DietaryBadge value={meal.dietaryPreference || "REGULAR"} />
                                     </TableCell>
-                                    <TableCell className="font-bold text-primary">৳ {meal.price}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={meal.isAvailable ? "default" : "destructive"}>
-                                            {meal.isAvailable ? "Available" : "Hidden"}
-                                        </Badge>
+                                    <TableCell className="px-4 py-4 font-bold text-foreground tabular-nums">
+                                        ৳ {meal.price}
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="px-4 py-4">
+                                        <StatusPill value={meal.isAvailable ? "available" : "hidden"} />
+                                    </TableCell>
+                                    <TableCell className="px-4 py-4 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
+                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted/80">
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem onClick={() => handleOpenDialog(meal)}>
-                                                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                                            <DropdownMenuContent align="end" className="w-48 rounded-xl p-2">
+                                                <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => handleOpenDialog(meal)} className="rounded-lg cursor-pointer">
+                                                    <Pencil className="mr-2 h-4 w-4" /> Edit Details
                                                 </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
+                                                <DropdownMenuSeparator className="my-1" />
                                                 <DropdownMenuItem
-                                                    className="text-destructive"
+                                                    className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-medium"
                                                     onClick={() => {
                                                         setDeletingMeal(meal);
                                                         setIsDeleteAlertOpen(true);
                                                     }}
                                                 >
-                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Meal
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -322,6 +341,7 @@ export default function ProviderMenuPage() {
                     </TableBody>
                 </Table>
             </div>
+        </div>
 
             {/* Create/Edit Modal */}
             <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>

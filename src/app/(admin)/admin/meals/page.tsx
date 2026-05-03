@@ -17,6 +17,7 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
+import { StatusPill } from "@/components/dashboard/badges";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -147,72 +148,71 @@ export default function AdminMealsPage() {
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <div className="space-y-2">
+                        <div className="space-y-4 p-4">
                             {Array.from({ length: 5 }).map((_, i) => (
-                                <Skeleton key={i} className="h-16 w-full" />
+                                <Skeleton key={i} className="h-16 w-full rounded-xl" />
                             ))}
                         </div>
                     ) : meals.length === 0 ? (
-                        <div className="text-center py-12 text-muted-foreground">
-                            <Utensils className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No meals found.</p>
+                        <div className="text-center py-20">
+                            <Utensils className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-20" />
+                            <p className="font-semibold text-foreground">No meals found</p>
+                            <p className="text-sm text-muted-foreground">Try adjusting your search terms.</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Meal</TableHead>
-                                        <TableHead>Provider</TableHead>
-                                        <TableHead>Category</TableHead>
-                                        <TableHead>Price</TableHead>
-                                        <TableHead>Rating</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
+                                    <TableRow className="bg-muted/50 border-b border-border hover:bg-muted/50 transition-none">
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Meal</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Provider</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Price</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Rating</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {meals.map((meal) => (
-                                        <TableRow key={meal.id} className="hover:bg-muted/30">
-                                            <TableCell>
+                                        <TableRow key={meal.id} className="hover:bg-muted/30 transition-colors">
+                                            <TableCell className="px-4 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <Avatar className="h-10 w-10 rounded-lg">
+                                                    <Avatar className="h-12 w-12 rounded-lg border border-border">
                                                         <AvatarImage src={getMediaUrl(meal.image)} alt={meal.name} className="object-cover" />
                                                         <AvatarFallback className="bg-primary/10 rounded-lg text-xs">
                                                             {meal.name.slice(0, 2).toUpperCase()}
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     <div className="flex flex-col">
-                                                        <span className="font-medium text-sm">{meal.name}</span>
+                                                        <span className="font-semibold text-foreground leading-tight">{meal.name}</span>
                                                         {meal.dietaryPreference && meal.dietaryPreference !== "REGULAR" && (
-                                                            <Badge variant="outline" className="w-fit text-[10px] px-1 leading-tight mt-0.5">
+                                                            <Badge variant="outline" className="w-fit text-[10px] px-1.5 h-4 leading-none mt-1 border-primary/20 text-primary bg-primary/5">
                                                                 {meal.dietaryPreference}
                                                             </Badge>
                                                         )}
                                                     </div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-sm">
+                                            <TableCell className="px-4 py-4 text-sm text-muted-foreground font-medium">
                                                 {(meal as any).providerProfile?.businessName || "Unknown"}
                                             </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className="text-xs">
+                                            <TableCell className="px-4 py-4">
+                                                <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground border border-border/50">
                                                     {(meal as any).category?.name || "Uncategorized"}
-                                                </Badge>
+                                                </span>
                                             </TableCell>
-                                            <TableCell className="font-bold text-sm">
+                                            <TableCell className="px-4 py-4 font-bold text-foreground tabular-nums text-sm">
                                                 ৳{meal.price.toFixed(0)}
                                             </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-1 text-sm">
+                                            <TableCell className="px-4 py-4">
+                                                <div className="flex items-center gap-1.5 text-sm font-medium">
                                                     <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                                                     {(meal.avgRating || 4.5).toFixed(1)}
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
-                                                <Badge className={meal.isAvailable !== false ? "bg-green-100 text-green-800 border-none" : "bg-gray-100 text-gray-800 border-none"}>
-                                                    {meal.isAvailable !== false ? "Available" : "Unavailable"}
-                                                </Badge>
+                                            <TableCell className="px-4 py-4">
+                                                <StatusPill value={meal.isAvailable !== false ? "available" : "hidden"} />
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <DropdownMenu>

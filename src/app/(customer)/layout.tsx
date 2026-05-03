@@ -1,6 +1,36 @@
 "use client";
 
-import { CustomerSidebar } from "@/components/dashboard/customer-sidebar";
+import { 
+  ShoppingBag, 
+  User, 
+  Heart, 
+  LayoutDashboard,
+  Settings
+} from "lucide-react";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
+
+const menuItems = [
+  {
+    label: "Dashboard",
+    href: "/profile",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "My Orders",
+    href: "/orders",
+    icon: ShoppingBag,
+  },
+  {
+    label: "Favorites",
+    href: "/favorites",
+    icon: Heart,
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
+  },
+];
 
 export default function CustomerLayout({
   children,
@@ -8,13 +38,12 @@ export default function CustomerLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-slate-50/50">
-      <CustomerSidebar />
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
-          {children}
-        </div>
-      </main>
-    </div>
+    <DashboardShell 
+      brandLabel="FoodHub Customer" 
+      brandIcon={User} 
+      items={menuItems}
+    >
+      {children}
+    </DashboardShell>
   );
 }

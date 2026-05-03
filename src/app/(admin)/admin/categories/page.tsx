@@ -160,32 +160,32 @@ export default function AdminCategoriesPage() {
             </div>
 
             {/* Toolbar */}
-            <div className="flex gap-4 bg-background p-4 rounded-xl border shadow-sm">
-                <div className="relative flex-1">
+            <div className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-xl border border-border shadow-sm items-center">
+                <div className="relative flex-1 w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Search categories..."
-                        className="pl-9 bg-muted/30"
+                        className="pl-9 bg-background/50 border-border focus-visible:ring-primary/20 w-full"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                <Badge variant="secondary" className="px-3">Total: {categories.length}</Badge>
+                <Badge variant="secondary" className="px-4 py-1 rounded-lg font-bold bg-muted text-foreground border-border shrink-0">Total: {categories.length}</Badge>
             </div>
 
-            {/* Table */}
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-                <Table>
-                    <TableHeader className="bg-muted/50">
-                        <TableRow>
-                            <TableHead className="w-[80px]">Image</TableHead>
-                            <TableHead className="w-[200px]">Name</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead className="w-[100px]">Featured</TableHead>
-                            <TableHead className="w-[150px]">Created</TableHead>
-                            <TableHead className="text-right w-[100px]">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
+            <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted/50 border-b border-border hover:bg-muted/50 transition-none">
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[80px]">Image</TableHead>
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[200px]">Name</TableHead>
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description</TableHead>
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[120px]">Featured</TableHead>
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[150px]">Created</TableHead>
+                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right w-[100px]">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
                     <TableBody>
                         {isLoading ? (
                             <TableRow><TableCell colSpan={5} className="h-24 text-center">Loading...</TableCell></TableRow>
@@ -193,40 +193,54 @@ export default function AdminCategoriesPage() {
                             <TableRow><TableCell colSpan={5} className="h-48 text-center text-muted-foreground">No categories found.</TableCell></TableRow>
                         ) : (
                             filteredCategories.map(cat => (
-                                <TableRow key={cat.id}>
-                                    <TableCell>
-                                        <div className="h-10 w-10 rounded-md overflow-hidden bg-muted flex items-center justify-center border">
+                                <TableRow key={cat.id} className="hover:bg-muted/30 transition-colors group">
+                                    <TableCell className="px-4 py-4">
+                                        <div className="h-12 w-12 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border shadow-sm group-hover:scale-105 transition-transform">
                                             {cat.image ? (
                                                 <img src={getMediaUrl(cat.image)} alt={cat.name} className="h-full w-full object-cover" />
                                             ) : (
-                                                <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                                                <ImageIcon className="h-6 w-6 text-muted-foreground/50" />
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-medium">{cat.name}</TableCell>
-                                    <TableCell className="text-muted-foreground truncate max-w-[300px]">
-                                        {cat.description || "No description"}
+                                    <TableCell className="px-4 py-4">
+                                        <div className="font-bold text-foreground leading-tight">{cat.name}</div>
+                                        <div className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider font-bold">Category</div>
                                     </TableCell>
-                                    <TableCell>
-                                        <Badge variant={cat.isFeatured ? "default" : "secondary"}>
-                                            {cat.isFeatured ? "Featured" : "Regular"}
-                                        </Badge>
+                                    <TableCell className="px-4 py-4">
+                                        <div className="text-sm text-muted-foreground line-clamp-1 max-w-[300px]">
+                                            {cat.description || "No description provided"}
+                                        </div>
                                     </TableCell>
-                                    <TableCell className="text-sm text-muted-foreground">
+                                    <TableCell className="px-4 py-4">
+                                        {cat.isFeatured ? (
+                                            <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-bold text-amber-500 border border-amber-500/20">
+                                                Featured
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground border border-border/50">
+                                                Regular
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="px-4 py-4 text-xs text-muted-foreground font-medium">
                                         {format(new Date(cat.createdAt), "MMM d, yyyy")}
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="px-4 py-4 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted/80">
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => handleOpenEdit(cat)}>
-                                                    <Edit className="h-4 w-4 mr-2" /> Edit
+                                            <DropdownMenuContent align="end" className="w-48 rounded-xl p-2 shadow-xl">
+                                                <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category Actions</DropdownMenuLabel>
+                                                <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => handleOpenEdit(cat)}>
+                                                    <Edit className="h-4 w-4 mr-2" /> Edit Details
                                                 </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem className="text-destructive" onClick={() => setDeleteCategory(cat)}>
-                                                    <Trash className="h-4 w-4 mr-2" /> Delete
+                                                <DropdownMenuSeparator className="my-1" />
+                                                <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-medium" onClick={() => setDeleteCategory(cat)}>
+                                                    <Trash className="h-4 w-4 mr-2" /> Delete Category
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -237,6 +251,7 @@ export default function AdminCategoriesPage() {
                     </TableBody>
                 </Table>
             </div>
+        </div>
 
             {/* Create / Edit Dialog */}
             <Dialog open={isCreateOpen || !!editCategory} onOpenChange={(open) => {

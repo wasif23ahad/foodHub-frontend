@@ -1,19 +1,54 @@
-import { StaticPageLayout } from "@/components/layout/static-page-layout";
+"use client";
+
+import { DocPage } from "@/components/layout/doc-page";
+import { Briefcase, Heart, Rocket, Mail } from "lucide-react";
 
 export default function CareersPage() {
-    return (
-        <StaticPageLayout
-            title="Careers"
-            description="Join our talented team and build the future of food."
-        >
-            <div className="space-y-8 text-center py-10">
-                <h2 className="text-3xl font-bold mb-4">We're Hiring!</h2>
-                <p className="text-lg text-slate-600 mb-8">Want to help build the best food platform? We're looking for passionate designers, developers, and operations experts.</p>
-                <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
-                    <p className="font-semibold">Drop your resume at:</p>
-                    <a href="mailto:careers@foodhub.com" className="text-primary hover:underline">careers@foodhub.com</a>
-                </div>
+  return (
+    <DocPage
+      eyebrow="Join Our Team"
+      EyebrowIcon={Briefcase}
+      title="Careers at FoodHub"
+      subtitle="Join our talented team and build the future of food discovery and delivery."
+      sections={[
+        {
+          id: "culture",
+          title: "Our Culture",
+          icon: Heart,
+          content: (
+            <p>
+              We believe in ownership, transparency, and a passion for food. We're 
+              building a community where everyone can thrive, from our developers 
+              to our delivery partners.
+            </p>
+          ),
+        },
+        {
+          id: "why-join",
+          title: "Why Join Us?",
+          icon: Rocket,
+          content: (
+            <p>
+              Work on complex problems, grow with a fast-scaling startup, and make a 
+              real impact on how thousands of people discover their next meal every day.
+            </p>
+          ),
+        },
+        {
+          id: "apply",
+          title: "How to Apply",
+          icon: Mail,
+          content: (
+            <div className="space-y-4">
+              <p>We're always looking for passionate designers, developers, and operations experts.</p>
+              <div className="p-8 rounded-2xl bg-muted/50 border border-border text-center max-w-sm">
+                <p className="font-bold text-foreground mb-2">Drop your resume at:</p>
+                <a href="mailto:careers@foodhub.app" className="text-primary font-black hover:underline">careers@foodhub.app</a>
+              </div>
             </div>
-        </StaticPageLayout>
-    );
+          ),
+        },
+      ]}
+    />
+  );
 }

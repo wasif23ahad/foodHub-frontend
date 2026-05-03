@@ -21,6 +21,7 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
+import { StatusPill } from "@/components/dashboard/badges";
 import {
     Card,
     CardContent,
@@ -42,12 +43,12 @@ import { api } from "@/lib/api";
 import { ApiResponse, Order } from "@/types";
 import { toast } from "sonner";
 
-const statusConfig: Record<string, { color: string; icon: React.ElementType; next?: string }> = {
-    PLACED: { color: "bg-yellow-100 text-yellow-800", icon: Clock, next: "PREPARING" },
-    PREPARING: { color: "bg-blue-100 text-blue-800", icon: ChefHat, next: "READY" },
-    READY: { color: "bg-green-100 text-green-800", icon: CheckCircle, next: "DELIVERED" },
-    DELIVERED: { color: "bg-emerald-100 text-emerald-800", icon: Truck },
-    CANCELLED: { color: "bg-red-100 text-red-800", icon: XCircle },
+const statusConfig: Record<string, { next?: string }> = {
+    PLACED: { next: "PREPARING" },
+    PREPARING: { next: "READY" },
+    READY: { next: "DELIVERED" },
+    DELIVERED: {},
+    CANCELLED: {},
 };
 
 export default function ProviderOrdersPage() {
@@ -124,13 +125,13 @@ export default function ProviderOrdersPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 bg-background p-4 rounded-xl border shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search by order ID or customer..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <Input placeholder="Search by order ID or customer..." className="pl-9 bg-background/50" value={search} onChange={(e) => setSearch(e.target.value)} />
                 </div>
                 <select
-                    className="h-10 min-w-[160px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="h-10 min-w-[160px] rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                 >
@@ -164,46 +165,46 @@ export default function ProviderOrdersPage() {
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Order ID</TableHead>
-                                        <TableHead>Customer</TableHead>
-                                        <TableHead>Items</TableHead>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Action</TableHead>
+                                    <TableRow className="bg-muted/50 border-b border-border hover:bg-muted/50 transition-none">
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Order ID</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Customer</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Items</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {orders.map((order) => {
                                         const config = statusConfig[order.status.toUpperCase()] || statusConfig["PLACED"];
-                                        const StatusIcon = config.icon;
                                         const nextStatus = config.next;
+                                        const itemsCount = (order.orderItems || order.items)?.length || 0;
 
                                         return (
-                                            <TableRow key={order.id} className="hover:bg-muted/30">
-                                                <TableCell className="font-mono text-sm">
-                                                    {order.id.slice(-8).toUpperCase()}
+                                            <TableRow key={order.id} className="hover:bg-muted/30 transition-colors group">
+                                                <TableCell className="px-4 py-4 font-mono text-xs text-muted-foreground">
+                                                    #{order.id.slice(-8).toUpperCase()}
                                                 </TableCell>
-                                                <TableCell className="font-medium">
-                                                    {order.customer?.name || "Customer"}
+                                                <TableCell className="px-4 py-4">
+                                                    <div className="font-semibold text-foreground leading-tight">{order.customer?.name || "Customer"}</div>
+                                                    <div className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider font-bold">Buyer</div>
                                                 </TableCell>
-                                                <TableCell className="text-sm text-muted-foreground">
-                                                    {(order.orderItems || order.items)?.length || 0} item{((order.orderItems || order.items)?.length || 0) !== 1 ? 's' : ''}
+                                                <TableCell className="px-4 py-4">
+                                                    <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground border border-border/50">
+                                                        {itemsCount} item{itemsCount !== 1 ? 's' : ''}
+                                                    </span>
                                                 </TableCell>
-                                                <TableCell className="font-bold">
-                                                    ৳{order.totalAmount.toFixed(2)}
+                                                <TableCell className="px-4 py-4 font-bold text-foreground tabular-nums">
+                                                    ৳{order.totalAmount.toFixed(0)}
                                                 </TableCell>
-                                                <TableCell>
-                                                    <Badge className={config.color + " border-none"}>
-                                                        <StatusIcon className="h-3 w-3 mr-1" />
-                                                        {order.status}
-                                                    </Badge>
+                                                <TableCell className="px-4 py-4">
+                                                    <StatusPill value={order.status} />
                                                 </TableCell>
-                                                <TableCell className="text-right">
+                                                <TableCell className="px-4 py-4 text-right">
                                                     {nextStatus ? (
                                                         <Button
                                                             size="sm"
-                                                            variant="outline"
+                                                            className="rounded-lg font-semibold shadow-sm hover:scale-105 transition-transform"
                                                             onClick={() =>
                                                                 updateStatusMutation.mutate({
                                                                     orderId: order.id,
@@ -215,7 +216,9 @@ export default function ProviderOrdersPage() {
                                                             Mark as {nextStatus.charAt(0) + nextStatus.slice(1).toLowerCase()}
                                                         </Button>
                                                     ) : (
-                                                        <span className="text-xs text-muted-foreground">Completed</span>
+                                                        <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-500 border border-emerald-500/20">
+                                                            Completed
+                                                        </span>
                                                     )}
                                                 </TableCell>
                                             </TableRow>

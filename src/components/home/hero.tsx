@@ -40,7 +40,7 @@ export function Hero() {
     };
 
     return (
-        <section className="relative bg-primary min-h-[60vh] lg:h-[70vh] flex items-center py-20 px-4 overflow-hidden">
+        <section className="relative bg-primary min-h-[60vh] lg:h-[70vh] flex items-center pt-32 pb-20 px-4 overflow-hidden">
             {/* Background Decorations */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--primary-dark),transparent)] opacity-60 pointer-events-none" />
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 pointer-events-none" />

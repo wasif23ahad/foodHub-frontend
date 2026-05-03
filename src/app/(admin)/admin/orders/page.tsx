@@ -18,6 +18,8 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table";
+import { StatusPill } from "@/components/dashboard/badges";
+import { cn } from "@/lib/utils";
 import {
     Card,
     CardContent,
@@ -31,19 +33,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { ApiResponse, Order } from "@/types";
 
-const statusColors: Record<string, string> = {
-    PLACED: "bg-yellow-100 text-yellow-800",
-    placed: "bg-yellow-100 text-yellow-800",
-    pending: "bg-yellow-100 text-yellow-800",
-    confirmed: "bg-blue-100 text-blue-800",
-    PREPARING: "bg-blue-100 text-blue-800",
-    preparing: "bg-blue-100 text-blue-800",
-    READY: "bg-green-100 text-green-800",
-    ready: "bg-green-100 text-green-800",
-    DELIVERED: "bg-green-100 text-green-800",
-    delivered: "bg-green-100 text-green-800",
-    CANCELLED: "bg-red-100 text-red-800",
-    cancelled: "bg-red-100 text-red-800",
+const mapStatus = (status: string): any => {
+    const s = status.toLowerCase();
+    if (s === "placed") return "pending";
+    if (s === "confirmed") return "preparing";
+    return s;
 };
 
 export default function AdminOrdersPage() {
@@ -179,41 +173,45 @@ export default function AdminOrdersPage() {
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <div className="space-y-2">
+                        <div className="space-y-4 p-4">
                             {Array.from({ length: 5 }).map((_, i) => (
-                                <Skeleton key={i} className="h-16 w-full" />
+                                <Skeleton key={i} className="h-16 w-full rounded-xl" />
                             ))}
                         </div>
                     ) : orders.length === 0 ? (
-                        <div className="text-center py-12 text-muted-foreground">
-                            <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No orders found matching your filters.</p>
+                        <div className="text-center py-20">
+                            <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-20" />
+                            <p className="font-semibold text-foreground">No orders found</p>
+                            <p className="text-sm text-muted-foreground">Try adjusting your filters.</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
+                                    <TableRow className="bg-muted/50 border-b border-border hover:bg-muted/50 transition-none">
                                         <TableHead className="w-8"></TableHead>
-                                        <TableHead>Order ID</TableHead>
-                                        <TableHead>Customer</TableHead>
-                                        <TableHead>Provider</TableHead>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Date</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Order ID</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Customer</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Provider</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                                        <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Date</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {orders.map((order) => (
                                         <React.Fragment key={order.id}>
                                             <TableRow
-                                                className="hover:bg-muted/30 cursor-pointer"
+                                                className={cn(
+                                                    "hover:bg-muted/30 cursor-pointer transition-colors",
+                                                    expandedOrderId === order.id && "bg-muted/20"
+                                                )}
                                                 onClick={() => setExpandedOrderId(
                                                     expandedOrderId === order.id ? null : order.id
                                                 )}
                                             >
-                                                <TableCell>
-                                                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                                                <TableCell className="px-4 py-4">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-muted/50">
                                                         {expandedOrderId === order.id ? (
                                                             <ChevronUp className="h-4 w-4" />
                                                         ) : (
@@ -221,49 +219,63 @@ export default function AdminOrdersPage() {
                                                         )}
                                                     </Button>
                                                 </TableCell>
-                                                <TableCell className="font-mono text-sm">
-                                                    {order.id.slice(-8).toUpperCase()}
+                                                <TableCell className="px-4 py-4 font-mono text-xs text-muted-foreground">
+                                                    #{order.id.slice(-8).toUpperCase()}
                                                 </TableCell>
-                                                <TableCell>
-                                                    <span className="font-medium">{order.customer?.name || "Anonymous"}</span>
+                                                <TableCell className="px-4 py-4">
+                                                    <div className="font-semibold text-foreground leading-tight">{order.customer?.name || "Anonymous"}</div>
+                                                    <div className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider font-bold">Customer</div>
                                                 </TableCell>
-                                                <TableCell>
-                                                    {order.providerProfile?.businessName || "Unknown"}
+                                                <TableCell className="px-4 py-4">
+                                                    <div className="font-medium text-foreground leading-tight">{order.providerProfile?.businessName || "Unknown"}</div>
+                                                    <div className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider font-bold">Kitchen</div>
                                                 </TableCell>
-                                                <TableCell className="font-bold">
-                                                    ৳{order.totalAmount.toFixed(2)}
+                                                <TableCell className="px-4 py-4 font-bold text-foreground tabular-nums text-sm">
+                                                    ৳{order.totalAmount.toFixed(0)}
                                                 </TableCell>
-                                                <TableCell>
-                                                    <Badge className={statusColors[order.status] || "bg-gray-100 text-gray-800"}>
-                                                        {order.status}
-                                                    </Badge>
+                                                <TableCell className="px-4 py-4">
+                                                    <StatusPill value={mapStatus(order.status)} />
                                                 </TableCell>
-                                                <TableCell className="text-sm text-muted-foreground">
-                                                    {new Date(order.createdAt).toLocaleDateString()}
+                                                <TableCell className="px-4 py-4 text-sm text-muted-foreground font-medium">
+                                                    {new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                                 </TableCell>
                                             </TableRow>
                                             {expandedOrderId === order.id && (
-                                                <TableRow key={`${order.id}-detail`}>
-                                                    <TableCell colSpan={7} className="bg-muted/20 p-4">
-                                                        <div className="space-y-3">
-                                                            <h4 className="font-semibold text-sm">Order Items</h4>
+                                                <TableRow key={`${order.id}-detail`} className="bg-muted/10">
+                                                    <TableCell colSpan={7} className="px-4 py-6 border-y border-border/50 shadow-inner">
+                                                        <div className="space-y-6 max-w-2xl">
+                                                            <div className="flex items-center gap-2">
+                                                                <h4 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Order Summary</h4>
+                                                                <div className="h-px flex-1 bg-border/50" />
+                                                            </div>
                                                             {order.orderItems && order.orderItems.length > 0 ? (
-                                                                <div className="grid gap-2">
+                                                                <div className="grid gap-3">
                                                                     {order.orderItems.map((item) => (
-                                                                        <div key={item.id} className="flex justify-between items-center text-sm bg-background p-2 rounded-md border">
-                                                                            <span>{item.meal?.name || "Unknown meal"}</span>
-                                                                            <span className="text-muted-foreground">
-                                                                                x{item.quantity} — ৳{((item.unitPrice || item.meal?.price || 0) * item.quantity).toFixed(2)}
+                                                                        <div key={item.id} className="flex justify-between items-center text-sm bg-card p-3 rounded-xl border border-border shadow-sm">
+                                                                            <div className="flex flex-col">
+                                                                                <span className="font-semibold text-foreground">{item.meal?.name || "Unknown meal"}</span>
+                                                                                <span className="text-xs text-muted-foreground">Qty: {item.quantity}</span>
+                                                                            </div>
+                                                                            <span className="font-bold text-foreground tabular-nums">
+                                                                                ৳{((item.unitPrice || item.meal?.price || 0) * item.quantity).toFixed(0)}
                                                                             </span>
                                                                         </div>
                                                                     ))}
                                                                 </div>
                                                             ) : (
-                                                                <p className="text-sm text-muted-foreground">No items data available for this order.</p>
+                                                                <p className="text-sm text-muted-foreground py-4 text-center border-2 border-dashed rounded-xl">No item details found for this order.</p>
                                                             )}
-                                                            <div className="flex gap-4 text-xs text-muted-foreground pt-2 border-t">
-                                                                <span>Delivery: {order.deliveryAddress || "N/A"}</span>
-                                                                {order.notes && <span>Notes: {order.notes}</span>}
+                                                            <div className="grid grid-cols-2 gap-8 pt-4 border-t border-border/50">
+                                                                <div className="space-y-1">
+                                                                    <div className="text-[10px] font-black uppercase text-muted-foreground">Delivery Address</div>
+                                                                    <div className="text-sm font-medium text-foreground">{order.deliveryAddress || "N/A"}</div>
+                                                                </div>
+                                                                {order.notes && (
+                                                                    <div className="space-y-1">
+                                                                        <div className="text-[10px] font-black uppercase text-muted-foreground">Order Notes</div>
+                                                                        <div className="text-sm font-medium text-foreground italic">"{order.notes}"</div>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </TableCell>
