@@ -13,6 +13,7 @@
 //   pnpm add -D playwright
 //   pnpm exec playwright install chromium
 
+import "dotenv/config";
 import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";

@@ -1,0 +1,527 @@
+{
+  "theme": "dark",
+  "baseUrl": "http://localhost:3000",
+  "results": [
+    {
+      "route": "/",
+      "count": 11,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Sign In",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "button.inline-flex.items-center.justify-center"
+        },
+        {
+          "tag": "h1",
+          "text": "Order Your Cravings\nWith AI Intelligence",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 72,
+          "fontWeight": 900,
+          "selector": "h1.text-4xl.md:text-7xl.font-black"
+        },
+        {
+          "tag": "span",
+          "text": "With AI Intelligence",
+          "color": "rgba(0, 0, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 72,
+          "fontWeight": 900,
+          "selector": "span.bg-clip-text.text-transparent.bg-gradient-to-r"
+        },
+        {
+          "tag": "button",
+          "text": "Browse All",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 18,
+          "fontWeight": 700,
+          "selector": "button.inline-flex.items-center.justify-center"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "h3",
+          "text": "Hungry?\nOrder now.",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 36,
+          "fontWeight": 900,
+          "selector": "h3.text-3xl.md:text-4xl.font-black"
+        },
+        {
+          "tag": "button",
+          "text": "Start Your Order",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 700,
+          "selector": "button.inline-flex.items-center.justify-center"
+        },
+        {
+          "tag": "h3",
+          "text": "Are you a\nfood provider?",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 36,
+          "fontWeight": 900,
+          "selector": "h3.text-3xl.md:text-4xl.font-black"
+        }
+      ]
+    },
+    {
+      "route": "/meals",
+      "count": 13,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Sign In",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "button.inline-flex.items-center.justify-center"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        },
+        {
+          "tag": "span",
+          "text": "Add to cart",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "span.sr-only"
+        }
+      ]
+    },
+    {
+      "route": "/providers",
+      "count": 1,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Sign In",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "button.inline-flex.items-center.justify-center"
+        }
+      ]
+    },
+    {
+      "route": "/about",
+      "count": 9,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Sign In",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "button.inline-flex.items-center.justify-center"
+        },
+        {
+          "tag": "h1",
+          "text": "Revolutionizing How You Eat.",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 72,
+          "fontWeight": 900,
+          "selector": "h1.text-5xl.md:text-7xl.font-black"
+        },
+        {
+          "tag": "p",
+          "text": "50K+",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 36,
+          "fontWeight": 900,
+          "selector": "p.text-4xl.font-black.mb-1"
+        },
+        {
+          "tag": "p",
+          "text": "1.2K+",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 36,
+          "fontWeight": 900,
+          "selector": "p.text-4xl.font-black.mb-1"
+        },
+        {
+          "tag": "p",
+          "text": "2M+",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 36,
+          "fontWeight": 900,
+          "selector": "p.text-4xl.font-black.mb-1"
+        },
+        {
+          "tag": "p",
+          "text": "12+",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 36,
+          "fontWeight": 900,
+          "selector": "p.text-4xl.font-black.mb-1"
+        },
+        {
+          "tag": "h2",
+          "text": "Want to Join Us?",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 60,
+          "fontWeight": 900,
+          "selector": "h2.text-4xl.md:text-6xl.font-black"
+        },
+        {
+          "tag": "button",
+          "text": "Contact Us",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 900,
+          "selector": "button.inline-flex.items-center.justify-center"
+        },
+        {
+          "tag": "div",
+          "text": "+14",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 20,
+          "fontWeight": 900,
+          "selector": "div.h-20.w-20.rounded-full"
+        }
+      ]
+    },
+    {
+      "route": "/contact",
+      "count": 2,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Sign In",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "button.inline-flex.items-center.justify-center"
+        },
+        {
+          "tag": "h1",
+          "text": "Let's Start a Conversation.",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 72,
+          "fontWeight": 900,
+          "selector": "h1.text-5xl.md:text-7xl.font-black"
+        }
+      ]
+    },
+    {
+      "route": "/help",
+      "count": 4,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Sign In",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "button.inline-flex.items-center.justify-center"
+        },
+        {
+          "tag": "h1",
+          "text": "How can we help you?",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 60,
+          "fontWeight": 900,
+          "selector": "h1.text-4xl.md:text-6xl.font-black"
+        },
+        {
+          "tag": "h2",
+          "text": "Still have questions?",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 3,
+          "fontSize": 48,
+          "fontWeight": 900,
+          "selector": "h2.text-3xl.md:text-5xl.font-black"
+        },
+        {
+          "tag": "button",
+          "text": "Check Community Forum",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 900,
+          "selector": "button.inline-flex.items-center.justify-center"
+        }
+      ]
+    },
+    {
+      "route": "/login",
+      "count": 2,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Sign In",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "button.inline-flex.items-center.justify-center"
+        },
+        {
+          "tag": "button",
+          "text": "Sign In as Customer",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 18,
+          "fontWeight": 700,
+          "selector": "button.inline-flex.items-center.justify-center"
+        }
+      ]
+    },
+    {
+      "route": "/register",
+      "count": 1,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Sign In",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 1,
+          "required": 4.5,
+          "fontSize": 14,
+          "fontWeight": 500,
+          "selector": "button.inline-flex.items-center.justify-center"
+        }
+      ]
+    }
+  ]
+}

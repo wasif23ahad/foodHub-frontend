@@ -43,7 +43,7 @@ export function DemoLoginPanel({ onSelect }: DemoLoginPanelProps) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-slate-50 px-2 text-slate-500 font-medium">
+          <span className="bg-card px-2 text-slate-500 font-medium">
             Try a demo account
           </span>
         </div>
@@ -56,7 +56,7 @@ export function DemoLoginPanel({ onSelect }: DemoLoginPanelProps) {
             className="flex h-auto items-center justify-start gap-4 p-4 text-left hover:bg-accent transition-all hover:border-primary group"
             onClick={() => onSelect(demo.email, demo.password, demo.role)}
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted group-hover:bg-primary/10 group-hover:text-primary transition-colors">
               <demo.icon className="h-5 w-5" />
             </div>
             <div className="flex flex-col gap-0.5">

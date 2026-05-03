@@ -59,7 +59,7 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="flex bg-slate-50 min-h-[calc(100vh-4rem)] items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="flex bg-slate-50 dark:bg-background min-h-[calc(100vh-4rem)] items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors">
             <Card className="w-full max-w-md shadow-lg border-none sm:border-border">
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl font-bold tracking-tight text-center text-primary">
@@ -205,7 +205,7 @@ export default function RegisterPage() {
                         </form>
                     </Form>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-4 text-center">
+                <CardFooter className="flex flex-col gap-4 text-center bg-muted/30 border-t py-6">
                     <div className="text-sm text-slate-500">
                         Already have an account?{" "}
                         <Link href="/login" className="text-primary hover:underline font-semibold">

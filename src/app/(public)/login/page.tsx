@@ -91,7 +91,7 @@ export default function LoginPage() {
           <div className="mb-6 space-y-4">
             <Button 
               variant="outline" 
-              className="w-full gap-2 font-semibold hover:bg-slate-50 dark:hover:bg-accent transition-colors"
+              className="w-full gap-2 font-semibold hover:bg-muted transition-colors"
               onClick={handleGoogleLogin}
               type="button"
             >
@@ -240,7 +240,7 @@ export default function LoginPage() {
 
           <DemoLoginPanel onSelect={handleDemoSelect} />
         </CardContent>
-        <CardFooter className="flex flex-col gap-4 text-center bg-slate-50/50 dark:bg-accent/10 border-t py-6">
+        <CardFooter className="flex flex-col gap-4 text-center bg-muted/30 border-t py-6">
           <div className="text-sm text-slate-500">
             Don't have an account?{" "}
             <Link href="/register" className="text-primary hover:underline font-bold">

@@ -8,6 +8,7 @@
 //   THEME=light node contrast-check.mjs                  # light mode
 //   BASE_URL=https://prod.example.com node contrast-check.mjs
 
+import "dotenv/config";
 import { chromium } from "playwright";
 import { writeFile } from "node:fs/promises";
 

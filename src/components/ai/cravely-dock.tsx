@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { streamCravelyChat } from "@/lib/cravely-stream";
-import { RichText } from "@/components/ui/rich-text";
+import { AssistantMessage } from "./assistant-message";
 
 interface Message {
   role: "user" | "assistant";
@@ -154,7 +154,10 @@ export function CravelyDock() {
                               : "bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-800"
                           )}>
                             {m.role === "assistant" ? (
-                              <RichText content={m.content} />
+                              <AssistantMessage 
+                                content={m.content} 
+                                isStreaming={isLoading && i === messages.length - 1} 
+                              />
                             ) : (
                               m.content
                             )}
