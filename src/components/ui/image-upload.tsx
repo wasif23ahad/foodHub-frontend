@@ -81,11 +81,13 @@ export function ImageUpload({ value, onChange, onRemove, aspectRatio = "wide" }:
                         src={getMediaUrl(value)}
                         alt=""
                         fill
-                        className="object-cover transition-all duration-300 group-hover:scale-105"
+                        className="object-contain transition-all duration-300 group-hover:scale-105 z-10"
                         onError={() => {
                             toast.error("Failed to load current image");
                         }}
                     />
+                    <div className="absolute inset-0 bg-muted/20 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] pointer-events-none" />
+
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <Button
                             type="button"

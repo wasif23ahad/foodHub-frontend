@@ -7,23 +7,25 @@ import {
     Shield,
     Globe,
     Save,
-    CreditCard,
     Mail,
-    Smartphone
+    Smartphone,
+    Building2,
+    ShieldAlert,
+    Palette
 } from "lucide-react";
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
-    CardTitle,
-    CardFooter
+    CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
 import { toast } from "sonner";
 
 export default function AdminSettingsPage() {
@@ -33,175 +35,209 @@ export default function AdminSettingsPage() {
         setIsSaving(true);
         setTimeout(() => {
             setIsSaving(false);
-            toast.success("Settings updated successfully");
+            toast.success("System settings updated successfully");
         }, 1000);
     };
 
     return (
         <div className="space-y-8 max-w-5xl mx-auto">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Admin Settings</h1>
-                <p className="text-muted-foreground mt-1">
-                    Manage system-wide configurations and platform preferences.
+                <h1 className="text-4xl font-black tracking-tight text-foreground">Admin Settings</h1>
+                <p className="text-muted-foreground mt-1 font-medium italic">
+                    Configure platform-wide parameters and security protocols.
                 </p>
             </div>
 
             <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-8">
-                    <TabsTrigger value="general" className="gap-2">
+                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-14 p-1 bg-muted/50 rounded-2xl mb-8">
+                    <TabsTrigger value="general" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
                         <Settings className="h-4 w-4" />
                         General
                     </TabsTrigger>
-                    <TabsTrigger value="notifications" className="gap-2">
+                    <TabsTrigger value="notifications" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
                         <Bell className="h-4 w-4" />
-                        Notifications
+                        System
                     </TabsTrigger>
-                    <TabsTrigger value="security" className="gap-2">
+                    <TabsTrigger value="security" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
                         <Shield className="h-4 w-4" />
                         Security
                     </TabsTrigger>
-                    <TabsTrigger value="localization" className="gap-2">
+                    <TabsTrigger value="appearance" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                        <Palette className="h-4 w-4" />
+                        Theme
+                    </TabsTrigger>
+                    <TabsTrigger value="localization" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
                         <Globe className="h-4 w-4" />
-                        Localization
+                        Locale
                     </TabsTrigger>
                 </TabsList>
 
                 {/* General Settings */}
-                <TabsContent value="general">
-                    <div className="grid gap-6">
-                        <Card className="border-none shadow-md">
-                            <CardHeader>
-                                <CardTitle>Platform Identity</CardTitle>
-                                <CardDescription>Basic information about your platform.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="site-name">Platform Name</Label>
-                                    <Input id="site-name" defaultValue="FoodHub" />
+                <TabsContent value="general" className="space-y-6">
+                    <Card className="border-border bg-card rounded-[2rem] shadow-sm overflow-hidden">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                                <Building2 className="h-6 w-6 text-primary" />
+                                Platform Identity
+                            </CardTitle>
+                            <CardDescription>Core details for the FoodHub ecosystem.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="site-name" className="text-sm font-bold uppercase tracking-wider text-muted-foreground ml-1">Platform Name</Label>
+                                    <Input id="site-name" defaultValue="FoodHub" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" />
                                 </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="site-description">Site Description</Label>
-                                    <Input id="site-description" defaultValue="Delicious Meals Delivered" />
+                                <div className="space-y-2">
+                                    <Label htmlFor="contact-email" className="text-sm font-bold uppercase tracking-wider text-muted-foreground ml-1">System Email</Label>
+                                    <Input id="contact-email" defaultValue="admin@foodhub.com" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" />
                                 </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="contact-email">System Email</Label>
-                                    <Input id="contact-email" defaultValue="admin@foodhub.com" />
-                                </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="site-description" className="text-sm font-bold uppercase tracking-wider text-muted-foreground ml-1">Site Meta Description</Label>
+                                <Input id="site-description" defaultValue="Delicious Meals Delivered" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" />
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        <Card className="border-none shadow-md">
-                            <CardHeader>
-                                <CardTitle>Maintenance Mode</CardTitle>
-                                <CardDescription>Take the platform offline for maintenance.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex items-center justify-between">
-                                <div className="space-y-0.5">
-                                    <Label>Enable Maintenance Mode</Label>
-                                    <p className="text-sm text-muted-foreground">Only admins will be able to access the site.</p>
-                                </div>
-                                <Switch />
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <Card className="border-border bg-card rounded-[2rem] shadow-sm overflow-hidden">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-2xl font-bold flex items-center gap-2 text-rose-500">
+                                <ShieldAlert className="h-6 w-6" />
+                                Emergency Controls
+                            </CardTitle>
+                            <CardDescription>Global flags for platform availability.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex items-center justify-between p-6 bg-rose-500/5 rounded-3xl border-2 border-rose-500/10">
+                            <div className="space-y-0.5">
+                                <Label className="text-base font-bold">Maintenance Mode</Label>
+                                <p className="text-sm text-muted-foreground">Only administrative users will be able to access the platform.</p>
+                            </div>
+                            <Switch />
+                        </CardContent>
+                    </Card>
                 </TabsContent>
 
                 {/* Notifications */}
-                <TabsContent value="notifications">
-                    <Card className="border-none shadow-md">
+                <TabsContent value="notifications" className="space-y-6">
+                    <Card className="border-border bg-card rounded-[2rem] shadow-sm overflow-hidden">
                         <CardHeader>
-                            <CardTitle>Global Notifications</CardTitle>
-                            <CardDescription>Configure how the system sends alerts.</CardDescription>
+                            <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                                <Bell className="h-6 w-6 text-primary" />
+                                System Notifications
+                            </CardTitle>
+                            <CardDescription>Configure global alert channels.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                        <Mail className="h-5 w-5" />
+                        <CardContent className="space-y-0 p-0">
+                            <div className="flex items-center justify-between p-8 border-b border-border/50 hover:bg-muted/30 transition-colors">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-primary/10 text-primary rounded-2xl">
+                                        <Mail className="h-6 w-6" />
                                     </div>
                                     <div className="space-y-0.5">
-                                        <Label>Email Alerts</Label>
-                                        <p className="text-sm text-muted-foreground">Send email for new provider registrations.</p>
+                                        <Label className="text-base font-bold">New Provider Registration</Label>
+                                        <p className="text-sm text-muted-foreground">Send email alerts when a new provider signs up.</p>
                                     </div>
                                 </div>
                                 <Switch defaultChecked />
                             </div>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                                        <Smartphone className="h-5 w-5" />
+                            <div className="flex items-center justify-between p-8 border-b border-border/50 hover:bg-muted/30 transition-colors">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-primary/10 text-primary rounded-2xl">
+                                        <Smartphone className="h-6 w-6" />
                                     </div>
                                     <div className="space-y-0.5">
-                                        <Label>Push Notifications</Label>
-                                        <p className="text-sm text-muted-foreground">Send push alerts for critical system errors.</p>
+                                        <Label className="text-base font-bold">System Health Alerts</Label>
+                                        <p className="text-sm text-muted-foreground">Notify sys-admins about critical server errors.</p>
                                     </div>
                                 </div>
-                                <Switch />
+                                <Switch defaultChecked />
                             </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
 
                 {/* Security */}
-                <TabsContent value="security">
-                    <Card className="border-none shadow-md">
+                <TabsContent value="security" className="space-y-6">
+                    <Card className="border-border bg-card rounded-[2rem] shadow-sm overflow-hidden">
                         <CardHeader>
-                            <CardTitle>Authentication Settings</CardTitle>
-                            <CardDescription>Policy configurations for user access.</CardDescription>
+                            <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                                <Shield className="h-6 w-6 text-primary" />
+                                Authentication Policy
+                            </CardTitle>
+                            <CardDescription>Strict security requirements for the platform.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between p-6 rounded-3xl bg-muted/30 border-2 border-border/50">
                                 <div className="space-y-0.5">
-                                    <Label>Two-Factor Authentication</Label>
-                                    <p className="text-sm text-muted-foreground">Require 2FA for all admin accounts.</p>
+                                    <Label className="text-base font-bold">Enforce 2FA</Label>
+                                    <p className="text-sm text-muted-foreground">Require Two-Factor Authentication for all admin accounts.</p>
                                 </div>
                                 <Switch defaultChecked />
                             </div>
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-0.5">
-                                    <Label>Account Lockout</Label>
-                                    <p className="text-sm text-muted-foreground">Lock accounts after 5 failed login attempts.</p>
+                            <div className="grid md:grid-cols-2 gap-6 pt-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="session-timeout" className="text-sm font-bold uppercase tracking-wider text-muted-foreground ml-1">Session Timeout (min)</Label>
+                                    <Input id="session-timeout" type="number" defaultValue="60" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" />
                                 </div>
-                                <Switch defaultChecked />
-                            </div>
-                            <div className="grid gap-2 pt-2">
-                                <Label htmlFor="session-timeout">Session Timeout (minutes)</Label>
-                                <Input id="session-timeout" type="number" defaultValue="60" />
+                                <div className="space-y-2">
+                                    <Label htmlFor="failed-attempts" className="text-sm font-bold uppercase tracking-wider text-muted-foreground ml-1">Max Login Attempts</Label>
+                                    <Input id="failed-attempts" type="number" defaultValue="5" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
 
-                {/* Localization */}
-                <TabsContent value="localization">
-                    <Card className="border-none shadow-md">
+                {/* Appearance */}
+                <TabsContent value="appearance" className="space-y-6">
+                    <Card className="border-border bg-card rounded-[2rem] shadow-sm overflow-hidden">
                         <CardHeader>
-                            <CardTitle>Regional Settings</CardTitle>
+                            <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                                <Palette className="h-6 w-6 text-primary" />
+                                System Appearance
+                            </CardTitle>
+                            <CardDescription>Default theme preference for administrative users.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-2">
+                            <ThemeSwitcher />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                {/* Localization */}
+                <TabsContent value="localization" className="space-y-6">
+                    <Card className="border-border bg-card rounded-[2rem] shadow-sm overflow-hidden">
+                        <CardHeader>
+                            <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                                <Globe className="h-6 w-6 text-primary" />
+                                Regional Settings
+                            </CardTitle>
                             <CardDescription>Default language and currency for the platform.</CardDescription>
                         </CardHeader>
-                        <CardContent className="grid gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="currency">Platform Currency</Label>
-                                <Input id="currency" defaultValue="BDT (৳)" />
+                        <CardContent className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="currency" className="text-sm font-bold uppercase tracking-wider text-muted-foreground ml-1">Platform Currency</Label>
+                                <Input id="currency" defaultValue="BDT (৳)" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" />
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="timezone">Default Timezone</Label>
-                                <Input id="timezone" defaultValue="Asia/Dhaka (UTC+6)" />
+                            <div className="space-y-2">
+                                <Label htmlFor="timezone" className="text-sm font-bold uppercase tracking-wider text-muted-foreground ml-1">Default Timezone</Label>
+                                <Input id="timezone" defaultValue="Asia/Dhaka (UTC+6)" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" />
                             </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
             </Tabs>
 
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end pt-4 pb-12">
                 <Button
                     size="lg"
-                    className="gap-2 px-8"
+                    className="h-14 rounded-2xl px-12 gap-3 font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
                     onClick={handleSave}
                     disabled={isSaving}
                 >
-                    {isSaving ? "Saving..." : "Save Settings"}
-                    {!isSaving && <Save className="h-4 w-4" />}
+                    {isSaving ? "Saving Settings..." : "Save Platform Settings"}
+                    {!isSaving && <Save className="h-5 w-5" />}
                 </Button>
             </div>
         </div>

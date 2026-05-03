@@ -24,6 +24,8 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import { FavoriteButton } from "./favorite-button";
+
 interface MealCardProps {
     meal: Meal | any;
 }
@@ -63,8 +65,8 @@ export function MealCard({ meal }: MealCardProps) {
                 className="h-full"
             >
                 <Card className="overflow-hidden group transition-shadow duration-300 border-none shadow-sm h-full flex flex-col hover:shadow-xl">
-                    <Link href={`/meals/${meal.id}`} className="overflow-hidden flex-1 flex flex-col">
-                        <div className="relative h-48 w-full overflow-hidden bg-muted">
+                    <div className="relative overflow-hidden flex-1 flex flex-col">
+                        <Link href={`/meals/${meal.id}`} className="block relative h-48 w-full overflow-hidden bg-muted">
                             <Image
                                 src={imgSrc}
                                 alt={meal.name}
@@ -72,40 +74,51 @@ export function MealCard({ meal }: MealCardProps) {
                                 className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                                 onError={() => setImgSrc("/placeholder-meal.jpg")}
                             />
-                            <Badge className="absolute top-3 right-3 bg-white/90 text-foreground hover:bg-white backdrop-blur-sm shadow-sm gap-1 z-10">
-                                {meal.avgRating && meal.avgRating > 0 ? (
-                                    <>
-                                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                        <span className="font-semibold text-xs">{meal.avgRating.toFixed(1)}</span>
-                                    </>
-                                ) : (
-                                    <span className="font-semibold text-xs text-primary">New</span>
-                                )}
-                            </Badge>
+                        </Link>
+                        
+                        {/* Interactive Overlay elements */}
+                        <div className="absolute top-3 inset-x-3 flex items-start justify-between z-10 pointer-events-none">
+                            <div className="pointer-events-auto">
+                                <FavoriteButton mealId={meal.id} />
+                            </div>
+                            <div className="pointer-events-auto">
+                                <Badge className="bg-white/90 text-foreground hover:bg-white backdrop-blur-sm shadow-sm gap-1">
+                                    {meal.avgRating && meal.avgRating > 0 ? (
+                                        <>
+                                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                            <span className="font-semibold text-xs">{meal.avgRating.toFixed(1)}</span>
+                                        </>
+                                    ) : (
+                                        <span className="font-semibold text-xs text-primary">New</span>
+                                    )}
+                                </Badge>
+                            </div>
                         </div>
 
-                        <CardContent className="p-4 flex-1">
-                            <div className="flex justify-between items-start mb-2 gap-2 flex-wrap">
-                                <Badge variant="secondary" className="text-xs font-normal text-muted-foreground bg-muted hover:bg-muted/80">
-                                    {meal.category?.name || "Meal"}
-                                </Badge>
-                                {meal.dietaryPreference && meal.dietaryPreference !== "REGULAR" && (
-                                    <Badge variant="outline" className="text-xs font-medium border-primary/20 bg-primary/5 text-primary">
-                                        {meal.dietaryPreference.replace("_", " ")}
+                        <Link href={`/meals/${meal.id}`} className="block flex-1">
+                            <CardContent className="p-4 flex-1">
+                                <div className="flex justify-between items-start mb-2 gap-2 flex-wrap">
+                                    <Badge variant="secondary" className="text-xs font-normal text-muted-foreground bg-muted hover:bg-muted/80">
+                                        {meal.category?.name || "Meal"}
                                     </Badge>
-                                )}
-                            </div>
-                            <h3 className="font-bold text-lg mb-1 truncate group-hover:text-primary transition-colors">
-                                {meal.name}
-                            </h3>
-                            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                                {meal.description}
-                            </p>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <span>By <span className="font-medium text-foreground">{meal.providerProfile?.businessName || "Local Kitchen"}</span></span>
-                            </div>
-                        </CardContent>
-                    </Link>
+                                    {meal.dietaryPreference && meal.dietaryPreference !== "REGULAR" && (
+                                        <Badge variant="outline" className="text-xs font-medium border-primary/20 bg-primary/5 text-primary">
+                                            {meal.dietaryPreference.replace("_", " ")}
+                                        </Badge>
+                                    )}
+                                </div>
+                                <h3 className="font-bold text-lg mb-1 truncate group-hover:text-primary transition-colors">
+                                    {meal.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                                    {meal.description}
+                                </p>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span>By <span className="font-medium text-foreground">{meal.providerProfile?.businessName || "Local Kitchen"}</span></span>
+                                </div>
+                            </CardContent>
+                        </Link>
+                    </div>
 
                     <CardFooter className="p-4 pt-0 flex items-center justify-between mt-auto">
                         <span className="text-xl font-bold text-primary">

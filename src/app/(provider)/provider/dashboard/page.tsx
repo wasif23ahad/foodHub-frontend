@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/dashboard/empty-state";
 import { api } from "@/lib/api";
 import { Order, ApiResponse, Meal } from "@/types";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -229,8 +230,12 @@ export default function ProviderDashboardPage() {
                     </CardHeader>
                     <CardContent className="pt-6">
                         {orders.length === 0 ? (
-                            <div className="py-20 text-center text-muted-foreground font-medium">
-                                No orders yet. Start promoting your kitchen!
+                            <div className="py-12">
+                                <EmptyState
+                                    icon={ShoppingBag}
+                                    title="No orders yet"
+                                    description="Start promoting your kitchen and share your unique flavors with the world!"
+                                />
                             </div>
                         ) : (
                             <div className="space-y-4">

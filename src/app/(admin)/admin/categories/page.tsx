@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, Plus, MoreHorizontal, Tags, Edit, Trash, ImageIcon } from "lucide-react";
+import { Search, Plus, MoreHorizontal, Tags, Edit, Trash, ImageIcon, Save, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { EmptyState } from "@/components/dashboard/empty-state";
+import { Switch } from "@/components/ui/switch";
 
 // Schemas matching Backend
 const categorySchema = z.object({
@@ -86,7 +88,6 @@ export default function AdminCategoriesPage() {
     // Mutations
     const createMutation = useMutation({
         mutationFn: async (data: CategoryFormData) => {
-            // Strip empty image string — backend URL validator rejects ''
             const payload = { ...data, image: data.image || undefined };
             return api.post<ApiResponse<Category>>("/admin/categories", payload);
         },
@@ -102,7 +103,6 @@ export default function AdminCategoriesPage() {
 
     const updateMutation = useMutation({
         mutationFn: async ({ id, data }: { id: string; data: CategoryFormData }) => {
-            // Strip empty image string — backend URL validator rejects ''
             const payload = { ...data, image: data.image || undefined };
             return api.put<ApiResponse<Category>>(`/admin/categories/${id}`, payload);
         },
@@ -139,108 +139,136 @@ export default function AdminCategoriesPage() {
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center p-20 text-center">
-                <Tags className="h-10 w-10 text-destructive mb-4" />
-                <h2 className="text-xl font-bold">Failed to load categories</h2>
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <EmptyState
+                    icon={Tags}
+                    title="Error loading categories"
+                    description="We couldn't retrieve the system categories. Please check your connection."
+                >
+                    <Button onClick={() => window.location.reload()} className="mt-4 rounded-xl font-bold border-2" variant="outline">Try Again</Button>
+                </EmptyState>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="space-y-8 max-w-7xl mx-auto pb-12">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Category Management</h1>
-                    <p className="text-muted-foreground">Manage food categories for providers and meals.</p>
+                    <h1 className="text-4xl font-black tracking-tight text-foreground">Category Management</h1>
+                    <p className="text-muted-foreground mt-1 font-medium italic">Define and organize the food catalog.</p>
                 </div>
-                <Button onClick={handleOpenCreate} className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Add Category
+                <Button 
+                    onClick={handleOpenCreate} 
+                    className="h-14 rounded-2xl px-8 gap-3 font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                >
+                    <Plus className="h-5 w-5" />
+                    Create Category
                 </Button>
             </div>
 
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-xl border border-border shadow-sm items-center">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="flex flex-col lg:flex-row gap-6 items-center">
+                <div className="relative flex-1 w-full group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input
-                        placeholder="Search categories..."
-                        className="pl-9 bg-background/50 border-border focus-visible:ring-primary/20 w-full"
+                        placeholder="Search categories by name or description..."
+                        className="pl-12 h-14 bg-card border-2 border-border rounded-2xl focus:border-primary/20 focus:ring-primary/10 transition-all font-medium"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                <Badge variant="secondary" className="px-4 py-1 rounded-lg font-bold bg-muted text-foreground border-border shrink-0">Total: {categories.length}</Badge>
+                <Badge variant="outline" className="h-10 px-6 rounded-2xl font-black border-2 text-primary border-primary/20 bg-primary/5 uppercase tracking-widest text-[10px] shrink-0">
+                    Total: {categories.length}
+                </Badge>
             </div>
 
-            <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+            <div className="rounded-[2.5rem] border-2 border-border bg-card shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>
-                            <TableRow className="bg-muted/50 border-b border-border hover:bg-muted/50 transition-none">
-                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[80px]">Image</TableHead>
-                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[200px]">Name</TableHead>
-                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description</TableHead>
-                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[120px]">Featured</TableHead>
-                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[150px]">Created</TableHead>
-                                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right w-[100px]">Actions</TableHead>
+                            <TableRow className="bg-muted/30 border-b-2 border-border hover:bg-muted/30 transition-none">
+                                <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Preview</TableHead>
+                                <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Category Name</TableHead>
+                                <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Description</TableHead>
+                                <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Featured</TableHead>
+                                <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Created</TableHead>
+                                <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                     <TableBody>
                         {isLoading ? (
-                            <TableRow><TableCell colSpan={5} className="h-24 text-center">Loading...</TableCell></TableRow>
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <TableRow key={i}>
+                                    <TableCell className="px-8 py-6"><div className="h-14 w-14 bg-muted animate-pulse rounded-xl" /></TableCell>
+                                    <TableCell><div className="h-6 w-32 bg-muted animate-pulse rounded" /></TableCell>
+                                    <TableCell><div className="h-4 w-64 bg-muted animate-pulse rounded" /></TableCell>
+                                    <TableCell><div className="h-6 w-20 bg-muted animate-pulse rounded-full" /></TableCell>
+                                    <TableCell><div className="h-4 w-24 bg-muted animate-pulse rounded" /></TableCell>
+                                    <TableCell className="text-right px-8"><div className="h-10 w-10 ml-auto bg-muted animate-pulse rounded-xl" /></TableCell>
+                                </TableRow>
+                            ))
                         ) : filteredCategories.length === 0 ? (
-                            <TableRow><TableCell colSpan={5} className="h-48 text-center text-muted-foreground">No categories found.</TableCell></TableRow>
+                            <TableRow>
+                                <TableCell colSpan={6} className="py-24 text-center">
+                                    <EmptyState
+                                        icon={Tags}
+                                        title="No categories found"
+                                        description={search ? `No matches for "${search}".` : "The category list is currently empty."}
+                                    />
+                                </TableCell>
+                            </TableRow>
                         ) : (
                             filteredCategories.map(cat => (
-                                <TableRow key={cat.id} className="hover:bg-muted/30 transition-colors group">
-                                    <TableCell className="px-4 py-4">
-                                        <div className="h-12 w-12 rounded-lg overflow-hidden bg-muted flex items-center justify-center border border-border shadow-sm group-hover:scale-105 transition-transform">
+                                <TableRow key={cat.id} className="hover:bg-muted/30 transition-all group/row border-b border-border/50">
+                                    <TableCell className="px-8 py-6">
+                                        <div className="h-16 w-16 rounded-[1.25rem] overflow-hidden bg-muted flex items-center justify-center border-2 border-border shadow-sm group-hover/row:scale-110 transition-transform">
                                             {cat.image ? (
                                                 <img src={getMediaUrl(cat.image)} alt={cat.name} className="h-full w-full object-cover" />
                                             ) : (
-                                                <ImageIcon className="h-6 w-6 text-muted-foreground/50" />
+                                                <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4">
-                                        <div className="font-bold text-foreground leading-tight">{cat.name}</div>
-                                        <div className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider font-bold">Category</div>
+                                    <TableCell className="px-8 py-6">
+                                        <div className="font-black text-foreground text-lg leading-tight group-hover/row:text-primary transition-colors">{cat.name}</div>
+                                        <div className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest font-black">System Category</div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4">
-                                        <div className="text-sm text-muted-foreground line-clamp-1 max-w-[300px]">
+                                    <TableCell className="px-8 py-6">
+                                        <div className="text-sm text-muted-foreground font-medium italic line-clamp-2 max-w-[300px]">
                                             {cat.description || "No description provided"}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4">
+                                    <TableCell className="px-8 py-6">
                                         {cat.isFeatured ? (
-                                            <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-bold text-amber-500 border border-amber-500/20">
+                                            <Badge className="bg-amber-500/10 text-amber-600 border-2 border-amber-500/20 px-3 py-1 rounded-xl font-black text-[10px] uppercase tracking-widest flex w-fit gap-1.5 items-center shadow-sm shadow-amber-500/5">
+                                                <Sparkles className="h-3 w-3" />
                                                 Featured
-                                            </span>
+                                            </Badge>
                                         ) : (
-                                            <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground border border-border/50">
+                                            <Badge variant="outline" className="text-muted-foreground/60 border-2 border-border/50 px-3 py-1 rounded-xl font-black text-[10px] uppercase tracking-widest">
                                                 Regular
-                                            </span>
+                                            </Badge>
                                         )}
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 text-xs text-muted-foreground font-medium">
+                                    <TableCell className="px-8 py-6 text-sm text-muted-foreground font-bold">
                                         {format(new Date(cat.createdAt), "MMM d, yyyy")}
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 text-right">
+                                    <TableCell className="px-8 py-6 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted/80">
-                                                    <MoreHorizontal className="h-4 w-4" />
+                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm">
+                                                    <MoreHorizontal className="h-5 w-5" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-48 rounded-xl p-2 shadow-xl">
-                                                <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem className="rounded-lg cursor-pointer" onClick={() => handleOpenEdit(cat)}>
-                                                    <Edit className="h-4 w-4 mr-2" /> Edit Details
+                                            <DropdownMenuContent align="end" className="w-56 rounded-[1.5rem] p-3 shadow-2xl border-2 border-border">
+                                                <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Category Settings</DropdownMenuLabel>
+                                                <DropdownMenuItem className="rounded-xl cursor-pointer py-3 px-3 font-bold" onClick={() => handleOpenEdit(cat)}>
+                                                    <Edit className="h-4 w-4 mr-3 text-primary" /> Edit Details
                                                 </DropdownMenuItem>
-                                                <DropdownMenuSeparator className="my-1" />
-                                                <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-medium" onClick={() => setDeleteCategory(cat)}>
-                                                    <Trash className="h-4 w-4 mr-2" /> Delete Category
+                                                <DropdownMenuSeparator className="my-2 bg-border/50" />
+                                                <DropdownMenuItem className="text-rose-600 focus:text-rose-600 focus:bg-rose-600/10 rounded-xl cursor-pointer font-black py-3 px-3" onClick={() => setDeleteCategory(cat)}>
+                                                    <Trash className="h-4 w-4 mr-3" /> Purge Category
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -261,54 +289,58 @@ export default function AdminCategoriesPage() {
                     form.reset();
                 }
             }}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-xl rounded-[2.5rem] border-2 p-8 shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle>{editCategory ? "Edit Category" : "Create Category"}</DialogTitle>
-                        <DialogDescription>
-                            {editCategory ? "Update the details of the category below." : "Add a new category to the platform."}
+                        <DialogTitle className="text-3xl font-black text-foreground">{editCategory ? "Edit Category" : "New Category"}</DialogTitle>
+                        <DialogDescription className="text-base font-medium italic">
+                            {editCategory ? "Update existing catalog definitions." : "Add a new flavor profile to the system."}
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
-                            <Input id="name" {...form.register("name")} placeholder="e.g. Deshi" disabled={updateMutation.isPending || createMutation.isPending} />
-                            {form.formState.errors.name && <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>}
+                            <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Display Name <span className="text-rose-500">*</span></Label>
+                            <Input id="name" {...form.register("name")} placeholder="e.g. Deshi Platters" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" disabled={updateMutation.isPending || createMutation.isPending} />
+                            {form.formState.errors.name && <p className="text-xs text-rose-500 font-bold ml-1">{form.formState.errors.name.message}</p>}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea id="description" {...form.register("description")} placeholder="Brief description" disabled={updateMutation.isPending || createMutation.isPending} />
-                            {form.formState.errors.description && <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>}
+                            <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Meta Description</Label>
+                            <Textarea id="description" {...form.register("description")} placeholder="Briefly describe what makes this category unique..." className="min-h-[100px] rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium resize-none" disabled={updateMutation.isPending || createMutation.isPending} />
+                            {form.formState.errors.description && <p className="text-xs text-rose-500 font-bold ml-1">{form.formState.errors.description.message}</p>}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="image">Category Image</Label>
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Cover Asset</Label>
                             <ImageUpload
                                 value={form.watch("image")}
                                 onChange={(url) => form.setValue("image", url, { shouldValidate: true })}
                                 onRemove={() => form.setValue("image", "", { shouldValidate: true })}
                             />
-                            {form.formState.errors.image && <p className="text-sm text-destructive">{form.formState.errors.image.message}</p>}
                         </div>
 
-                        <div className="flex items-center space-x-2 py-2">
-                            <input
-                                type="checkbox"
-                                id="isFeatured"
-                                {...form.register("isFeatured")}
-                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                disabled={updateMutation.isPending || createMutation.isPending}
+                        <div className="flex items-center justify-between p-6 bg-muted/30 rounded-3xl border-2 border-border/50">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="isFeatured" className="text-base font-bold cursor-pointer">Featured Category</Label>
+                                <p className="text-xs text-muted-foreground font-medium italic">Prioritize this category on the homepage.</p>
+                            </div>
+                            <Switch 
+                                checked={form.watch("isFeatured")}
+                                onCheckedChange={(val) => form.setValue("isFeatured", val)}
                             />
-                            <Label htmlFor="isFeatured" className="cursor-pointer">Feature on homepage</Label>
                         </div>
 
-                        <DialogFooter className="pt-4">
-                            <Button type="button" variant="outline" onClick={() => { setIsCreateOpen(false); setEditCategory(null); }}>
+                        <DialogFooter className="pt-6">
+                            <Button type="button" variant="ghost" onClick={() => { setIsCreateOpen(false); setEditCategory(null); }} className="rounded-xl font-bold h-12">
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={updateMutation.isPending || createMutation.isPending}>
-                                {(updateMutation.isPending || createMutation.isPending) ? "Saving..." : "Save Category"}
+                            <Button type="submit" disabled={updateMutation.isPending || createMutation.isPending} className="rounded-2xl font-black h-12 px-8 shadow-lg shadow-primary/20">
+                                {(updateMutation.isPending || createMutation.isPending) ? (
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                    <Save className="h-4 w-4 mr-2" />
+                                )}
+                                {editCategory ? "Update Category" : "Establish Category"}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -317,23 +349,24 @@ export default function AdminCategoriesPage() {
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={!!deleteCategory} onOpenChange={(open) => !open && setDeleteCategory(null)}>
-                <DialogContent>
+                <DialogContent className="rounded-[2.5rem] border-2 p-8">
                     <DialogHeader>
-                        <DialogTitle>Delete Category</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete <span className="font-semibold text-foreground">{deleteCategory?.name}</span>? 
-                            This action cannot be undone and may affect meals associated with this category.
+                        <DialogTitle className="text-2xl font-black text-foreground">Purge Category Definition?</DialogTitle>
+                        <DialogDescription className="text-base font-medium italic">
+                            Are you sure you want to permanently delete <span className="font-black text-rose-600 not-italic">{deleteCategory?.name}</span>? 
+                            This action may cause synchronization issues with existing meals.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setDeleteCategory(null)}>Cancel</Button>
+                    <DialogFooter className="gap-3 pt-6">
+                        <Button type="button" variant="ghost" onClick={() => setDeleteCategory(null)} className="rounded-xl font-bold h-12">Cancel</Button>
                         <Button 
                             type="button" 
                             variant="destructive" 
                             onClick={() => deleteCategory && deleteMutation.mutate(deleteCategory.id)}
                             disabled={deleteMutation.isPending}
+                            className="rounded-xl font-black h-12 bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-500/20"
                         >
-                            {deleteMutation.isPending ? "Deleting..." : "Delete Category"}
+                            {deleteMutation.isPending ? "Purging..." : "Confirm Purge"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

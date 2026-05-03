@@ -11,7 +11,8 @@ import {
     Trash2,
     Mail,
     Calendar,
-    Filter
+    Filter,
+    ChevronDown
 } from "lucide-react";
 import {
     Table,
@@ -51,11 +52,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { api } from "@/lib/api";
 import { User, ApiResponse } from "@/types";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { getMediaUrl } from "@/lib/utils";
+import { EmptyState } from "@/components/dashboard/empty-state";
 
 export default function AdminUsersPage() {
     const [search, setSearch] = useState("");
@@ -118,180 +127,182 @@ export default function AdminUsersPage() {
         const roleLower = role.toLowerCase();
         switch (roleLower) {
             case "admin":
-                return <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/20 hover:bg-purple-500/20 transition-colors">Admin</Badge>;
+                return <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/20 hover:bg-purple-500/20 transition-colors font-bold px-3">Admin</Badge>;
             case "provider":
-                return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20 transition-colors">Provider</Badge>;
+                return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20 transition-colors font-bold px-3">Provider</Badge>;
             default:
-                return <Badge className="bg-muted text-muted-foreground border-border hover:bg-muted/80 transition-colors">Customer</Badge>;
+                return <Badge className="bg-muted text-muted-foreground border-border hover:bg-muted/80 transition-colors font-bold px-3">Customer</Badge>;
         }
     };
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center h-full py-20 bg-white rounded-xl border border-dashed text-center">
-                <div className="p-4 bg-red-100 rounded-full mb-4">
-                    <UserIcon className="h-8 w-8 text-red-600" />
-                </div>
-                <h2 className="text-xl font-bold mb-2">Error loading users</h2>
-                <p className="text-muted-foreground mb-6">There was a problem communicating with the server.</p>
-                <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <EmptyState
+                    icon={UserIcon}
+                    title="Error loading users"
+                    description="There was a problem communicating with the server. Please check your connection and try again."
+                >
+                    <Button onClick={() => window.location.reload()} className="mt-4 rounded-xl font-bold border-2" variant="outline">Try Again</Button>
+                </EmptyState>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="space-y-8 max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-                    <p className="text-muted-foreground">Manage all registered users and their permissions.</p>
+                    <h1 className="text-4xl font-black tracking-tight text-foreground">User Management</h1>
+                    <p className="text-muted-foreground mt-1 font-medium italic">Manage and monitor all registered accounts.</p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="h-8 px-3">
+                <div className="flex items-center gap-3">
+                    <Badge variant="outline" className="h-10 px-6 rounded-2xl font-black border-2 text-primary border-primary/20 bg-primary/5 uppercase tracking-widest text-[10px]">
                         Total: {usersData?.length || 0}
                     </Badge>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="flex flex-col lg:flex-row gap-6 items-center">
+                <div className="relative flex-1 w-full group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input
-                        placeholder="Search by name or email..."
-                        className="pl-9 bg-background/50 border-border focus-visible:ring-primary/20"
+                        placeholder="Search users by name or email..."
+                        className="pl-12 h-14 bg-card border-2 border-border rounded-2xl focus:border-primary/20 focus:ring-primary/10 transition-all font-medium"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                <div className="flex items-center gap-2 min-w-[200px]">
-                    <Filter className="h-4 w-4 text-muted-foreground" />
-                    <select
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none appearance-none cursor-pointer"
-                        value={roleFilter}
-                        onChange={(e) => setRoleFilter(e.target.value)}
-                    >
-                        <option value="all">All Roles</option>
-                        <option value="customer">Customer</option>
-                        <option value="provider">Provider</option>
-                        <option value="admin">Admin</option>
-                    </select>
+                <div className="flex items-center gap-4 w-full lg:w-auto">
+                    <Select value={roleFilter} onValueChange={setRoleFilter}>
+                        <SelectTrigger className="h-14 w-full lg:w-48 rounded-2xl border-2 border-border bg-card px-4 py-2 text-sm font-bold text-foreground focus:ring-2 focus:ring-primary/10 outline-none hover:border-primary/50 transition-colors">
+                            <SelectValue placeholder="All Roles" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl border-2">
+                            <SelectItem value="all" className="font-bold rounded-xl">All Roles</SelectItem>
+                            <SelectItem value="customer" className="font-bold rounded-xl">Customer</SelectItem>
+                            <SelectItem value="provider" className="font-bold rounded-xl">Provider</SelectItem>
+                            <SelectItem value="admin" className="font-bold rounded-xl">Admin</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
             {/* Users Table */}
-            <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+            <div className="rounded-[2.5rem] border-2 border-border bg-card shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <Table>
                     <TableHeader>
-                        <TableRow className="bg-muted/50 border-b border-border hover:bg-muted/50 transition-none">
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[300px]">User</TableHead>
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</TableHead>
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Joined Date</TableHead>
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</TableHead>
+                        <TableRow className="bg-muted/30 border-b-2 border-border hover:bg-muted/30 transition-none">
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground w-[350px]">User Profile</TableHead>
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Account Role</TableHead>
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Joined Date</TableHead>
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Status</TableHead>
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {isLoading ? (
                             Array.from({ length: 5 }).map((_, i) => (
                                 <TableRow key={i}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 shrink-0 rounded-full bg-muted animate-pulse" />
+                                    <TableCell className="px-8 py-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 shrink-0 rounded-full bg-muted animate-pulse" />
                                             <div className="space-y-2">
                                                 <div className="h-4 w-32 bg-muted animate-pulse rounded" />
                                                 <div className="h-3 w-24 bg-muted animate-pulse rounded" />
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell><div className="h-6 w-20 bg-muted animate-pulse rounded-full" /></TableCell>
-                                    <TableCell><div className="h-4 w-24 bg-muted animate-pulse rounded" /></TableCell>
-                                    <TableCell><div className="h-6 w-16 bg-muted animate-pulse rounded-full" /></TableCell>
-                                    <TableCell className="text-right"><div className="h-8 w-8 ml-auto bg-muted animate-pulse rounded" /></TableCell>
+                                    <TableCell><div className="h-8 w-24 bg-muted animate-pulse rounded-2xl" /></TableCell>
+                                    <TableCell><div className="h-4 w-28 bg-muted animate-pulse rounded" /></TableCell>
+                                    <TableCell><div className="h-8 w-20 bg-muted animate-pulse rounded-2xl" /></TableCell>
+                                    <TableCell className="text-right px-8"><div className="h-10 w-10 ml-auto bg-muted animate-pulse rounded-xl" /></TableCell>
                                 </TableRow>
                             ))
                         ) : filteredUsers.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-64 text-center">
-                                    <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                        <UserIcon className="h-12 w-12 mb-2 opacity-20" />
-                                        <p>No users found matching your criteria</p>
-                                    </div>
+                                <TableCell colSpan={5} className="py-24 text-center">
+                                    <EmptyState
+                                        icon={UserIcon}
+                                        title="No users found"
+                                        description={search ? `No results matching "${search}" for role "${roleFilter}".` : "The user directory is currently empty."}
+                                    />
                                 </TableCell>
                             </TableRow>
                         ) : (
                             filteredUsers.map((user) => (
-                                <TableRow key={user.id} className="hover:bg-muted/30 transition-colors group">
-                                    <TableCell className="px-4 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-10 w-10 border border-border shadow-sm shrink-0">
+                                <TableRow key={user.id} className="hover:bg-muted/30 transition-all group/row border-b border-border/50">
+                                    <TableCell className="px-8 py-6">
+                                        <div className="flex items-center gap-4">
+                                            <Avatar className="h-12 w-12 border-2 border-border shadow-sm shrink-0 transition-transform group-hover/row:scale-110">
                                                 <AvatarImage src={getMediaUrl(user.image)} alt={user.name} className="object-cover" />
-                                                <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                                                <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">
                                                     {user.name.slice(0, 2).toUpperCase()}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div className="flex flex-col">
-                                                <span className="font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
+                                                <span className="font-black text-foreground text-lg leading-tight group-hover/row:text-primary transition-colors">
                                                     {user.name}
                                                 </span>
-                                                <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                                                    <Mail className="h-3 w-3" /> {user.email}
+                                                <span className="text-xs text-muted-foreground font-bold flex items-center gap-1.5 mt-1">
+                                                    <Mail className="h-3 w-3 text-primary/60" /> {user.email}
                                                 </span>
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4">
+                                    <TableCell className="px-8 py-6">
                                         {getRoleBadge(user.role)}
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 text-sm text-muted-foreground font-medium">
-                                        <div className="flex items-center gap-1.5">
-                                            <Calendar className="h-3.5 w-3.5 opacity-50" />
+                                    <TableCell className="px-8 py-6 text-sm text-muted-foreground font-bold">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 opacity-40" />
                                             {format(new Date(user.createdAt), "MMM d, yyyy")}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4">
+                                    <TableCell className="px-8 py-6">
                                         <StatusPill value={user.banned ? "banned" : "active"} />
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 text-right">
+                                    <TableCell className="px-8 py-6 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted/80">
-                                                    <MoreHorizontal className="h-4 w-4" />
+                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm">
+                                                    <MoreHorizontal className="h-5 w-5" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-52 rounded-xl p-2 shadow-xl">
-                                                <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User Actions</DropdownMenuLabel>
+                                            <DropdownMenuContent align="end" className="w-56 rounded-[1.5rem] p-3 shadow-2xl border-2 border-border">
+                                                <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Account Management</DropdownMenuLabel>
                                                 <DropdownMenuItem
-                                                    className="rounded-lg cursor-pointer"
+                                                    className="rounded-xl cursor-pointer py-3 px-3 font-bold"
                                                     onClick={() => setViewTarget(user)}
                                                 >
-                                                    <UserIcon className="mr-2 h-4 w-4" /> View Full Profile
+                                                    <UserIcon className="mr-3 h-4 w-4 text-primary" /> View Profile
                                                 </DropdownMenuItem>
-                                                <DropdownMenuSeparator className="my-1" />
+                                                <DropdownMenuSeparator className="my-2 bg-border/50" />
                                                 {!user.banned ? (
                                                     <DropdownMenuItem
-                                                        className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-medium"
+                                                        className="text-rose-500 focus:text-rose-500 focus:bg-rose-500/10 rounded-xl cursor-pointer font-black py-3 px-3"
                                                         onClick={() => banUserMutation.mutate({ userId: user.id, banned: true })}
                                                         disabled={banUserMutation.isPending}
                                                     >
-                                                        <UserMinus className="mr-2 h-4 w-4" /> Ban This User
+                                                        <UserMinus className="mr-3 h-4 w-4" /> Suspend Access
                                                     </DropdownMenuItem>
                                                 ) : (
                                                     <DropdownMenuItem
-                                                        className="text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10 rounded-lg cursor-pointer font-medium"
+                                                        className="text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10 rounded-xl cursor-pointer font-black py-3 px-3"
                                                         onClick={() => banUserMutation.mutate({ userId: user.id, banned: false })}
                                                         disabled={banUserMutation.isPending}
                                                     >
-                                                        <UserCheck className="mr-2 h-4 w-4" /> Restore Access
+                                                        <UserCheck className="mr-3 h-4 w-4" /> Restore Access
                                                     </DropdownMenuItem>
                                                 )}
                                                 {user.role.toUpperCase() !== "ADMIN" && (
                                                     <DropdownMenuItem
-                                                        className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-medium"
+                                                        className="text-rose-600 focus:text-rose-600 focus:bg-rose-600/10 rounded-xl cursor-pointer font-black py-3 px-3 mt-1"
                                                         onClick={() => setDeleteTarget(user)}
                                                     >
-                                                        <Trash2 className="mr-2 h-4 w-4" /> Delete Account
+                                                        <Trash2 className="mr-3 h-4 w-4" /> Purge Account
                                                     </DropdownMenuItem>
                                                 )}
                                             </DropdownMenuContent>
@@ -307,55 +318,68 @@ export default function AdminUsersPage() {
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-                <AlertDialogContent>
+                <AlertDialogContent className="rounded-[2rem] border-2">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete User</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to delete <strong>{deleteTarget?.name}</strong> ({deleteTarget?.email})?
-                            This action cannot be undone and will permanently remove all their data.
+                        <AlertDialogTitle className="text-2xl font-black">Purge Account?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-base font-medium italic">
+                            You are about to permanently delete <strong>{deleteTarget?.name}</strong>. This action is irreversible and will erase all associated activity logs.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogFooter className="gap-3">
+                        <AlertDialogCancel className="rounded-xl font-bold h-12 border-2">Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            variant="destructive"
+                            className="rounded-xl font-bold h-12 bg-rose-600 hover:bg-rose-700"
                             onClick={() => deleteTarget && deleteUserMutation.mutate(deleteTarget.id)}
                         >
-                            Delete
+                            Confirm Purge
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* View Profile Dialog */}
             <Dialog open={!!viewTarget} onOpenChange={(open) => !open && setViewTarget(null)}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md rounded-[2.5rem] border-2 p-8">
                     <DialogHeader>
-                        <DialogTitle>User Profile</DialogTitle>
-                        <DialogDescription>Detailed user information.</DialogDescription>
+                        <DialogTitle className="text-2xl font-black">User Profile</DialogTitle>
+                        <DialogDescription className="font-medium italic">Detailed system record.</DialogDescription>
                     </DialogHeader>
                     {viewTarget && (
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <Avatar className="h-16 w-16 border-2 border-primary/10">
+                        <div className="space-y-6 pt-4">
+                            <div className="flex items-center gap-6">
+                                <Avatar className="h-20 w-20 border-2 border-primary/20 shadow-lg">
                                     <AvatarImage src={getMediaUrl(viewTarget.image)} alt={viewTarget.name} />
-                                    <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
-                                        {viewTarget.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                    <AvatarFallback className="bg-primary/10 text-primary text-2xl font-black">
+                                        {viewTarget.name.slice(0, 2).toUpperCase()}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <h3 className="font-bold text-lg">{viewTarget.name}</h3>
-                                    <p className="text-sm text-muted-foreground">{viewTarget.email}</p>
+                                    <h3 className="font-black text-2xl tracking-tight leading-none mb-2">{viewTarget.name}</h3>
+                                    <div className="flex items-center gap-2 text-muted-foreground font-bold text-sm">
+                                        <Mail className="h-4 w-4 text-primary" />
+                                        {viewTarget.email}
+                                    </div>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div><span className="text-muted-foreground">Role:</span> <span className="font-medium capitalize">{viewTarget.role}</span></div>
-                                <div><span className="text-muted-foreground">Status:</span> <span className={`font-medium ${viewTarget.banned ? 'text-red-600' : 'text-green-600'}`}>{viewTarget.banned ? 'Banned' : 'Active'}</span></div>
-                                <div><span className="text-muted-foreground">Joined:</span> <span className="font-medium">{format(new Date(viewTarget.createdAt), "MMM d, yyyy")}</span></div>
-                                {viewTarget.banReason && (
-                                    <div className="col-span-2"><span className="text-muted-foreground">Ban Reason:</span> <span className="font-medium text-red-600">{viewTarget.banReason}</span></div>
-                                )}
+                            <div className="grid grid-cols-2 gap-4 p-6 bg-muted/30 rounded-3xl border-2 border-border/50">
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Access Level</span>
+                                    <p className="font-bold capitalize">{viewTarget.role}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Account Status</span>
+                                    <p className={`font-bold ${viewTarget.banned ? 'text-rose-500' : 'text-emerald-500'}`}>{viewTarget.banned ? 'Banned' : 'Active'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Registration</span>
+                                    <p className="font-bold">{format(new Date(viewTarget.createdAt), "MMM d, yyyy")}</p>
+                                </div>
                             </div>
+                            {viewTarget.banReason && (
+                                <div className="p-4 bg-rose-500/10 border-2 border-rose-500/20 rounded-2xl">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-rose-500">Ban Reason</span>
+                                    <p className="font-bold text-rose-600 mt-1">{viewTarget.banReason}</p>
+                                </div>
+                            )}
                         </div>
                     )}
                 </DialogContent>

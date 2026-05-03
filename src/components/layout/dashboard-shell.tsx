@@ -54,7 +54,10 @@ export function DashboardShell({ brandLabel, brandIcon: BrandIcon, items, childr
       </div>
 
       {/* Sidebar nav — scrollable if items overflow */}
-      <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
+      <nav 
+        className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar"
+        data-lenis-prevent
+      >
         {items.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
@@ -107,11 +110,11 @@ export function DashboardShell({ brandLabel, brandIcon: BrandIcon, items, childr
   );
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* SIDEBAR — fixed on desktop, drawer on mobile */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-border bg-card transition-transform duration-300 lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-border bg-card transition-transform duration-300 lg:translate-x-0 h-full",
           mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -128,7 +131,7 @@ export function DashboardShell({ brandLabel, brandIcon: BrandIcon, items, childr
       )}
 
       {/* MAIN CONTENT Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-72 w-full">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-72 w-full h-full">
         {/* Desktop/Mobile Top Header */}
         <header className="sticky top-0 z-30 h-16 border-b border-border bg-background/80 backdrop-blur-md px-4 md:px-8 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4 lg:hidden">
@@ -151,7 +154,7 @@ export function DashboardShell({ brandLabel, brandIcon: BrandIcon, items, childr
 
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <div className="h-8 w-[1px] bg-border mx-1" />
+            <div className="h-8 w-px bg-border mx-1" />
             <div className="hidden sm:flex items-center gap-3 pl-2">
                 <div className="text-right">
                     <p className="text-xs font-black text-foreground leading-none mb-1">{user?.name}</p>
@@ -162,7 +165,10 @@ export function DashboardShell({ brandLabel, brandIcon: BrandIcon, items, childr
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 md:p-8 lg:p-12 animate-in fade-in duration-500">
+        <main 
+          className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 animate-in fade-in duration-500 custom-scrollbar"
+          data-lenis-prevent
+        >
           <div className="max-w-7xl mx-auto w-full">
             {children}
           </div>

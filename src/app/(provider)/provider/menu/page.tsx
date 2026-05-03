@@ -7,9 +7,14 @@ import {
     MoreHorizontal,
     Pencil,
     Trash2,
-    Loader2,
     Utensils,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Save,
+    Sparkles,
+    Banknote,
+    Tag,
+    ChefHat,
+    Loader2
 } from "lucide-react";
 import {
     Table,
@@ -20,6 +25,7 @@ import {
     TableRow
 } from "@/components/ui/table";
 import { StatusPill, DietaryBadge } from "@/components/dashboard/badges";
+import { EmptyState } from "@/components/dashboard/empty-state";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -67,6 +73,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { Meal, ApiResponse, Category } from "@/types";
 import { useForm } from "react-hook-form";
@@ -98,7 +105,7 @@ export default function ProviderMenuPage() {
     const [deletingMeal, setDeletingMeal] = useState<Meal | null>(null);
 
     // Fetch meals
-    const { data: meals, isLoading } = useQuery({
+    const { data: meals, isLoading, error } = useQuery({
         queryKey: ["provider-meals-own"],
         queryFn: async () => {
             try {
@@ -134,7 +141,6 @@ export default function ProviderMenuPage() {
         },
     });
 
-    // Reset form when editing or closing
     const handleOpenDialog = (meal?: Meal) => {
         if (meal) {
             setEditingMeal(meal);
@@ -162,7 +168,6 @@ export default function ProviderMenuPage() {
         setIsEditorOpen(true);
     };
 
-    // Create/Update Mutation
     const upsertMutation = useMutation({
         mutationFn: async (values: MealFormValues) => {
             if (editingMeal) {
@@ -172,22 +177,21 @@ export default function ProviderMenuPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["provider-meals-own"] });
-            toast.success(editingMeal ? "Meal updated" : "Meal created");
+            toast.success(editingMeal ? "Dish updated successfully" : "New dish added to menu");
             setIsEditorOpen(false);
         },
         onError: (error: any) => {
-            toast.error(error.message || "Something went wrong");
+            toast.error(error.message || "Failed to save meal");
         },
     });
 
-    // Delete Mutation
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
             return api.delete(`/provider/meals/${id}`);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["provider-meals-own"] });
-            toast.success("Meal deleted");
+            toast.success("Dish purged from menu");
             setIsDeleteAlertOpen(false);
         },
         onError: (error: any) => {
@@ -201,83 +205,114 @@ export default function ProviderMenuPage() {
 
     if (isLoading) {
         return (
-            <div className="flex h-[80vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                <Sparkles className="h-10 w-10 animate-pulse text-primary" />
+                <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Kitchen...</p>
             </div>
         );
     }
 
     if (meals === null) {
         return (
-            <div className="flex h-[80vh] flex-col items-center justify-center space-y-4 text-center">
-                <div className="rounded-full bg-primary/10 p-6">
-                    <Utensils className="h-12 w-12 text-primary" />
-                </div>
-                <h2 className="text-2xl font-bold">Business Profile Required</h2>
-                <p className="text-muted-foreground max-w-[400px]">
-                    You need to complete your business profile before you can start managing your menu.
-                </p>
-                <Link href="/provider/profile" className="mt-4">
-                    <Button>Setup Profile Now</Button>
-                </Link>
+            <div className="flex items-center justify-center min-h-[70vh]">
+                <EmptyState
+                    icon={ChefHat}
+                    title="Business Profile Required"
+                    description="You need to complete your business identity before serving meals to our community."
+                >
+                    <Link href="/provider/profile" className="mt-6">
+                        <Button className="h-14 rounded-2xl px-8 font-black shadow-lg shadow-primary/20">Setup Kitchen Identity</Button>
+                    </Link>
+                </EmptyState>
             </div>
         );
     }
 
+    const totalMeals = meals?.length || 0;
+    const activeMeals = meals?.filter(m => m.isAvailable).length || 0;
+    const avgPrice = totalMeals > 0 ? ((meals || []).reduce((s, m) => s + m.price, 0) / totalMeals).toFixed(0) : 0;
+
+    const stats = [
+        { label: "Menu Items", value: totalMeals, color: "text-blue-500", icon: Utensils },
+        { label: "On Air", value: activeMeals, color: "text-emerald-500", icon: Sparkles },
+        { label: "Avg Price", value: `৳${avgPrice}`, color: "text-amber-500", icon: Banknote },
+    ];
+
     return (
-        <div className="container mx-auto p-6 space-y-8">
-            <div className="flex items-center justify-between">
+        <div className="space-y-10 max-w-7xl mx-auto pb-12">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Menu Management</h1>
-                    <p className="text-muted-foreground mt-1">
-                        Add, edit, or remove meals from your restaurant's menu.
-                    </p>
+                    <h1 className="text-4xl font-black tracking-tight text-foreground">Menu Catalog</h1>
+                    <p className="text-muted-foreground mt-1 font-medium italic">Craft your culinary offering and manage item visibility.</p>
                 </div>
-                <Button onClick={() => handleOpenDialog()} className="gap-2">
-                    <Plus className="h-4 w-4" /> Add New Meal
+                <Button 
+                    onClick={() => handleOpenDialog()} 
+                    className="h-14 rounded-2xl px-8 gap-3 font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                >
+                    <Plus className="h-5 w-5" />
+                    New Creation
                 </Button>
             </div>
 
-            <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {stats.map((stat) => {
+                    const Icon = stat.icon;
+                    return (
+                        <Card key={stat.label} className="border-border bg-card rounded-[2rem] shadow-sm overflow-hidden group">
+                            <CardContent className="pt-8 pb-8 px-8 flex items-center justify-between">
+                                <div>
+                                    <div className={`text-4xl font-black ${stat.color} tabular-nums tracking-tighter`}>
+                                        {stat.value}
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-2">{stat.label}</p>
+                                </div>
+                                <div className={`p-4 rounded-2xl ${stat.color} bg-current/10 group-hover:scale-110 transition-transform`}>
+                                    <Icon className="h-7 w-7" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
+
+            <div className="rounded-[2.5rem] border-2 border-border bg-card shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <Table>
                     <TableHeader>
-                        <TableRow className="bg-muted/50 border-b border-border hover:bg-muted/50 transition-none">
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground w-[100px]">Image</TableHead>
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Meal Name</TableHead>
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</TableHead>
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dietary</TableHead>
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Price</TableHead>
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
-                            <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</TableHead>
+                        <TableRow className="bg-muted/30 border-b-2 border-border hover:bg-muted/30 transition-none">
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Preview</TableHead>
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Dish Name</TableHead>
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Category</TableHead>
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Dietary</TableHead>
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Pricing</TableHead>
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Status</TableHead>
+                            <TableHead className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {meals?.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="h-40 text-center">
-                                    <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                                        <Utensils className="h-10 w-10 opacity-20" />
-                                        <div className="space-y-1">
-                                            <p className="font-semibold text-foreground text-base">No meals found</p>
-                                            <p className="text-sm">Start by adding a delicious dish to your menu.</p>
-                                        </div>
+                                <TableCell colSpan={7} className="py-32 text-center">
+                                    <EmptyState
+                                        icon={Utensils}
+                                        title="Empty Kitchen"
+                                        description="You haven't listed any dishes yet. Start serving today!"
+                                    >
                                         <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="mt-2"
+                                            className="mt-8 rounded-2xl font-black h-12 px-8 shadow-lg"
                                             onClick={() => handleOpenDialog()}
                                         >
-                                            <Plus className="h-4 w-4 mr-2" /> Add Your First Meal
+                                            <Plus className="h-5 w-5 mr-2" /> Add Your First Meal
                                         </Button>
-                                    </div>
+                                    </EmptyState>
                                 </TableCell>
                             </TableRow>
                         ) : (
                             meals?.map((meal) => (
-                                <TableRow key={meal.id} className="hover:bg-muted/30 transition-colors group/row">
-                                    <TableCell className="px-4 py-4">
-                                        <div className="relative h-12 w-12 rounded-lg overflow-hidden border border-border bg-muted/50 flex items-center justify-center transition-transform group-hover/row:scale-105">
+                                <TableRow key={meal.id} className="hover:bg-muted/30 transition-all group/row border-b border-border/50">
+                                    <TableCell className="px-8 py-6">
+                                        <div className="relative h-16 w-16 rounded-[1.25rem] overflow-hidden border-2 border-border bg-muted flex items-center justify-center transition-transform group-hover/row:scale-110">
                                             {meal.image ? (
                                                 <Image
                                                     src={getMediaUrl(meal.image)}
@@ -286,51 +321,54 @@ export default function ProviderMenuPage() {
                                                     className="object-cover"
                                                 />
                                             ) : (
-                                                <ImageIcon className="h-6 w-6 text-muted-foreground/50" />
+                                                <div className="flex flex-col items-center justify-center gap-1 opacity-20">
+                                                    <div className="text-[8px] font-black uppercase">No</div>
+                                                    <div className="text-[8px] font-black uppercase">Image</div>
+                                                </div>
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4">
-                                        <div className="font-semibold text-foreground leading-tight">{meal.name}</div>
-                                        <div className="text-xs text-muted-foreground mt-1 line-clamp-1 max-w-[200px]">
+                                    <TableCell className="px-8 py-6">
+                                        <div className="font-black text-foreground text-lg leading-tight group-hover/row:text-primary transition-colors">{meal.name}</div>
+                                        <div className="text-[10px] text-muted-foreground mt-1 font-bold line-clamp-1 max-w-[200px] italic">
                                             {meal.description}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4">
-                                        <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground border border-border/50">
-                                            {meal.category?.name || "Uncategorized"}
-                                        </span>
+                                    <TableCell className="px-8 py-6">
+                                        <Badge variant="outline" className="rounded-xl px-4 py-1.5 font-bold border-2 border-primary/10 bg-muted/50 text-foreground">
+                                            {meal.category?.name || "Global"}
+                                        </Badge>
                                     </TableCell>
-                                    <TableCell className="px-4 py-4">
+                                    <TableCell className="px-8 py-6">
                                         <DietaryBadge value={meal.dietaryPreference || "REGULAR"} />
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 font-bold text-foreground tabular-nums">
-                                        ৳ {meal.price}
+                                    <TableCell className="px-8 py-6 font-black text-foreground tabular-nums text-lg">
+                                        ৳{meal.price}
                                     </TableCell>
-                                    <TableCell className="px-4 py-4">
+                                    <TableCell className="px-8 py-6">
                                         <StatusPill value={meal.isAvailable ? "available" : "hidden"} />
                                     </TableCell>
-                                    <TableCell className="px-4 py-4 text-right">
+                                    <TableCell className="px-8 py-6 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-muted/80">
-                                                    <MoreHorizontal className="h-4 w-4" />
+                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm">
+                                                    <MoreHorizontal className="h-5 w-5" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-48 rounded-xl p-2">
-                                                <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem onClick={() => handleOpenDialog(meal)} className="rounded-lg cursor-pointer">
-                                                    <Pencil className="mr-2 h-4 w-4" /> Edit Details
+                                            <DropdownMenuContent align="end" className="w-56 rounded-[1.5rem] p-3 shadow-2xl border-2 border-border">
+                                                <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Item Controls</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => handleOpenDialog(meal)} className="rounded-xl cursor-pointer py-3 px-3 font-bold">
+                                                    <Pencil className="mr-3 h-4 w-4 text-primary" /> Edit Dish Detail
                                                 </DropdownMenuItem>
-                                                <DropdownMenuSeparator className="my-1" />
+                                                <DropdownMenuSeparator className="my-2 bg-border/50" />
                                                 <DropdownMenuItem
-                                                    className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-medium"
+                                                    className="text-rose-600 focus:text-rose-600 focus:bg-rose-600/10 rounded-xl cursor-pointer font-black py-3 px-3"
                                                     onClick={() => {
                                                         setDeletingMeal(meal);
                                                         setIsDeleteAlertOpen(true);
                                                     }}
                                                 >
-                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Meal
+                                                    <Trash2 className="mr-3 h-4 w-4" /> Purge from Menu
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -345,43 +383,47 @@ export default function ProviderMenuPage() {
 
             {/* Create/Edit Modal */}
             <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
-                <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-xl rounded-[2.5rem] border-2 p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>{editingMeal ? "Edit Meal" : "Add New Meal"}</DialogTitle>
-                        <DialogDescription>
-                            {editingMeal ? "Update the details of your meal here." : "Fill in the details to add a new dish to your menu."}
+                        <DialogTitle className="text-3xl font-black text-foreground">{editingMeal ? "Refine Creation" : "New Culinary Addition"}</DialogTitle>
+                        <DialogDescription className="text-base font-medium italic">
+                            {editingMeal ? "Update your dish with seasonal adjustments." : "Expand your menu with a fresh creation."}
                         </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
                             <FormField
                                 control={form.control}
                                 name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Name</FormLabel>
+                                        <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Display Name <span className="text-rose-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="e.g. Spicy Chicken Burger" {...field} />
+                                            <Input placeholder="e.g. Traditional Beef Rezala" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" {...field} />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs font-bold ml-1" />
                                     </FormItem>
                                 )}
                             />
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-6">
                                 <FormField
                                     control={form.control}
                                     name="price"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Price (৳)</FormLabel>
+                                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Retail Price (৳) <span className="text-rose-500">*</span></FormLabel>
                                             <FormControl>
-                                                <Input
-                                                    type="number"
-                                                    {...field}
-                                                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                                                />
+                                                <div className="relative">
+                                                    <Banknote className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        type="number"
+                                                        className="h-12 pl-10 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-black"
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                                                    />
+                                                </div>
                                             </FormControl>
-                                            <FormMessage />
+                                            <FormMessage className="text-xs font-bold ml-1" />
                                         </FormItem>
                                     )}
                                 />
@@ -390,22 +432,22 @@ export default function ProviderMenuPage() {
                                     name="categoryId"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Category</FormLabel>
+                                            <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Classification <span className="text-rose-500">*</span></FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select category" />
+                                                    <SelectTrigger className="h-12 rounded-2xl border-2 focus:ring-primary/20 bg-background font-bold">
+                                                        <SelectValue placeholder="Select genre" />
                                                     </SelectTrigger>
                                                 </FormControl>
-                                                <SelectContent>
+                                                <SelectContent className="rounded-2xl border-2">
                                                     {categories?.map((cat) => (
-                                                        <SelectItem key={cat.id} value={cat.id}>
+                                                        <SelectItem key={cat.id} value={cat.id} className="rounded-xl font-bold py-2">
                                                             {cat.name}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                            <FormMessage />
+                                            <FormMessage className="text-xs font-bold ml-1" />
                                         </FormItem>
                                     )}
                                 />
@@ -415,11 +457,11 @@ export default function ProviderMenuPage() {
                                 name="description"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Description</FormLabel>
+                                        <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Chef's Description <span className="text-rose-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Textarea placeholder="Describe your meal..." {...field} />
+                                            <Textarea placeholder="Tell the story of this dish..." className="min-h-[100px] rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium resize-none" {...field} />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs font-bold ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -428,15 +470,14 @@ export default function ProviderMenuPage() {
                                 name="image"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Meal Image</FormLabel>
+                                        <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Culinary Visual</FormLabel>
                                         <FormControl>
                                             <ImageUpload
                                                 value={field.value}
                                                 onChange={field.onChange}
                                             />
                                         </FormControl>
-                                        <FormDescription>Upload a delicious photo of your meal.</FormDescription>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs font-bold ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -445,23 +486,23 @@ export default function ProviderMenuPage() {
                                 name="dietaryPreference"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Dietary Preference</FormLabel>
+                                        <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Dietary Alignment</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select dietary preference" />
+                                                <SelectTrigger className="h-12 rounded-2xl border-2 focus:ring-primary/20 bg-background font-bold">
+                                                    <SelectValue placeholder="Select dietary fit" />
                                                 </SelectTrigger>
                                             </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="REGULAR">Regular</SelectItem>
-                                                <SelectItem value="VEGETARIAN">Vegetarian</SelectItem>
-                                                <SelectItem value="VEGAN">Vegan</SelectItem>
-                                                <SelectItem value="GLUTEN_FREE">Gluten Free</SelectItem>
-                                                <SelectItem value="KETO">Keto</SelectItem>
-                                                <SelectItem value="HALAL">Halal</SelectItem>
+                                            <SelectContent className="rounded-2xl border-2">
+                                                <SelectItem value="REGULAR" className="rounded-xl font-bold">Regular</SelectItem>
+                                                <SelectItem value="VEGETARIAN" className="rounded-xl font-bold">Vegetarian</SelectItem>
+                                                <SelectItem value="VEGAN" className="rounded-xl font-bold">Vegan</SelectItem>
+                                                <SelectItem value="GLUTEN_FREE" className="rounded-xl font-bold">Gluten Free</SelectItem>
+                                                <SelectItem value="KETO" className="rounded-xl font-bold">Keto</SelectItem>
+                                                <SelectItem value="HALAL" className="rounded-xl font-bold">Halal</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs font-bold ml-1" />
                                     </FormItem>
                                 )}
                             />
@@ -469,11 +510,11 @@ export default function ProviderMenuPage() {
                                 control={form.control}
                                 name="isAvailable"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>Available for order</FormLabel>
-                                            <FormDescription>
-                                                Hide this meal from your menu if out of stock.
+                                    <FormItem className="flex flex-row items-center justify-between rounded-3xl border-2 p-6 bg-muted/30">
+                                        <div className="space-y-1">
+                                            <FormLabel className="text-base font-black">Live Visibility</FormLabel>
+                                            <FormDescription className="text-xs font-medium italic">
+                                                Toggle availability based on kitchen stock.
                                             </FormDescription>
                                         </div>
                                         <FormControl>
@@ -485,10 +526,14 @@ export default function ProviderMenuPage() {
                                     </FormItem>
                                 )}
                             />
-                            <DialogFooter className="pt-4">
-                                <Button type="submit" disabled={upsertMutation.isPending}>
-                                    {upsertMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {editingMeal ? "Update Meal" : "Create Meal"}
+                            <DialogFooter className="pt-6">
+                                <Button type="submit" disabled={upsertMutation.isPending} className="h-14 rounded-2xl px-10 font-black shadow-lg shadow-primary/20">
+                                    {upsertMutation.isPending ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Save className="mr-2 h-4 w-4" />
+                                    )}
+                                    {editingMeal ? "Update dish" : "Add to Menu"}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -498,21 +543,21 @@ export default function ProviderMenuPage() {
 
             {/* Delete Confirmation */}
             <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent className="rounded-[2.5rem] border-2 p-8">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will permanently delete the meal <span className="font-bold">{deletingMeal?.name}</span> and remove it from our listings.
+                        <AlertDialogTitle className="text-2xl font-black text-foreground">Purge from Kitchen?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-base font-medium italic">
+                            You are about to permanently delete <span className="font-black text-rose-600 not-italic">{deletingMeal?.name}</span>. This action is irreversible.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setDeletingMeal(null)}>Cancel</AlertDialogCancel>
+                    <AlertDialogFooter className="gap-3 pt-6">
+                        <AlertDialogCancel onClick={() => setDeletingMeal(null)} className="rounded-xl font-bold h-12">Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            className="bg-destructive hover:bg-destructive/90 text-white"
+                            className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black h-12 shadow-lg shadow-rose-500/20"
                             onClick={() => deletingMeal && deleteMutation.mutate(deletingMeal.id)}
                             disabled={deleteMutation.isPending}
                         >
-                            {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                            {deleteMutation.isPending ? "Purging..." : "Confirm Purge"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -520,3 +565,5 @@ export default function ProviderMenuPage() {
         </div>
     );
 }
+
+

@@ -9,6 +9,8 @@ import { useCartStore } from "@/stores/cart-store";
 import { useEffect, useState } from "react";
 import { getMediaUrl } from "@/lib/utils";
 
+import { EmptyState } from "@/components/dashboard/empty-state";
+
 export default function CartPage() {
     const { items, removeItem, updateQuantity, clearCart, getTotalPrice } = useCartStore();
     const [mounted, setMounted] = useState(false);
@@ -19,7 +21,7 @@ export default function CartPage() {
     }, []);
 
     if (!mounted) {
-        return <div className="min-h-screen container mx-auto px-4 py-8">Loading cart...</div>;
+        return <div className="min-h-screen container mx-auto px-4 py-8 text-muted-foreground animate-pulse">Loading cart...</div>;
     }
 
     const subtotal = getTotalPrice();
@@ -32,24 +34,23 @@ export default function CartPage() {
 
     if (items.length === 0) {
         return (
-            <div className="container mx-auto px-4 py-20 flex flex-col items-center justify-center text-center">
-                <div className="bg-muted/50 p-6 rounded-full mb-6">
-                    <ShoppingBag className="h-12 w-12 text-muted-foreground" />
-                </div>
-                <h1 className="text-2xl font-bold mb-2">Your cart is empty</h1>
-                <p className="text-muted-foreground mb-8 max-w-sm">
-                    Looks like you haven't added any meals to your cart yet. Browse our delicious menu to get started!
-                </p>
-                <Link href="/meals">
-                    <Button size="lg">Browse Meals</Button>
-                </Link>
+            <div className="container mx-auto px-4 py-12">
+                <EmptyState
+                    icon={ShoppingBag}
+                    title="Your cart is empty"
+                    description="Looks like you haven't added any meals to your cart yet. Browse our delicious menu to get started!"
+                    action={{ label: "Browse Meals", href: "/meals" }}
+                />
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+        <div className="container mx-auto px-4 py-8 space-y-8">
+            <div>
+                <h1 className="text-3xl font-black text-foreground tracking-tight">Shopping Cart</h1>
+                <p className="text-muted-foreground mt-1">Review your items and proceed to checkout.</p>
+            </div>
 
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Cart Items List */}

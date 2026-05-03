@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Store } from "lucide-react";
+import { Loader2, Store, Save, Building2, Info, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { ProviderProfile, ApiResponse } from "@/types";
@@ -16,7 +16,6 @@ import { Textarea } from "@/components/ui/textarea";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -24,10 +23,9 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { Label } from "@/components/ui/label";
 
 const profileSchema = z.object({
-    // Field names match what the backend expects:
-    // phone (not contactPhone), logo (not coverImage)
     businessName: z.string().min(2, "Business name is required"),
     description: z.string().max(500).optional(),
     logo: z.string().optional(),
@@ -42,17 +40,13 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function ProviderProfilePage() {
     const queryClient = useQueryClient();
 
-    // Use throwOnError: false so a 404 (no profile yet) renders null profile,
-    // not an unrecoverable error screen
     const { data: profile, isLoading } = useQuery({
         queryKey: ["provider-profile"],
         queryFn: async () => {
             try {
-                // api.get returns res.json() directly = { success, data: profile|null }
                 const body = await api.get<ApiResponse<ProviderProfile>>("/provider/profile");
                 return body.data ?? null;
             } catch {
-                // New provider — no profile exists yet. Return null to trigger create mode.
                 return null;
             }
         },
@@ -66,7 +60,6 @@ export default function ProviderProfilePage() {
             businessName: profile?.businessName || "",
             description: profile?.description || "",
             logo: profile?.logo || "",
-            // phone field — backend stores as `phone`, not `contactPhone`
             phone: (profile as any)?.phone || (profile as any)?.contactPhone || "",
             contactEmail: profile?.contactEmail || "",
             cuisineType: (profile as any)?.cuisineType || "",
@@ -76,7 +69,6 @@ export default function ProviderProfilePage() {
 
     const updateProfile = useMutation({
         mutationFn: async (values: ProfileFormValues) => {
-            // Sanitize: remove empty strings so URL/email validators don't trip on ""
             const payload: Record<string, unknown> = {};
             if (values.businessName) payload.businessName = values.businessName;
             if (values.description) payload.description = values.description;
@@ -87,10 +79,8 @@ export default function ProviderProfilePage() {
             if (values.address) payload.address = values.address;
 
             if (!profile) {
-                // No existing profile — create it (POST)
                 return api.post<ApiResponse<ProviderProfile>>("/provider/profile", payload);
             }
-            // Profile exists — update it (PUT)
             return api.put<ApiResponse<ProviderProfile>>("/provider/profile", payload);
         },
         onSuccess: () => {
@@ -110,134 +100,54 @@ export default function ProviderProfilePage() {
     if (isLoading) {
         return (
             <div className="flex h-[80vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto p-6 max-w-4xl space-y-8">
-            <div className="flex items-center gap-3">
-                <Store className="h-8 w-8 text-primary" />
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Business Profile</h1>
-                    <p className="text-muted-foreground mt-1">
-                        {profile
-                            ? "Manage how your restaurant appears to customers on FoodHub."
-                            : "Set up your business profile to start adding meals."}
-                    </p>
+        <div className="max-w-5xl mx-auto space-y-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary/10 rounded-2xl">
+                        <Store className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                        <h1 className="text-4xl font-black tracking-tight text-foreground">Business Profile</h1>
+                        <p className="text-muted-foreground mt-1 font-medium italic">
+                            Manage how your restaurant appears on the platform.
+                        </p>
+                    </div>
                 </div>
             </div>
 
             {!profile && (
-                <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
-                    <strong>Welcome!</strong> Please complete your business profile before adding meals.
+                <div className="flex items-center gap-4 p-6 rounded-[2rem] bg-amber-500/10 border-2 border-amber-500/20 text-amber-700 dark:text-amber-400">
+                    <div className="p-2 bg-amber-500 rounded-xl text-white">
+                        <Info className="h-5 w-5" />
+                    </div>
+                    <p className="font-bold">Welcome! Please complete your business profile before adding meals.</p>
                 </div>
             )}
 
-            <Card className="shadow-sm border-muted">
-                <CardHeader>
-                    <CardTitle>Profile Details</CardTitle>
-                    <CardDescription>
-                        These details will be shown on your public restaurant page.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <FormField
-                                    control={form.control}
-                                    name="businessName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Business Name *</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="e.g. Bella Italia" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="phone"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Contact Phone</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="e.g. +880 1234 567890" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="contactEmail"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Support Email</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="support@restaurant.com" type="email" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="cuisineType"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Cuisine Type</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="e.g. Italian, Deshi, Fast Food" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="address"
-                                    render={({ field }) => (
-                                        <FormItem className="md:col-span-2">
-                                            <FormLabel>Restaurant Address</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="e.g. 123 Main St, Dhaka" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="description"
-                                    render={({ field }) => (
-                                        <FormItem className="md:col-span-2">
-                                            <FormLabel>About Your Restaurant</FormLabel>
-                                            <FormControl>
-                                                <Textarea 
-                                                    placeholder="Tell customers about your story and food..." 
-                                                    className="resize-none h-24"
-                                                    {...field} 
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-medium">Branding</h3>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        {/* Branding Section */}
+                        <Card className="border-border bg-card rounded-[2rem] shadow-sm overflow-hidden h-fit">
+                            <CardHeader>
+                                <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                    <ImageIcon className="h-5 w-5 text-primary" />
+                                    Branding
+                                </CardTitle>
+                                <CardDescription>Your visual identity.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
                                 <FormField
                                     control={form.control}
                                     name="logo"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Restaurant Logo</FormLabel>
                                             <FormControl>
                                                 <ImageUpload
                                                     value={field.value}
@@ -246,25 +156,134 @@ export default function ProviderProfilePage() {
                                                     aspectRatio="square"
                                                 />
                                             </FormControl>
-                                            <FormDescription>
-                                                A square image works best for your logo.
-                                            </FormDescription>
+                                            <p className="text-xs text-muted-foreground mt-3 font-medium text-center">
+                                                A high-quality logo helps you stand out.
+                                            </p>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                            </div>
+                            </CardContent>
+                        </Card>
 
-                            <div className="flex justify-end pt-4 border-t">
-                                <Button type="submit" disabled={updateProfile.isPending}>
-                                    {updateProfile.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {profile ? "Save Changes" : "Create Profile"}
+                        {/* Details Section */}
+                        <div className="lg:col-span-2 space-y-8">
+                            <Card className="border-border bg-card rounded-[2rem] shadow-sm overflow-hidden">
+                                <CardHeader>
+                                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                                        <Building2 className="h-5 w-5 text-primary" />
+                                        Business Details
+                                    </CardTitle>
+                                    <CardDescription>Basic information about your kitchen.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <FormField
+                                            control={form.control}
+                                            name="businessName"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Business Name *</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="e.g. Bella Italia" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="phone"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Contact Phone</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="+880 1XXX XXXXXX" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <FormField
+                                            control={form.control}
+                                            name="contactEmail"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Support Email</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="support@kitchen.com" type="email" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="cuisineType"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Cuisine Type</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="e.g. Italian, Fast Food" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+
+                                    <FormField
+                                        control={form.control}
+                                        name="address"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Physical Address</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="e.g. 123 Main St, Dhaka" className="h-12 rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="description"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">About Your Story</FormLabel>
+                                                <FormControl>
+                                                    <Textarea 
+                                                        placeholder="Share your passion for food with your customers..." 
+                                                        className="min-h-[120px] rounded-2xl border-2 focus-visible:ring-primary/20 bg-background font-medium resize-none"
+                                                        {...field} 
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </CardContent>
+                            </Card>
+
+                            <div className="flex justify-end pt-4 pb-12">
+                                <Button 
+                                    type="submit" 
+                                    size="lg" 
+                                    className="h-14 rounded-2xl px-12 gap-3 font-black shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                                    disabled={updateProfile.isPending}
+                                >
+                                    {updateProfile.isPending ? "Saving Profile..." : "Save Business Profile"}
+                                    {!updateProfile.isPending && <Save className="h-5 w-5" />}
                                 </Button>
                             </div>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+                        </div>
+                    </div>
+                </form>
+            </Form>
         </div>
     );
 }
