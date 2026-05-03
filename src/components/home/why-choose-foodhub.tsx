@@ -81,7 +81,7 @@ export function WhyChooseFoodHub() {
               key={item.title}
               variants={itemVariants}
               whileHover={{ y: -10 }}
-              className="flex flex-col items-center text-center p-10 rounded-[2.5rem] bg-slate-50 dark:bg-accent/5 border border-border/40 hover:bg-white dark:hover:bg-card hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300"
+              className="flex flex-col items-center text-center p-10 rounded-[2.5rem] bg-muted dark:bg-accent/5 border border-border/40 hover:bg-card dark:hover:bg-card hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300"
             >
               <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 rotate-3 group-hover:rotate-0 transition-transform">
                 <item.icon className="h-8 w-8 text-primary" />

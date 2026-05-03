@@ -41,7 +41,7 @@ export function PopularMeals() {
     };
 
     return (
-        <section className="py-20 px-4 bg-slate-50 overflow-hidden">
+        <section className="py-20 px-4 bg-muted overflow-hidden">
             <div className="container mx-auto">
                 <motion.div
                     initial={{ opacity: 0, x: -30 }}

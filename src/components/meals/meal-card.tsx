@@ -64,7 +64,7 @@ export function MealCard({ meal }: MealCardProps) {
             >
                 <Card className="overflow-hidden group transition-shadow duration-300 border-none shadow-sm h-full flex flex-col hover:shadow-xl">
                     <Link href={`/meals/${meal.id}`} className="overflow-hidden flex-1 flex flex-col">
-                        <div className="relative h-48 w-full overflow-hidden bg-slate-100">
+                        <div className="relative h-48 w-full overflow-hidden bg-muted">
                             <Image
                                 src={imgSrc}
                                 alt={meal.name}
@@ -86,7 +86,7 @@ export function MealCard({ meal }: MealCardProps) {
 
                         <CardContent className="p-4 flex-1">
                             <div className="flex justify-between items-start mb-2 gap-2 flex-wrap">
-                                <Badge variant="secondary" className="text-xs font-normal text-muted-foreground bg-slate-100 hover:bg-slate-200">
+                                <Badge variant="secondary" className="text-xs font-normal text-muted-foreground bg-muted hover:bg-muted/80">
                                     {meal.category?.name || "Meal"}
                                 </Badge>
                                 {meal.dietaryPreference && meal.dietaryPreference !== "REGULAR" && (
@@ -114,7 +114,7 @@ export function MealCard({ meal }: MealCardProps) {
                         {isCustomer && (
                             <Button
                                 size="sm"
-                                className="bg-slate-900 text-white hover:bg-slate-800 rounded-full h-8 w-8 p-0"
+                                className="bg-primary text-white hover:bg-primary-dark rounded-full h-8 w-8 p-0 shadow-lg shadow-primary/20"
                                 onClick={handleAddToCart}
                             >
                                 <Plus className="h-4 w-4" />

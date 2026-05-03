@@ -266,7 +266,7 @@ export function Navbar() {
                                     <>
                                         {user ? (
                                             <>
-                                                <div className="py-4 px-2 bg-slate-50 rounded-lg mt-4">
+                                                <div className="py-4 px-2 bg-muted rounded-lg mt-4">
                                                     <div className="flex items-center gap-3">
                                                         <Avatar className="h-10 w-10">
                                                             <AvatarImage src={getMediaUrl(user.image)} alt={user.name} />

@@ -45,11 +45,12 @@ export default function LoginPage() {
     },
   });
 
-  async function onSubmit(data: LoginFormValues) {
+  async function onSubmit(data: LoginFormValues, overrideRole?: "user" | "seller" | "admin") {
     try {
+      const activeRole = overrideRole || loginRole;
       let requireRole: "CUSTOMER" | "PROVIDER" | "ADMIN" = "CUSTOMER";
-      if (loginRole === "seller") requireRole = "PROVIDER";
-      if (loginRole === "admin") requireRole = "ADMIN";
+      if (activeRole === "seller") requireRole = "PROVIDER";
+      if (activeRole === "admin") requireRole = "ADMIN";
       
       await login(data, requireRole);
     } catch {
@@ -58,13 +59,13 @@ export default function LoginPage() {
   }
 
   const handleDemoSelect = (email: string, password: string, role: "user" | "seller" | "admin") => {
-    form.setValue("email", email);
-    form.setValue("password", password);
+    form.setValue("email", email, { shouldValidate: true });
+    form.setValue("password", password, { shouldValidate: true });
     setLoginRole(role);
     
     // Auto-submit for better UX
     setTimeout(() => {
-        form.handleSubmit(onSubmit)();
+        form.handleSubmit((data) => onSubmit(data, role))();
     }, 150);
   };
 
@@ -110,7 +111,7 @@ export default function LoginPage() {
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <form onSubmit={form.handleSubmit((data) => onSubmit(data))} className="space-y-5">
               <div className="space-y-3">
                 <Label className="text-base font-semibold">Sign in as</Label>
                 <div className="grid grid-cols-3 gap-2 sm:gap-4">

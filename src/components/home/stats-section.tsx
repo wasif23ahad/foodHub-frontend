@@ -68,7 +68,7 @@ export function StatsSection() {
   ];
 
   return (
-    <section className="py-20 bg-slate-50 dark:bg-accent/5">
+    <section className="py-20 bg-muted dark:bg-accent/5">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
