@@ -28,7 +28,16 @@ export function PersonalizedMeals() {
   }
 
   return (
-    <section className="py-20 bg-slate-50/50">
+    <section className="relative bg-background py-20 overflow-hidden border-t border-border/50">
+      {/* Subtle ambient glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 opacity-30 dark:opacity-20"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 40% at 50% 0%, var(--primary) 0%, transparent 70%)",
+        }}
+      />
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-end justify-between gap-6 mb-12">
           <div className="space-y-4 max-w-2xl">
@@ -36,21 +45,24 @@ export function PersonalizedMeals() {
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-bold uppercase tracking-widest"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest"
             >
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-3.5 w-3.5" />
               Smart Recommendations
             </motion.div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900">
-              Personalized <span className="text-primary">For You</span>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
+              Personalized{" "}
+              <span className="bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
+                For You
+              </span>
             </h2>
-            <p className="text-lg text-slate-600 font-medium leading-relaxed">
+            <p className="text-lg text-muted-foreground font-medium leading-relaxed">
               Based on your taste profile and order history, we think you'll love these delicious options.
             </p>
           </div>
-
+ 
           <Link href="/meals">
-            <Button variant="ghost" className="group text-primary font-bold hover:bg-primary/5 rounded-2xl h-14 px-8">
+            <Button variant="ghost" className="group text-muted-foreground hover:text-primary font-bold hover:bg-primary/5 rounded-2xl h-14 px-8 transition-colors">
               Explore More
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>

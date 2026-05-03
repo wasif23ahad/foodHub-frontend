@@ -65,7 +65,7 @@ export function HowItWorks() {
                     className="grid grid-cols-1 md:grid-cols-3 gap-8 relative"
                 >
                     {/* Connecting line for desktop */}
-                    <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-slate-100 -z-10" />
+                    <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-border -z-10" />
 
                     {STEPS.map((step, index) => (
                         <motion.div key={index} variants={itemVariants} className="flex flex-col items-center group">
