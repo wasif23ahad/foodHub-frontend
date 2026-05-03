@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { streamCravelyChat } from "@/lib/cravely-stream";
-import { PlainTextMessage } from "@/components/ai/plain-text-message";
+import { CravelyMessage } from "@/components/ai/cravely-message";
 
 interface Message {
   role: "user" | "assistant";
@@ -195,7 +195,7 @@ export default function CravelyPage() {
                                     )}>
                                         {m.role === "assistant" ? (
                                           m.content ? (
-                                            <PlainTextMessage 
+                                            <CravelyMessage 
                                               content={m.content} 
                                               isStreaming={isLoading && i === messages.length - 1} 
                                             />
