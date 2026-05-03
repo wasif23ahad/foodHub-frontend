@@ -50,20 +50,20 @@ export default function CustomerSettingsPage() {
             </div>
 
             <Tabs defaultValue="account" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-14 p-1 bg-muted/50 rounded-2xl mb-8">
-                    <TabsTrigger value="account" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-16 p-1.5 bg-muted/50 rounded-[1.25rem] mb-10 border-2 border-border/50">
+                    <TabsTrigger value="account" className="h-full gap-3 rounded-[0.9rem] font-bold text-sm transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 border border-transparent data-[state=active]:border-border/50">
                         <User className="h-4 w-4" />
                         Account
                     </TabsTrigger>
-                    <TabsTrigger value="notifications" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                    <TabsTrigger value="notifications" className="h-full gap-3 rounded-[0.9rem] font-bold text-sm transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 border border-transparent data-[state=active]:border-border/50">
                         <Bell className="h-4 w-4" />
                         Alerts
                     </TabsTrigger>
-                    <TabsTrigger value="appearance" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                    <TabsTrigger value="appearance" className="h-full gap-3 rounded-[0.9rem] font-bold text-sm transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 border border-transparent data-[state=active]:border-border/50">
                         <Palette className="h-4 w-4" />
                         Theme
                     </TabsTrigger>
-                    <TabsTrigger value="privacy" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                    <TabsTrigger value="privacy" className="h-full gap-3 rounded-[0.9rem] font-bold text-sm transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 border border-transparent data-[state=active]:border-border/50">
                         <Lock className="h-4 w-4" />
                         Privacy
                     </TabsTrigger>

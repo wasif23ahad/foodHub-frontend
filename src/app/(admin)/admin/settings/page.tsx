@@ -49,24 +49,24 @@ export default function AdminSettingsPage() {
             </div>
 
             <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-14 p-1 bg-muted/50 rounded-2xl mb-8">
-                    <TabsTrigger value="general" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-16 p-1.5 bg-muted/50 rounded-[1.25rem] mb-10 border-2 border-border/50">
+                    <TabsTrigger value="general" className="h-full gap-3 rounded-[0.9rem] font-bold text-sm transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 border border-transparent data-[state=active]:border-border/50">
                         <Settings className="h-4 w-4" />
                         General
                     </TabsTrigger>
-                    <TabsTrigger value="notifications" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                    <TabsTrigger value="notifications" className="h-full gap-3 rounded-[0.9rem] font-bold text-sm transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 border border-transparent data-[state=active]:border-border/50">
                         <Bell className="h-4 w-4" />
                         System
                     </TabsTrigger>
-                    <TabsTrigger value="security" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                    <TabsTrigger value="security" className="h-full gap-3 rounded-[0.9rem] font-bold text-sm transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 border border-transparent data-[state=active]:border-border/50">
                         <Shield className="h-4 w-4" />
                         Security
                     </TabsTrigger>
-                    <TabsTrigger value="appearance" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                    <TabsTrigger value="appearance" className="h-full gap-3 rounded-[0.9rem] font-bold text-sm transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 border border-transparent data-[state=active]:border-border/50">
                         <Palette className="h-4 w-4" />
                         Theme
                     </TabsTrigger>
-                    <TabsTrigger value="localization" className="gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm">
+                    <TabsTrigger value="localization" className="h-full gap-3 rounded-[0.9rem] font-bold text-sm transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 border border-transparent data-[state=active]:border-border/50">
                         <Globe className="h-4 w-4" />
                         Locale
                     </TabsTrigger>
