@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { streamCravelyChat } from "@/lib/cravely-stream";
-import { AssistantMessage } from "./assistant-message";
+import { PlainTextMessage } from "./plain-text-message";
 
 interface Message {
   role: "user" | "assistant";
@@ -148,36 +148,30 @@ export function CravelyDock() {
                             </div>
                           )}
                           <div className={cn(
-                            "max-w-[80%] p-4 rounded-[1.5rem] text-sm leading-relaxed",
+                            "max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed",
                             m.role === "user" 
-                              ? "bg-slate-900 text-white rounded-br-none shadow-xl shadow-slate-200/50 dark:shadow-none font-medium" 
+                              ? "bg-slate-900 text-white rounded-br-none shadow-lg shadow-slate-200/50 dark:shadow-none font-medium ml-auto" 
                               : "bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-800"
                           )}>
                             {m.role === "assistant" ? (
-                              <AssistantMessage 
-                                content={m.content} 
-                                isStreaming={isLoading && i === messages.length - 1} 
-                              />
+                              m.content ? (
+                                <PlainTextMessage 
+                                  content={m.content} 
+                                  isStreaming={isLoading && i === messages.length - 1} 
+                                />
+                              ) : (
+                                <div className="flex gap-1 py-1">
+                                  <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1 }} className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                  <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                  <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                </div>
+                              )
                             ) : (
                               m.content
                             )}
                           </div>
                         </motion.div>
                       ))}
-                      {isLoading && (
-                        <div className="flex items-center gap-2">
-                           <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                                <Bot className="h-4 w-4 text-primary animate-pulse" />
-                            </div>
-                          <div className="bg-slate-50 dark:bg-slate-800/50 px-4 py-3 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-800">
-                            <div className="flex gap-1">
-                                <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1 }} className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="h-1.5 w-1.5 rounded-full bg-primary" />
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </ScrollArea>
 

@@ -1,15 +1,10 @@
 import { API_URL } from "@/lib/api";
 
-export type CravelyCitation = {
-  id: string;
-  name?: string;
-};
 
 type StreamOptions = {
   message: string;
   sessionId?: string | null;
   onToken: (text: string) => void;
-  onCitations?: (ids: string[]) => void;
   onDone: (payload: { sessionId: string }) => void;
 };
 
@@ -62,9 +57,6 @@ export async function streamCravelyChat(options: StreamOptions) {
       const data = JSON.parse(dataLine) as Record<string, unknown>;
       if (event === "token" && typeof data["text"] === "string") {
         options.onToken(data["text"]);
-      }
-      if (event === "citations" && Array.isArray(data["meals"])) {
-        options.onCitations?.(data["meals"].filter((id): id is string => typeof id === "string"));
       }
       if (event === "done" && typeof data["sessionId"] === "string") {
         options.onDone({ sessionId: data["sessionId"] });

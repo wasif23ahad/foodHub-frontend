@@ -10,12 +10,11 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { streamCravelyChat } from "@/lib/cravely-stream";
-import { AssistantMessage } from "@/components/ai/assistant-message";
+import { PlainTextMessage } from "@/components/ai/plain-text-message";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
-  citations?: string[];
 }
 
 export default function CravelyPage() {
@@ -45,7 +44,7 @@ export default function CravelyPage() {
     setIsLoading(true);
 
     try {
-      setMessages(prev => [...prev, { role: "assistant", content: "", citations: [] }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
       await streamCravelyChat({
         message: userMessage,
         sessionId,
@@ -55,16 +54,6 @@ export default function CravelyPage() {
             const last = next[next.length - 1];
             if (last?.role === "assistant") {
               next[next.length - 1] = { ...last, content: `${last.content}${text}` };
-            }
-            return next;
-          });
-        },
-        onCitations: (ids) => {
-          setMessages(prev => {
-            const next = [...prev];
-            const last = next[next.length - 1];
-            if (last?.role === "assistant") {
-              next[next.length - 1] = { ...last, citations: ids };
             }
             return next;
           });
@@ -197,52 +186,33 @@ export default function CravelyPage() {
                                         <Bot className="h-6 w-6 text-primary" />
                                     </div>
                                 )}
-                                <div className="flex flex-col gap-3 max-w-[80%]">
+                                <div className="flex flex-col gap-3 max-w-[85%]">
                                     <div className={cn(
                                         "p-6 rounded-[2rem] text-base leading-relaxed",
                                         m.role === "user" 
-                                            ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-br-none shadow-2xl shadow-slate-200 dark:shadow-none font-medium" 
+                                            ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-br-none shadow-2xl shadow-slate-200 dark:shadow-none font-medium ml-auto" 
                                             : "bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 rounded-bl-none border border-slate-100 dark:border-slate-800/50"
                                     )}>
                                         {m.role === "assistant" ? (
-                                          <AssistantMessage 
-                                            content={m.content} 
-                                            isStreaming={isLoading && i === messages.length - 1} 
-                                          />
+                                          m.content ? (
+                                            <PlainTextMessage 
+                                              content={m.content} 
+                                              isStreaming={isLoading && i === messages.length - 1} 
+                                            />
+                                          ) : (
+                                            <div className="flex gap-2 py-1">
+                                              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="h-2 w-2 rounded-full bg-primary" />
+                                              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="h-2 w-2 rounded-full bg-primary" />
+                                              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="h-2 w-2 rounded-full bg-primary" />
+                                            </div>
+                                          )
                                         ) : (
                                           m.content
                                         )}
                                     </div>
-                                    
-                                    {m.citations && m.citations.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 px-2 animate-in fade-in slide-in-from-top-2 duration-500">
-                                            {m.citations.map((id) => (
-                                                <Badge 
-                                                    key={id} 
-                                                    variant="secondary" 
-                                                    className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 font-bold px-4 py-2 rounded-xl shadow-sm hover:border-primary/30 transition-colors cursor-pointer group"
-                                                >
-                                                    <Utensils className="h-3 w-3 mr-2 text-primary group-hover:scale-110 transition-transform" />
-                                                    {id}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
                             </motion.div>
                         ))}
-                        {isLoading && (
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200/50">
-                                    <Bot className="h-6 w-6 text-primary animate-pulse" />
-                                </div>
-                                <div className="flex gap-2 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] rounded-bl-none border border-slate-100 dark:border-slate-800/50">
-                                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="h-2 w-2 rounded-full bg-primary" />
-                                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="h-2 w-2 rounded-full bg-primary" />
-                                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="h-2 w-2 rounded-full bg-primary" />
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </ScrollArea>
 
